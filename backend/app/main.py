@@ -155,6 +155,12 @@ def recommendations(limit: int = 6):
             "interests": interests, "topics": TOPIC_LABEL}
 
 
+@app.get("/v1/checkpoints")
+def checkpoint_overview():
+    from . import checkpoints
+    return checkpoints.overview()
+
+
 @app.get("/v1/growth")
 def growth_events(days: int = 7):
     return {"items": growth.recent(max(1, min(days, 60)), 20)}
@@ -357,7 +363,8 @@ def audio(path: str):
 def export():
     out = {}
     for t in ("profile", "skill_stats", "level_stats", "exposures", "sessions", "attempts", "srs_cards", "daily_log", "tests",
-              "user_vocab", "vocab_diagnostics", "audio_lessons", "imports", "ability_snapshots", "growth_events"):
+              "user_vocab", "vocab_diagnostics", "audio_lessons", "imports", "ability_snapshots", "growth_events",
+              "checkpoint_plan"):
         out[t] = [dict(r) for r in db.q(f"SELECT * FROM {t}")]
     return JSONResponse(out, headers={"Content-Disposition": "attachment; filename=listenflow-export.json"})
 

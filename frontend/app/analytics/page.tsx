@@ -3,6 +3,7 @@
 import { Loader2, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnalyticsTabs } from "@/components/analytics-tabs";
+import { CheckpointPanel } from "@/components/checkpoint-panel";
 import { ListeningProfilePanel } from "@/components/listening-profile";
 import { BarChart, LineChart, Meter } from "@/components/charts";
 import { api, LEVEL_LABEL } from "@/lib/api";
@@ -26,8 +27,6 @@ type Analytics = {
   tests: { form: string; taken_at: string; day: number; dictation: number; comprehension: number; score: number; level_estimate: number }[];
   curriculum: { start: number; end: number; name: string; description: string }[];
 };
-
-const TEST_NAME: Record<string, string> = { A: "初回診断", B: "Day 15", C: "Day 29", D: "Day 43", E: "Day 57" };
 
 function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
@@ -169,36 +168,7 @@ export default function AnalyticsPage() {
           </ul>
         </Panel>
 
-        <Panel title="初見リスニングテスト" note="毎回、一度も聞いていない別の音声で測定します">
-          {a.tests.length ? (
-            <table className="w-full text-sm">
-              <thead className="text-xs text-muted-foreground">
-                <tr>
-                  <th className="py-1 text-left font-normal">テスト</th>
-                  <th className="text-right font-normal">スコア</th>
-                  <th className="text-right font-normal">書取</th>
-                  <th className="text-right font-normal">理解</th>
-                  <th className="text-right font-normal">推定</th>
-                </tr>
-              </thead>
-              <tbody className="tabular">
-                {a.tests.map((t) => (
-                  <tr key={t.taken_at} className="border-t">
-                    <td className="py-2">
-                      {TEST_NAME[t.form]} <span className="text-xs text-muted-foreground">Day {t.day}</span>
-                    </td>
-                    <td className="text-right font-semibold">{Math.round(t.score)}</td>
-                    <td className="text-right">{Math.round(t.dictation * 100)}%</td>
-                    <td className="text-right">{Math.round(t.comprehension * 100)}%</td>
-                    <td className="text-right">{LEVEL_LABEL[t.level_estimate]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="py-6 text-center text-sm text-muted-foreground">まだテスト結果がありません</p>
-          )}
-        </Panel>
+        <CheckpointPanel />
       </div>
 
       <Panel title="60日間のカリキュラム" note={`現在 Day ${a.day}。各期間で重点的に扱う音のテーマが変わります`}>

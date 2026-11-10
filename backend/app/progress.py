@@ -126,20 +126,54 @@ def today_seconds() -> int:
     return r["seconds"] if r else 0
 
 
-# every 14 days, always on never-heard audio built to the same structure (levels 1-5, 2 questions each)
-TEST_SCHEDULE = {"A": 1, "B": 15, "C": 29, "D": 43, "E": 57}
-TEST_NAMES = {"A": "初回レベル診断", "B": "Day 15 確認テスト", "C": "Day 29 確認テスト", "D": "Day 43 確認テスト",
-              "E": "Day 57 確認テスト"}
+# Checkpoints every 14 days, always on never-heard audio built to the same structure (levels 1-5, 2 questions
+# each). Which form is used on which day is drawn at random per learner (counterbalancing): if one form were
+# easier, a fixed order would make that easiness look like progress on the day it happens to be used.
+FORMS = ("A", "B", "C", "D", "E")
+CHECKPOINT_DAYS = (1, 15, 29, 43, 57)
+TEST_SCHEDULE = dict(zip(FORMS, CHECKPOINT_DAYS))   # nominal; the per-learner order is checkpoint_plan()
+
+
+def slot_name(slot: int) -> str:
+    return "初回レベル診断" if slot == 1 else f"Day {CHECKPOINT_DAYS[slot - 1]} 確認テスト"
+
+
+def checkpoint_plan(conn=None) -> list[dict]:
+    """[{slot, day, form}] — created on first use. Forms already taken keep the slots they were taken in."""
+    import secrets
+
+    def run(c):
+        rows = c.execute("SELECT slot, day, form FROM checkpoint_plan ORDER BY slot").fetchall()
+        if len(rows) == len(FORMS):
+            return [dict(r) for r in rows]
+        taken = [r["form"] for r in c.execute("SELECT form FROM tests ORDER BY taken_at").fetchall()]
+        taken = list(dict.fromkeys(f for f in taken if f in FORMS))
+        rest = [f for f in FORMS if f not in taken]
+        rng = secrets.SystemRandom()
+        rng.shuffle(rest)
+        order = taken + rest
+        c.execute("DELETE FROM checkpoint_plan")
+        for i, (day, form) in enumerate(zip(CHECKPOINT_DAYS, order), 1):
+            c.execute("INSERT INTO checkpoint_plan (slot, day, form, assigned_at) VALUES (?,?,?,?)", (i, day, form, db.now_iso()))
+        return [{"slot": i, "day": d, "form": f} for i, (d, f) in enumerate(zip(CHECKPOINT_DAYS, order), 1)]
+    if conn is not None:
+        return run(conn)
+    with db.tx() as c:
+        return run(c)
+
+
+def form_for_slot(slot: int, conn=None) -> str:
+    return checkpoint_plan(conn)[slot - 1]["form"]
 
 
 def tests_status() -> list[dict]:
     taken = {r["form"]: dict(r) for r in db.q("SELECT * FROM tests ORDER BY taken_at")}
     day = day_number()
     out = []
-    for form, due_day in TEST_SCHEDULE.items():
-        t = taken.get(form)
-        out.append({"form": form, "name": TEST_NAMES[form], "day": due_day, "available": day >= due_day,
-                    "taken": bool(t), "score": t["score"] if t else None,
+    for p in checkpoint_plan():
+        t = taken.get(p["form"])
+        out.append({"form": p["form"], "slot": p["slot"], "name": slot_name(p["slot"]), "day": p["day"],
+                    "available": day >= p["day"], "taken": bool(t), "score": t["score"] if t else None,
                     "taken_at": t["taken_at"] if t else None})
     return out
 

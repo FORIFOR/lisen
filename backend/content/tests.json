@@ -1446,7 +1446,7 @@
     "explain": "online sales grew by twelve percent … physical stores remained flat"
    },
    {
-    "type": "inference",
+    "type": "detail",
     "q": "来期の重点は？",
     "choices": [
      "新規顧客の獲得",

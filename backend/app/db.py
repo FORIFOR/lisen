@@ -78,6 +78,9 @@ CREATE TABLE IF NOT EXISTS vocab_items (
   payload TEXT NOT NULL, answered INTEGER NOT NULL DEFAULT 0, answer TEXT, feedback TEXT
 );
 CREATE INDEX IF NOT EXISTS vocab_items_origin ON vocab_items(origin, origin_id, answered);
+CREATE TABLE IF NOT EXISTS checkpoint_plan (
+  slot INTEGER PRIMARY KEY, day INTEGER NOT NULL, form TEXT NOT NULL UNIQUE, assigned_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS ability_snapshots (
   id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, date TEXT NOT NULL, session_id TEXT,
   source TEXT NOT NULL, data TEXT NOT NULL

@@ -27,16 +27,16 @@ def test_sentence_bank_is_valid_and_single_answer():
 def test_checkpoints_every_14_days_with_equal_structure():
     from app import progress
     from app.content import reload_library
-    assert progress.TEST_SCHEDULE == {"A": 1, "B": 15, "C": 29, "D": 43, "E": 57}
+    assert progress.CHECKPOINT_DAYS == (1, 15, 29, 43, 57) and progress.FORMS == ("A", "B", "C", "D", "E")
     lib = reload_library()   # other tests point AUDIO_DIR at temp dirs
     shape = None
-    for form in progress.TEST_SCHEDULE:
+    for form in progress.FORMS:
         clips = lib.test_clips(form)
         s = [(c.level, len(c.questions)) for c in clips]
         assert s == [(1, 2), (2, 2), (3, 2), (4, 2), (5, 2)], form
         assert all(c.audio for c in clips)
         shape = shape or s
-    ids = [c.id for f in progress.TEST_SCHEDULE for c in lib.test_clips(f)]
+    ids = [c.id for f in progress.FORMS for c in lib.test_clips(f)]
     assert len(ids) == len(set(ids)) == 25
     assert not {c.id for c in lib.train_clips()} & set(ids)    # test audio never appears in training
 
@@ -75,7 +75,7 @@ def test_profile_diagnostic_measures_four_abilities_and_adapts_plan(client):
     assert by_block["d_sound"] == ["discrimination"] * 10
     assert by_block["d_words"] == ["word"] * 20
     assert by_block["d_sentence"] == ["sentence"] * 10
-    assert by_block["test"].count("comprehension") == 5            # form A: 10 conversation questions
+    assert by_block["test"].count("comprehension") == 5            # first checkpoint form: 10 conversation questions
     # vocabulary part is a real (20-item) vocabulary diagnostic
     vd = db.q1("SELECT * FROM vocab_diagnostics WHERE status='completed'")
     assert vd and json.loads(vd["result"])["items"] == 20
@@ -89,7 +89,8 @@ def test_profile_diagnostic_measures_four_abilities_and_adapts_plan(client):
     assert lp["priority"] == "sound" and "音" in lp["advice"]
     # all vocabulary answers were right: correct audio answers count (they also credit text mastery)
     assert snap["data"]["vocab"]["value"] == 1.0 and lp["abilities"]["vocab"]["value"] == 1.0
-    assert db.q1("SELECT form FROM tests")["form"] == "A"
+    from app import progress
+    assert db.q1("SELECT form FROM tests")["form"] == progress.form_for_slot(1)   # this learner's first form
     # the next plan moves time to sound training, keeps never-heard listening >= 25%
     plan = client.post("/plan/preview", json={"minutes": 30}).json()["blocks"]
     base = planner.build_plan(30, {}, "standard", None)
@@ -272,3 +273,51 @@ def test_comprehension_choices_are_shuffled_so_position_does_not_score(client):
         if item["type"] == "comprehension":
             assert fb["score"] == 1.0 and all(r["correct"] for r in fb["results"])
             break
+
+
+
+def test_checkpoint_forms_are_comparable():
+    """Objective proxies of difficulty stay within fixed tolerances across the five forms."""
+    from app import checkpoints
+    from app.content import reload_library
+    reload_library()
+    e = checkpoints.equivalence()
+    assert e["ok"], [c for c in e["checks"] if not c["ok"]]
+    assert {c["metric"] for c in e["checks"]} >= {"structure", "words", "words_per_second", "words_per_line",
+                                                  "long_word_share", "gist_inference"}
+
+
+def test_checkpoint_order_is_random_per_learner_and_stable(client):
+    from app import progress
+    plan = progress.checkpoint_plan()
+    assert [p["day"] for p in plan] == [1, 15, 29, 43, 57]
+    assert sorted(p["form"] for p in plan) == ["A", "B", "C", "D", "E"]
+    assert progress.checkpoint_plan() == plan                      # persisted, not redrawn
+    st = client.get("/profile").json()["tests"]
+    assert [t["form"] for t in st] == [p["form"] for p in plan] and st[0]["name"] == "初回レベル診断"
+    # fresh plans differ across learners (120 possible orders; 30 draws all equal would be ~impossible)
+    seen = set()
+    for _ in range(30):
+        with db.tx() as conn:
+            conn.execute("DELETE FROM checkpoint_plan")
+            seen.add(tuple(p["form"] for p in progress.checkpoint_plan(conn)))
+    assert len(seen) > 5
+
+
+def test_profile_diagnostic_uses_first_assigned_form_and_taken_forms_keep_their_slot(client):
+    from app import progress
+    with db.tx() as conn:
+        conn.execute("DELETE FROM checkpoint_plan")
+        for i, (d, f) in enumerate(zip(progress.CHECKPOINT_DAYS, "DABEC"), 1):
+            conn.execute("INSERT INTO checkpoint_plan (slot, day, form, assigned_at) VALUES (?,?,?,?)", (i, d, f, db.now_iso()))
+    sid, seen = _profile_session(client, sound_good=True)
+    t = db.q1("SELECT form FROM tests")
+    assert t["form"] == "D"                                        # slot 1 of this learner, not a fixed "A"
+    asked = [r["item_id"] for r in db.q("SELECT item_id FROM attempts WHERE session_id=? AND kind='comprehension'", (sid,))]
+    assert all(a.startswith("tD-") for a in asked) and client.get("/profile").json()["onboarded"]
+    # if the plan is ever rebuilt, a taken form stays in the slot it was taken in
+    with db.tx() as conn:
+        conn.execute("DELETE FROM checkpoint_plan")
+    assert progress.checkpoint_plan()[0]["form"] == "D"
+    ov = client.get("/v1/checkpoints").json()
+    assert ov["plan"][0]["result"]["form"] == "D" and ov["equivalence"]["ok"]

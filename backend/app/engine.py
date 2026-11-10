@@ -68,14 +68,15 @@ def create_session(minutes: int, mode: str = "standard", replace: bool = False, 
                    focus_clip: str | None = None) -> dict:
     prof = db.profile()
     if mode == "test":
-        if form not in progress.TEST_SCHEDULE:
+        if form not in progress.FORMS:
             raise SessionError(400, "不明なテストです")
         plan = [planner._block("test", 0)]
     elif mode == "profile":
         # listening-profile diagnostic: sound -> words -> sentences -> unseen conversations (~20-25 min)
         plan = [planner._block(k, m) for k, m in (("d_sound", 4), ("d_words", 5), ("d_sentence", 4), ("test", 10))]
         taken = {r["form"] for r in db.q("SELECT form FROM tests")}
-        form = "A" if "A" not in taken else None
+        first = progress.form_for_slot(1)          # the learner's (randomly assigned) first checkpoint form
+        form = first if first not in taken else None
     else:
         if not 5 <= minutes <= 300:
             raise SessionError(400, "学習時間は 5〜300 分で指定してください")
@@ -931,7 +932,7 @@ def _record_test(conn, s: dict) -> None:
                  " VALUES (?,?,?,?,?,?,?,?,?)",
                  (s["test_form"], s["id"], db.now_iso(), progress.day_number(), round(d, 3), round(c, 3), score, estimate,
                   json.dumps({"levels": level_detail})))
-    if s["test_form"] == "A":
-        prof = conn.execute("SELECT onboarded FROM profile WHERE id=1").fetchone()
-        if not prof["onboarded"]:
-            conn.execute("UPDATE profile SET onboarded=1, level=?, unlocked=? WHERE id=1", (estimate, estimate))
+    # the first checkpoint taken (whichever form the learner drew) sets the starting level
+    prof = conn.execute("SELECT onboarded FROM profile WHERE id=1").fetchone()
+    if not prof["onboarded"]:
+        conn.execute("UPDATE profile SET onboarded=1, level=?, unlocked=? WHERE id=1", (estimate, estimate))
