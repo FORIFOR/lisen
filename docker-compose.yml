@@ -1,0 +1,19 @@
+# Alternative to ./start.sh (e.g. for an always-on Mac mini or a server later).
+# Generate audio on a Mac first:  cd backend && .venv/bin/python -m scripts.build_audio
+# Adding new material from the UI needs macOS `say`, so it is unavailable inside containers.
+services:
+  api:
+    build: ./backend
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+  web:
+    build:
+      context: ./frontend
+      args:
+        LISTENFLOW_API_URL: http://api:8765
+    ports:
+      - "3210:3210"
+    depends_on:
+      - api
+    restart: unless-stopped

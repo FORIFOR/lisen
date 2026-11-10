@@ -1,0 +1,3 @@
+# Speech recognition worker (backend/.venv-asr, Python 3.10-3.12). Used to verify lesson audio and import NotebookLM audio.
+faster-whisper==1.2.1
+numpy

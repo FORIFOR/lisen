@@ -1,0 +1,129 @@
+[
+  {
+    "id": "l4-remote-work", "level": 4, "pool": "train", "kind": "dialogue", "title": "リモートワークの是非",
+    "voices": {"A": "Samantha", "B": "Daniel"},
+    "lines": [
+      ["A", "I honestly don't think I could go back to working in an office five days a week."],
+      ["B", "I get that, but don't you miss bumping into people and having quick chats?"],
+      ["A", "Sometimes, sure. But I'd rather have an extra two hours a day than spend them commuting."],
+      ["B", "Fair enough. Still, I've noticed new hires seem to learn a lot faster when they're around experienced staff."],
+      ["A", "That's a good point. Maybe a hybrid setup is the best of both worlds."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "A の主張は？", "choices": ["週5日出社すべき", "通勤時間をなくせる在宅勤務の方がよい", "オフィスの方が集中できる", "仕事を辞めたい"], "answer": 1, "explain": "通勤に2時間使うより在宅を好んでいます。"},
+      {"type": "inference", "q": "B が指摘した出社の利点は？", "choices": ["通勤で運動できる", "新人が経験者の近くで速く学べる", "会議が短くなる", "経費が減る"], "answer": 1, "explain": "new hires seem to learn a lot faster when they're around experienced staff"}
+    ],
+    "vocab": [["commuting", "通勤すること"], ["hybrid", "ハイブリッドの、混合型の"]]
+  },
+  {
+    "id": "l4-news-transport", "level": 4, "pool": "train", "kind": "announcement", "title": "ニュース：交通政策",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "The city council has approved a plan to make public buses free for residents under 18."],
+      ["A", "Officials say the scheme, which begins in April, is aimed at reducing traffic around schools."],
+      ["A", "It's expected to cost around 3 million dollars a year, funded partly by a new parking fee."],
+      ["A", "Critics argue the money would be better spent improving existing routes."],
+      ["A", "The council says it will review the results after twelve months."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "計画の内容は？", "choices": ["全市民のバスを無料化", "18歳未満の住民のバスを無料化", "バス路線を廃止", "駐車場を無料化"], "answer": 1, "explain": "free for residents under 18"},
+      {"type": "detail", "q": "批判派の意見は？", "choices": ["費用が少なすぎる", "既存路線の改善に使うべき", "開始を早めるべき", "学校を移転すべき"], "answer": 1, "explain": "better spent improving existing routes"}
+    ],
+    "vocab": [["council", "議会"], ["residents", "住民"]]
+  },
+  {
+    "id": "l4-product-launch", "level": 4, "pool": "train", "kind": "monologue", "title": "製品発表",
+    "voices": {"A": "Samantha"},
+    "lines": [
+      ["A", "When we started designing this headset, we kept hearing the same complaint: it hurts after an hour."],
+      ["A", "So instead of adding more features, we focused almost entirely on comfort."],
+      ["A", "The new model is thirty percent lighter, and the battery lasts a full working day."],
+      ["A", "We've also made the ear cushions replaceable, so you won't have to throw the whole thing away."],
+      ["A", "It goes on sale next month, starting at 149 dollars."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "開発で最も重視したことは？", "choices": ["機能の追加", "装着の快適さ", "価格の安さ", "デザイン"], "answer": 1, "explain": "we focused almost entirely on comfort"},
+      {"type": "detail", "q": "新モデルの特徴として正しいのは？", "choices": ["30%軽い", "50%安い", "バッテリーが2日もつ", "防水"], "answer": 0, "explain": "thirty percent lighter"}
+    ],
+    "vocab": [["complaint", "不満、苦情"], ["replaceable", "交換可能な"]]
+  },
+  {
+    "id": "l4-memory-lecture", "level": 4, "pool": "train", "kind": "lecture", "title": "講義：記憶と忘却",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "In the 1880s, a German researcher named Hermann Ebbinghaus tested his own memory using lists of nonsense syllables."],
+      ["A", "He found that we forget most new information within the first day, and then the rate of forgetting slows down."],
+      ["A", "What's interesting is that each time he reviewed the material, it took longer to forget."],
+      ["A", "This is the basic idea behind spaced repetition, which many learning apps rely on today."],
+      ["A", "In other words, it's not how long you study, but when you review that really matters."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "エビングハウスの発見は？", "choices": ["1日目に忘れる量は少ない", "新しい情報の多くは最初の1日で忘れ、その後忘れる速度は落ちる", "復習しても忘れる速さは同じ", "無意味な音節は覚えやすい"], "answer": 1, "explain": "forget most new information within the first day, then the rate slows down"},
+      {"type": "gist", "q": "講師の結論は？", "choices": ["長時間勉強することが大事", "いつ復習するかが大事", "アプリは役に立たない", "記憶力は生まれつき"], "answer": 1, "explain": "it's not how long you study, but when you review that really matters"}
+    ],
+    "vocab": [["syllables", "音節"], ["repetition", "繰り返し"]]
+  },
+  {
+    "id": "l4-negotiation", "level": 4, "pool": "train", "kind": "dialogue", "title": "取引の交渉",
+    "voices": {"A": "Karen", "B": "Daniel"},
+    "lines": [
+      ["A", "We're very interested, but the price is a bit higher than we'd budgeted for."],
+      ["B", "I understand. What kind of figure did you have in mind?"],
+      ["A", "If you could bring it down by ten percent, we'd be ready to sign today."],
+      ["B", "Ten percent is difficult. But if you commit to a two-year contract, I could offer seven."],
+      ["A", "Let me run that by my manager, and I'll get back to you this afternoon."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "B が提示した条件は？", "choices": ["1年契約で10%引き", "2年契約なら7%引き", "即日署名で5%引き", "値引きなし"], "answer": 1, "explain": "if you commit to a two-year contract, I could offer seven"},
+      {"type": "inference", "q": "A は次に何をする？", "choices": ["すぐ署名する", "上司に相談して午後に返事をする", "交渉を打ち切る", "他社に連絡する"], "answer": 1, "explain": "Let me run that by my manager, and I'll get back to you this afternoon."}
+    ],
+    "vocab": [["budgeted", "予算を組んだ"], ["commit", "確約する"]]
+  },
+  {
+    "id": "l4-interview", "level": 4, "pool": "train", "kind": "dialogue", "title": "就職面接",
+    "voices": {"A": "Moira", "B": "Daniel"},
+    "lines": [
+      ["A", "Can you tell me about a time you had to deal with a difficult client?"],
+      ["B", "Sure. In my last job, a client kept changing the requirements at the last minute."],
+      ["B", "Rather than arguing, I set up a short weekly call so we could agree on priorities early."],
+      ["A", "And how did that work out?"],
+      ["B", "Pretty well, actually. We finished the project on time, and they've hired us twice since then."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "顧客の問題行動は？", "choices": ["支払いが遅れた", "直前に要件を変え続けた", "連絡が取れなかった", "無礼だった"], "answer": 1, "explain": "kept changing the requirements at the last minute"},
+      {"type": "detail", "q": "B の対策は？", "choices": ["上司に報告した", "毎週短い電話で優先順位を早めに合意した", "契約を解除した", "追加料金を請求した"], "answer": 1, "explain": "a short weekly call so we could agree on priorities early"}
+    ],
+    "vocab": [["requirements", "要件"], ["priorities", "優先事項"]]
+  },
+  {
+    "id": "l4-city-radio", "level": 4, "pool": "train", "kind": "dialogue", "title": "ラジオ：街の緑化",
+    "voices": {"A": "Samantha", "B": "Daniel", "C": "Karen"},
+    "lines": [
+      ["A", "Joining me today are two guests to talk about the city's plan to plant ten thousand trees."],
+      ["B", "Thanks for having me. Trees can lower street temperatures by several degrees in summer."],
+      ["C", "I agree they're important, but my concern is maintenance. Who's going to water them?"],
+      ["B", "That's actually part of the plan. Local volunteers will adopt the trees on their street."],
+      ["C", "That sounds nice in theory, but volunteer programs often lose interest after a year or two."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "B が述べた木の効果は？", "choices": ["騒音を減らす", "夏の路上の気温を数度下げる", "地価を上げる", "雨を増やす"], "answer": 1, "explain": "lower street temperatures by several degrees in summer"},
+      {"type": "inference", "q": "C の懸念は？", "choices": ["費用が高い", "ボランティアの関心が続かず維持管理が難しい", "木が多すぎる", "場所がない"], "answer": 1, "explain": "maintenance と volunteer programs often lose interest を心配しています。"}
+    ],
+    "vocab": [["maintenance", "維持管理"], ["volunteers", "ボランティア"]]
+  },
+  {
+    "id": "l4-startup", "level": 4, "pool": "train", "kind": "monologue", "title": "起業ストーリー",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "We launched our first app in a tiny shared office, and for six months, almost nobody downloaded it."],
+      ["A", "We were about to give up when we noticed that a small group of teachers were using it every single day."],
+      ["A", "So we interviewed them and realized they were using it for something we'd never intended."],
+      ["A", "We rebuilt the whole product around that one use case, and within a year, we had fifty thousand users."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "最初の半年の状況は？", "choices": ["急成長した", "ほとんどダウンロードされなかった", "資金が尽きた", "教師に禁止された"], "answer": 1, "explain": "almost nobody downloaded it"},
+      {"type": "gist", "q": "転機になったことは？", "choices": ["広告を出した", "想定外の使い方をしていた教師たちに注目した", "価格を下げた", "オフィスを移転した"], "answer": 1, "explain": "教師たちが意図しない用途で使っていたことに気づき、それに合わせて作り直しました。"}
+    ],
+    "vocab": [["intended", "意図した"], ["realized", "気づいた"]]
+  }
+]

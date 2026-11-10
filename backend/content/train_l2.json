@@ -1,0 +1,153 @@
+[
+  {
+    "id": "l2-train", "level": 2, "pool": "train", "kind": "announcement", "title": "駅のアナウンス",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "Attention, please. The 8:15 train to Oxford is running about 20 minutes late."],
+      ["A", "It will now leave from platform 4 instead of platform 2."],
+      ["A", "Passengers for Reading should change at the next station."],
+      ["A", "We're sorry for the delay and thank you for your patience."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "オックスフォード行きの電車はどうなっている？", "choices": ["運休", "約20分遅れ", "定刻どおり", "15分早く出発"], "answer": 1, "explain": "running about 20 minutes late"},
+      {"type": "detail", "q": "新しい発車ホームは？", "choices": ["2番", "4番", "8番", "15番"], "answer": 1, "explain": "leave from platform 4 instead of platform 2"}
+    ],
+    "vocab": [["passengers", "乗客"], ["patience", "忍耐、辛抱"]]
+  },
+  {
+    "id": "l2-first-day", "level": 2, "pool": "train", "kind": "dialogue", "title": "新しい職場の初日",
+    "voices": {"A": "Samantha", "B": "Daniel"},
+    "lines": [
+      ["A", "Hi, you must be Tom. I'm Lisa, your manager."],
+      ["B", "Nice to meet you, Lisa. I'm a bit nervous, to be honest."],
+      ["A", "Don't worry. Everyone feels that way on their first day."],
+      ["A", "This morning, you'll get your laptop and meet the team."],
+      ["A", "After lunch, Kevin will show you how our system works."],
+      ["B", "Great. Should I ask Kevin if I have any questions?"],
+      ["A", "Yes, or you can always come to me."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "Tom は午前中に何をする？", "choices": ["システムの説明を受ける", "パソコンを受け取りチームに会う", "Kevin と昼食", "会議で発表"], "answer": 1, "explain": "you'll get your laptop and meet the team"},
+      {"type": "inference", "q": "Tom の今の気持ちは？", "choices": ["退屈している", "少し緊張している", "怒っている", "疲れている"], "answer": 1, "explain": "I'm a bit nervous と言っています。"}
+    ],
+    "vocab": [["nervous", "緊張している"], ["manager", "上司、管理者"]]
+  },
+  {
+    "id": "l2-doctor", "level": 2, "pool": "train", "kind": "dialogue", "title": "診察を受ける",
+    "voices": {"A": "Moira", "B": "Daniel"},
+    "lines": [
+      ["A", "So, what seems to be the problem?"],
+      ["B", "I've had a sore throat and a headache since Monday."],
+      ["A", "Have you had a fever?"],
+      ["B", "A little, last night. I couldn't sleep very well."],
+      ["A", "It looks like a cold. Get plenty of rest and drink lots of water."],
+      ["A", "If you don't feel better in 3 days, come back and see me."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "症状はいつから？", "choices": ["昨夜から", "月曜日から", "3日前から", "先週から"], "answer": 1, "explain": "since Monday"},
+      {"type": "detail", "q": "医者の指示は？", "choices": ["すぐ薬を飲む", "休んで水分をとり、3日で治らなければ再診", "明日もう一度来る", "入院する"], "answer": 1, "explain": "plenty of rest, lots of water, come back in 3 days if not better."}
+    ],
+    "vocab": [["sore throat", "喉の痛み"], ["fever", "熱"]]
+  },
+  {
+    "id": "l2-reservation", "level": 2, "pool": "train", "kind": "dialogue", "title": "レストランの予約",
+    "voices": {"A": "Karen", "B": "Daniel"},
+    "lines": [
+      ["A", "Good evening, Rossi's. How can I help you?"],
+      ["B", "Hi, I'd like to book a table for 6 people this Friday."],
+      ["A", "What time would you like?"],
+      ["B", "Around 7:30, if possible."],
+      ["A", "I'm afraid we're full at 7:30. Would 8 o'clock be OK?"],
+      ["B", "Yes, that works. Could we have a table by the window?"],
+      ["A", "I'll make a note of that."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "予約した人数は？", "choices": ["2人", "6人", "7人", "8人"], "answer": 1, "explain": "a table for 6 people"},
+      {"type": "detail", "q": "最終的な予約時間は？", "choices": ["7時", "7時半", "8時", "8時半"], "answer": 2, "explain": "7:30 は満席で 8 o'clock になりました。"}
+    ],
+    "vocab": [["book", "予約する"], ["afraid", "（残念ながら）〜と思う"]]
+  },
+  {
+    "id": "l2-luggage", "level": 2, "pool": "train", "kind": "dialogue", "title": "荷物が届かない",
+    "voices": {"A": "Samantha", "B": "Daniel"},
+    "lines": [
+      ["A", "Excuse me, my suitcase didn't come out on the belt."],
+      ["B", "I'm sorry about that. Which flight were you on?"],
+      ["A", "Flight 207 from Chicago."],
+      ["B", "Can you describe your bag?"],
+      ["A", "It's a large blue suitcase with a yellow tag on the handle."],
+      ["B", "OK. We'll deliver it to your hotel as soon as we find it."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "スーツケースの特徴は？", "choices": ["小さな黒いバッグ", "大きな青いスーツケースに黄色いタグ", "黄色いスーツケース", "青いリュック"], "answer": 1, "explain": "a large blue suitcase with a yellow tag"},
+      {"type": "detail", "q": "見つかったらどうなる？", "choices": ["空港で受け取る", "ホテルに届けられる", "シカゴへ送り返される", "電話で連絡するだけ"], "answer": 1, "explain": "We'll deliver it to your hotel"}
+    ],
+    "vocab": [["describe", "説明する、描写する"], ["deliver", "配達する"]]
+  },
+  {
+    "id": "l2-gym", "level": 2, "pool": "train", "kind": "dialogue", "title": "ジムの入会",
+    "voices": {"A": "Daniel", "B": "Karen"},
+    "lines": [
+      ["A", "I'm thinking about joining the gym. How much is a membership?"],
+      ["B", "It's 40 dollars a month, or 400 dollars for the whole year."],
+      ["A", "Does that include the swimming pool?"],
+      ["B", "Yes, and you can join any of our yoga classes for free."],
+      ["A", "Sounds good. Can I have a look around first?"],
+      ["B", "Of course. Follow me."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "年会費はいくら？", "choices": ["40ドル", "140ドル", "400ドル", "480ドル"], "answer": 2, "explain": "400 dollars for the whole year"},
+      {"type": "inference", "q": "この後2人は何をする？", "choices": ["ヨガのクラスに出る", "施設を見て回る", "プールで泳ぐ", "契約書にサインする"], "answer": 1, "explain": "Can I have a look around first? → Follow me."}
+    ],
+    "vocab": [["membership", "会員（資格）"], ["include", "含む"]]
+  },
+  {
+    "id": "l2-roommate", "level": 2, "pool": "train", "kind": "dialogue", "title": "ルームメイトとの予定",
+    "voices": {"A": "Samantha", "B": "Moira"},
+    "lines": [
+      ["A", "Are you gonna be home tonight?"],
+      ["B", "Probably not. I've got a study group until 9."],
+      ["A", "OK. I was gonna cook pasta. Do you want me to save you some?"],
+      ["B", "That'd be great, thanks. I'll eat it when I get back."],
+      ["A", "Also, don't forget it's your turn to take out the trash."],
+      ["B", "Oh, right. I'll do it before I leave."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "B が今夜遅くなる理由は？", "choices": ["アルバイト", "勉強会", "デート", "買い物"], "answer": 1, "explain": "I've got a study group until 9."},
+      {"type": "detail", "q": "B が出かける前にすることは？", "choices": ["パスタを作る", "ゴミを出す", "掃除をする", "宿題をする"], "answer": 1, "explain": "take out the trash → I'll do it before I leave."}
+    ],
+    "vocab": [["probably", "たぶん"], ["trash", "ゴミ"]]
+  },
+  {
+    "id": "l2-voicemail", "level": 2, "pool": "train", "kind": "monologue", "title": "留守番電話のメッセージ",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "Hi Sarah, it's Mike. I'm calling about the concert on Saturday."],
+      ["A", "I managed to get 2 tickets, but they're for the late show at 9."],
+      ["A", "Let's meet at the café across from the theater at 8."],
+      ["A", "If that doesn't work for you, just send me a text."],
+      ["A", "Talk to you soon."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "コンサートの開始時間は？", "choices": ["8時", "9時", "土曜の昼", "未定"], "answer": 1, "explain": "the late show at 9"},
+      {"type": "detail", "q": "待ち合わせ場所は？", "choices": ["劇場の入口", "劇場向かいのカフェ", "駅", "Mike の家"], "answer": 1, "explain": "the café across from the theater"}
+    ],
+    "vocab": [["managed", "なんとか〜できた"], ["theater", "劇場"]]
+  },
+  {
+    "id": "l2-museum", "level": 2, "pool": "train", "kind": "announcement", "title": "美術館ツアーの案内",
+    "voices": {"A": "Moira"},
+    "lines": [
+      ["A", "Welcome to the City Art Museum. My name is Anna, and I'll be your guide today."],
+      ["A", "The tour takes about one hour."],
+      ["A", "We'll start on the ground floor with modern paintings."],
+      ["A", "Please don't touch any of the artwork, and photos without flash are fine."],
+      ["A", "At the end, there's a gift shop where you can buy postcards."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "ツアーの所要時間は？", "choices": ["30分", "約1時間", "2時間", "半日"], "answer": 1, "explain": "about one hour"},
+      {"type": "detail", "q": "写真撮影について正しいのは？", "choices": ["全面禁止", "フラッシュなしならOK", "フラッシュありでもOK", "1階のみOK"], "answer": 1, "explain": "photos without flash are fine"}
+    ],
+    "vocab": [["artwork", "芸術作品"], ["guide", "案内人、ガイド"]]
+  }
+]

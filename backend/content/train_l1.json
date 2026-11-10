@@ -1,0 +1,134 @@
+[
+  {
+    "id": "l1-cafe", "level": 1, "pool": "train", "kind": "dialogue", "title": "カフェで注文する",
+    "voices": {"A": "Samantha", "B": "Daniel"},
+    "lines": [
+      ["A", "Hi, can I get a small coffee, please?"],
+      ["B", "Sure. Would you like milk in it?"],
+      ["A", "Just a little. And I'll have a blueberry muffin too."],
+      ["B", "That's 6 dollars and 50 cents."],
+      ["A", "Can I pay by card?"],
+      ["B", "Of course. Here's your receipt."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "客が注文したものは？", "choices": ["小さいコーヒーとマフィン", "大きいコーヒーだけ", "紅茶とマフィン", "小さいコーヒーとクッキー"], "answer": 0, "explain": "small coffee と blueberry muffin を注文しています。"},
+      {"type": "detail", "q": "合計金額はいくら？", "choices": ["5ドル50セント", "6ドル15セント", "6ドル50セント", "16ドル50セント"], "answer": 2, "explain": "6 dollars and 50 cents と言っています。"}
+    ],
+    "vocab": [["receipt", "レシート、領収書"], ["muffin", "マフィン"]]
+  },
+  {
+    "id": "l1-weekend", "level": 1, "pool": "train", "kind": "monologue", "title": "週末の過ごし方",
+    "voices": {"A": "Karen"},
+    "lines": [
+      ["A", "On Saturday morning, I usually go for a walk in the park."],
+      ["A", "Then I meet my sister for lunch."],
+      ["A", "We often eat at a small Italian place near the station."],
+      ["A", "In the afternoon, I clean my apartment and do the laundry."],
+      ["A", "On Sunday, I just relax at home and read a book."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "土曜日の昼食は誰と食べる？", "choices": ["友人", "姉妹", "母親", "同僚"], "answer": 1, "explain": "I meet my sister for lunch と言っています。"},
+      {"type": "gist", "q": "日曜日は主に何をする？", "choices": ["掃除と洗濯", "公園を散歩", "家でくつろいで読書", "駅前で食事"], "answer": 2, "explain": "On Sunday, I just relax at home and read a book."}
+    ],
+    "vocab": [["laundry", "洗濯（物）"], ["relax", "くつろぐ"]]
+  },
+  {
+    "id": "l1-directions", "level": 1, "pool": "train", "kind": "dialogue", "title": "道をたずねる",
+    "voices": {"A": "Daniel", "B": "Moira"},
+    "lines": [
+      ["A", "Excuse me. Is there a bank near here?"],
+      ["B", "Yes, there's one on Green Street."],
+      ["A", "How do I get there?"],
+      ["B", "Go straight and turn left at the second corner."],
+      ["B", "It's next to the post office."],
+      ["A", "Thanks a lot."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "銀行はどこにある？", "choices": ["駅の隣", "郵便局の隣", "公園の向かい", "病院の裏"], "answer": 1, "explain": "It's next to the post office."},
+      {"type": "detail", "q": "どう行けばよい？", "choices": ["2つ目の角を左", "1つ目の角を右", "2つ目の角を右", "まっすぐ進むだけ"], "answer": 0, "explain": "turn left at the second corner と言っています。"}
+    ],
+    "vocab": [["corner", "角"], ["straight", "まっすぐに"]]
+  },
+  {
+    "id": "l1-phone-reschedule", "level": 1, "pool": "train", "kind": "dialogue", "title": "予約の変更を電話で",
+    "voices": {"A": "Samantha", "B": "Daniel"},
+    "lines": [
+      ["A", "Hello, this is Emma. I have an appointment at 3 o'clock today."],
+      ["B", "Hi, Emma. How can I help you?"],
+      ["A", "I'm sorry, but I can't come today. Can I change it to tomorrow?"],
+      ["B", "Let me check. We have an opening at 10 in the morning."],
+      ["A", "That's perfect. Thank you."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "Emma が電話した目的は？", "choices": ["予約をキャンセルするため", "予約を変更するため", "道を聞くため", "料金を聞くため"], "answer": 1, "explain": "Can I change it to tomorrow? と予約の変更を頼んでいます。"},
+      {"type": "detail", "q": "新しい予約時間は？", "choices": ["今日の3時", "明日の3時", "明日の朝10時", "明日の夜10時"], "answer": 2, "explain": "an opening at 10 in the morning → 明日の朝10時。"}
+    ],
+    "vocab": [["appointment", "予約、約束"], ["opening", "空き（枠）"]]
+  },
+  {
+    "id": "l1-shoes", "level": 1, "pool": "train", "kind": "dialogue", "title": "靴を買う",
+    "voices": {"A": "Moira", "B": "Samantha"},
+    "lines": [
+      ["A", "Do you have these shoes in a size 8?"],
+      ["B", "Let me see. We have them in black and brown."],
+      ["A", "Can I try the brown ones?"],
+      ["B", "Here you are. How do they feel?"],
+      ["A", "They're a little tight. Do you have a bigger size?"],
+      ["B", "Sure, I'll get you a size 9."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "客が試した靴の色は？", "choices": ["黒", "茶色", "白", "紺"], "answer": 1, "explain": "Can I try the brown ones?"},
+      {"type": "inference", "q": "店員は次に何をする？", "choices": ["別の色を持ってくる", "サイズ9を持ってくる", "値引きをする", "レジに案内する"], "answer": 1, "explain": "きつかったので I'll get you a size 9 と言っています。"}
+    ],
+    "vocab": [["tight", "きつい"], ["size", "サイズ"]]
+  },
+  {
+    "id": "l1-family", "level": 1, "pool": "train", "kind": "monologue", "title": "家族の紹介",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "There are 4 people in my family."],
+      ["A", "My father works at a hospital, and my mother teaches English."],
+      ["A", "I have a younger brother. He's 15 and loves soccer."],
+      ["A", "We also have a dog named Max."],
+      ["A", "We all have dinner together on Friday nights."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "母親の仕事は？", "choices": ["看護師", "英語教師", "医者", "会社員"], "answer": 1, "explain": "my mother teaches English."},
+      {"type": "detail", "q": "弟は何歳？", "choices": ["5歳", "13歳", "15歳", "50歳"], "answer": 2, "explain": "He's 15 and loves soccer."}
+    ],
+    "vocab": [["younger", "年下の"], ["together", "一緒に"]]
+  },
+  {
+    "id": "l1-weather", "level": 1, "pool": "train", "kind": "announcement", "title": "天気予報",
+    "voices": {"A": "Samantha"},
+    "lines": [
+      ["A", "Good morning. Here's the weather for today."],
+      ["A", "It's going to be cloudy in the morning."],
+      ["A", "In the afternoon, there's a good chance of rain, so take an umbrella."],
+      ["A", "The high today is 18 degrees."],
+      ["A", "Tomorrow will be sunny and warm."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "今日の午後の天気は？", "choices": ["晴れ", "雨の可能性が高い", "雪", "くもりのみ"], "answer": 1, "explain": "there's a good chance of rain"},
+      {"type": "detail", "q": "今日の最高気温は？", "choices": ["8度", "18度", "28度", "80度"], "answer": 1, "explain": "The high today is 18 degrees."}
+    ],
+    "vocab": [["cloudy", "くもりの"], ["umbrella", "傘"]]
+  },
+  {
+    "id": "l1-hotel", "level": 1, "pool": "train", "kind": "dialogue", "title": "ホテルのチェックイン",
+    "voices": {"A": "Daniel", "B": "Karen"},
+    "lines": [
+      ["A", "Hi, I have a reservation under the name Brown."],
+      ["B", "Welcome, Mr. Brown. You're staying for 2 nights, right?"],
+      ["A", "Yes, that's right."],
+      ["B", "Your room is on the fifth floor. Breakfast is from 7 to 10."],
+      ["A", "Is there free Wi-Fi in the room?"],
+      ["B", "Yes. The password is on your key card."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "何泊する予定？", "choices": ["1泊", "2泊", "3泊", "5泊"], "answer": 1, "explain": "You're staying for 2 nights"},
+      {"type": "detail", "q": "Wi-Fi のパスワードはどこにある？", "choices": ["部屋の机の上", "フロントの掲示", "カードキー", "朝食会場"], "answer": 2, "explain": "The password is on your key card."}
+    ],
+    "vocab": [["reservation", "予約"], ["floor", "階"]]
+  }
+]

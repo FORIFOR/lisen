@@ -1,0 +1,93 @@
+[
+  {
+    "id": "l5-economics", "level": 5, "pool": "train", "kind": "lecture", "title": "講義：インフレの仕組み",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "Inflation is often described as too much money chasing too few goods, but that's only part of the story."],
+      ["A", "Expectations play a surprisingly large role: if people believe prices will rise, they tend to spend sooner and demand higher wages."],
+      ["A", "Businesses, anticipating higher costs, raise their prices in advance, which in turn confirms everyone's expectations."],
+      ["A", "This is why central banks put so much effort into appearing credible, sometimes more than into the interest rate itself."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "講師が強調している要因は？", "choices": ["通貨の供給量だけ", "人々の予想（期待）", "輸入品の価格", "人口の増加"], "answer": 1, "explain": "Expectations play a surprisingly large role"},
+      {"type": "inference", "q": "中央銀行が信頼性を重視する理由は？", "choices": ["金利を下げるため", "人々の物価予想に影響を与えるため", "銀行の利益のため", "法律で決まっているため"], "answer": 1, "explain": "予想が自己実現的に物価を押し上げるので、信頼されることで予想を安定させようとします。"}
+    ],
+    "vocab": [["anticipating", "予期して"], ["credible", "信頼できる"]]
+  },
+  {
+    "id": "l5-panel-ai", "level": 5, "pool": "train", "kind": "dialogue", "title": "パネル討論：AIと仕事",
+    "voices": {"A": "Samantha", "B": "Daniel", "C": "Moira"},
+    "lines": [
+      ["A", "Let's turn to the question everyone's asking: will these tools replace jobs or just reshape them?"],
+      ["B", "Historically, automation has eliminated specific tasks rather than entire occupations, and I don't see why this time would be fundamentally different."],
+      ["C", "I'd push back on that a little. The pace is what's different. People had decades to adjust before; now it might be a few years."],
+      ["B", "That's fair, though I'd argue the bottleneck is retraining, not the technology itself."],
+      ["A", "So we're agreed that policy has some catching up to do."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "B の歴史的見解は？", "choices": ["自動化は職業全体を消してきた", "自動化は職業全体ではなく特定の作業を消してきた", "自動化は雇用を減らさない", "今回は全く違う"], "answer": 1, "explain": "eliminated specific tasks rather than entire occupations"},
+      {"type": "inference", "q": "C が「違う」と言った点は？", "choices": ["技術の種類", "変化のスピード", "影響を受ける業界", "政府の対応"], "answer": 1, "explain": "The pace is what's different."}
+    ],
+    "vocab": [["occupations", "職業"], ["bottleneck", "障害、ボトルネック"]]
+  },
+  {
+    "id": "l5-history-podcast", "level": 5, "pool": "train", "kind": "monologue", "title": "歴史ポッドキャスト：時間の標準化",
+    "voices": {"A": "Moira"},
+    "lines": [
+      ["A", "It's easy to forget that until the late nineteenth century, almost every town kept its own local time, set by the position of the sun."],
+      ["A", "That worked perfectly well until railways made it possible to cross several of these time zones in a single afternoon."],
+      ["A", "Timetables became a nightmare, and in 1883, the American railroads simply agreed among themselves to adopt standard time zones."],
+      ["A", "Remarkably, it took the federal government another thirty-five years to make it official."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "19世紀後半まで各町の時刻はどう決まっていた？", "choices": ["鉄道会社が決めた", "太陽の位置による地方時", "国が統一していた", "教会の鐘"], "answer": 1, "explain": "local time, set by the position of the sun"},
+      {"type": "inference", "q": "話し手が remarkably と強調したのは？", "choices": ["鉄道が速かったこと", "政府の公式化が35年も遅れたこと", "時刻表がなかったこと", "町が多かったこと"], "answer": 1, "explain": "it took the federal government another thirty-five years to make it official"}
+    ],
+    "vocab": [["timetables", "時刻表"], ["adopt", "採用する"]]
+  },
+  {
+    "id": "l5-science-news", "level": 5, "pool": "train", "kind": "announcement", "title": "科学ニュース：深海の発見",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "Researchers exploring a deep-sea trench off the coast of Chile have identified what they believe are more than a dozen previously unknown species."],
+      ["A", "Among them is a translucent fish that appears to survive at depths where the pressure would crush most submarines."],
+      ["A", "The team cautioned, however, that confirming the findings will require genetic analysis, which could take up to two years."],
+      ["A", "They also warned that deep-sea mining proposals in the region could threaten these ecosystems before they're properly understood."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "発見について研究チームが慎重な理由は？", "choices": ["写真が不鮮明", "確認に最長2年の遺伝子分析が必要", "資金が不足", "場所が秘密"], "answer": 1, "explain": "confirming the findings will require genetic analysis, which could take up to two years"},
+      {"type": "detail", "q": "警告されている脅威は？", "choices": ["気候変動", "深海採掘の計画", "観光", "漁業"], "answer": 1, "explain": "deep-sea mining proposals"}
+    ],
+    "vocab": [["translucent", "半透明の"], ["cautioned", "注意を促した"]]
+  },
+  {
+    "id": "l5-book-club", "level": 5, "pool": "train", "kind": "dialogue", "title": "読書会",
+    "voices": {"A": "Karen", "B": "Daniel"},
+    "lines": [
+      ["A", "I have to admit, I found the ending a bit of a letdown after such a gripping first half."],
+      ["B", "Really? I thought the ambiguity was the whole point. She deliberately leaves it unresolved."],
+      ["A", "Maybe, but it felt less like a choice and more like she'd run out of ideas."],
+      ["B", "I can see why you'd read it that way, but the clues are all there if you go back to the opening chapter."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "A の結末への評価は？", "choices": ["完璧だった", "前半に比べて期待外れ", "難しすぎた", "長すぎた"], "answer": 1, "explain": "a bit of a letdown after such a gripping first half"},
+      {"type": "inference", "q": "B の考えは？", "choices": ["作者はアイデアが尽きた", "曖昧さは意図的で、冒頭に手がかりがある", "続編がある", "翻訳が悪い"], "answer": 1, "explain": "the ambiguity was the whole point / the clues are all there"}
+    ],
+    "vocab": [["letdown", "期待外れ"], ["ambiguity", "曖昧さ"]]
+  },
+  {
+    "id": "l5-strategy", "level": 5, "pool": "train", "kind": "monologue", "title": "経営戦略の振り返り",
+    "voices": {"A": "Samantha"},
+    "lines": [
+      ["A", "Looking back, our biggest mistake wasn't entering the European market; it was trying to enter five countries at once."],
+      ["A", "We spread our resources so thin that we couldn't build a meaningful presence anywhere."],
+      ["A", "Had we focused on Germany alone for the first eighteen months, I suspect we'd have been profitable by now."],
+      ["A", "The lesson I'd pass on is that sequencing often matters more than the strategy itself."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "最大の失敗は？", "choices": ["欧州に進出したこと", "5か国に同時に進出したこと", "ドイツに集中したこと", "撤退が遅れたこと"], "answer": 1, "explain": "trying to enter five countries at once"},
+      {"type": "gist", "q": "話し手の教訓は？", "choices": ["戦略より順序が重要なことが多い", "大きく賭けるべき", "欧州は避けるべき", "人材が最重要"], "answer": 0, "explain": "sequencing often matters more than the strategy itself"}
+    ],
+    "vocab": [["resources", "資源、経営資源"], ["profitable", "利益を出している"]]
+  }
+]

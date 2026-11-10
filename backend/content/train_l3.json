@@ -1,0 +1,152 @@
+[
+  {
+    "id": "l3-team-meeting", "level": 3, "pool": "train", "kind": "dialogue", "title": "チームミーティング",
+    "voices": {"A": "Daniel", "B": "Samantha", "C": "Karen"},
+    "lines": [
+      ["A", "OK, let's get started. The main thing today is the website launch."],
+      ["B", "We're a little behind schedule. The design team needs another week."],
+      ["A", "Is that going to push back the launch date?"],
+      ["C", "Not necessarily. We could start testing the parts that are already finished."],
+      ["B", "That would save us a few days, actually."],
+      ["A", "Good idea. Let's plan to launch on the 20th as long as nothing else goes wrong."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "会議の主な議題は？", "choices": ["新人採用", "ウェブサイトの公開", "予算削減", "オフィス移転"], "answer": 1, "explain": "The main thing today is the website launch."},
+      {"type": "inference", "q": "公開日についての結論は？", "choices": ["1週間延期する", "完成部分からテストを始め、20日公開を目指す", "公開を中止する", "デザインチームを増員する"], "answer": 1, "explain": "完成した部分のテストを先に始め、the 20th を目指すことになりました。"}
+    ],
+    "vocab": [["behind schedule", "予定より遅れて"], ["necessarily", "必ずしも"]]
+  },
+  {
+    "id": "l3-sleep-podcast", "level": 3, "pool": "train", "kind": "monologue", "title": "睡眠についてのポッドキャスト",
+    "voices": {"A": "Samantha"},
+    "lines": [
+      ["A", "Most adults need between 7 and 9 hours of sleep a night, but many of us get far less."],
+      ["A", "One common mistake is looking at your phone right before bed."],
+      ["A", "The light from the screen tells your brain that it's still daytime."],
+      ["A", "Another tip is to go to bed at the same time every night, even on weekends."],
+      ["A", "It sounds simple, but it can make a big difference in how you feel."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "寝る前にスマホを見るのがよくない理由は？", "choices": ["目が疲れるから", "画面の光が脳にまだ昼だと伝えるから", "夜ふかしするから", "電磁波があるから"], "answer": 1, "explain": "The light from the screen tells your brain that it's still daytime."},
+      {"type": "detail", "q": "もう1つのアドバイスは？", "choices": ["週末は長く寝る", "毎晩同じ時間に寝る", "昼寝をする", "寝る前に運動する"], "answer": 1, "explain": "go to bed at the same time every night, even on weekends"}
+    ],
+    "vocab": [["daytime", "昼間"], ["difference", "違い"]]
+  },
+  {
+    "id": "l3-apartment", "level": 3, "pool": "train", "kind": "dialogue", "title": "部屋の内見",
+    "voices": {"A": "Karen", "B": "Daniel"},
+    "lines": [
+      ["A", "So this is the living room. It gets a lot of sunlight in the afternoon."],
+      ["B", "It's bigger than I expected. How much is the rent?"],
+      ["A", "It's 1,200 a month, and that includes water and heating."],
+      ["B", "What about electricity and internet?"],
+      ["A", "Those are separate. You'd need to set them up yourself."],
+      ["B", "And is the building OK with pets? I've got a cat."],
+      ["A", "Cats are fine, but you'd have to pay a small deposit."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "家賃に含まれているものは？", "choices": ["電気とネット", "水道と暖房", "すべての光熱費", "何も含まれない"], "answer": 1, "explain": "that includes water and heating"},
+      {"type": "detail", "q": "猫を飼う場合の条件は？", "choices": ["飼えない", "少額の保証金が必要", "家賃が上がる", "1階のみ可"], "answer": 1, "explain": "you'd have to pay a small deposit"}
+    ],
+    "vocab": [["rent", "家賃"], ["deposit", "保証金、預け金"]]
+  },
+  {
+    "id": "l3-support", "level": 3, "pool": "train", "kind": "dialogue", "title": "カスタマーサポート",
+    "voices": {"A": "Daniel", "B": "Moira"},
+    "lines": [
+      ["A", "Thanks for calling. What can I do for you today?"],
+      ["B", "I ordered a printer last week, but it arrived with a cracked screen."],
+      ["A", "I'm really sorry to hear that. Could I have your order number?"],
+      ["B", "Sure, it's 4 8 1 5 2."],
+      ["A", "Thanks. I can either send you a replacement or give you a full refund."],
+      ["B", "I'd prefer a replacement, as long as it arrives before the weekend."],
+      ["A", "It'll be there by Thursday at the latest."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "問題は何？", "choices": ["プリンターが届かない", "画面が割れていた", "色が違う", "請求額が違う"], "answer": 1, "explain": "it arrived with a cracked screen"},
+      {"type": "detail", "q": "客が選んだ対応は？", "choices": ["全額返金", "交換品", "修理", "割引"], "answer": 1, "explain": "I'd prefer a replacement"}
+    ],
+    "vocab": [["replacement", "交換品"], ["refund", "返金"]]
+  },
+  {
+    "id": "l3-travel-story", "level": 3, "pool": "train", "kind": "monologue", "title": "旅先でのハプニング",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "A couple of years ago, I went backpacking in Portugal with a friend."],
+      ["A", "On the third day, we missed the last bus back to our hostel."],
+      ["A", "We didn't know what to do, and our phones were almost dead."],
+      ["A", "Then an old man who ran a small bakery offered to drive us."],
+      ["A", "He wouldn't take any money, so we bought a whole bag of his bread instead."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "3日目に起きたことは？", "choices": ["財布をなくした", "最終バスに乗り遅れた", "道に迷った", "病気になった"], "answer": 1, "explain": "we missed the last bus"},
+      {"type": "inference", "q": "パンを1袋買った理由は？", "choices": ["お腹が空いていたから", "男性がお金を受け取らなかったのでお礼として", "安かったから", "友人に頼まれたから"], "answer": 1, "explain": "He wouldn't take any money, so ... instead → お礼の代わり。"}
+    ],
+    "vocab": [["hostel", "ホステル（安宿）"], ["offered", "申し出た"]]
+  },
+  {
+    "id": "l3-cooking", "level": 3, "pool": "train", "kind": "monologue", "title": "料理教室",
+    "voices": {"A": "Karen"},
+    "lines": [
+      ["A", "First, cut the onions and the garlic into small pieces."],
+      ["A", "Heat some oil in a large pan, and cook the onions until they turn soft."],
+      ["A", "Add the tomatoes and a pinch of salt, then let it simmer for about 15 minutes."],
+      ["A", "While that's cooking, boil the pasta in plenty of salted water."],
+      ["A", "Finally, mix everything together and add some fresh basil on top."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "トマトを加えた後に煮込む時間は？", "choices": ["5分", "約15分", "50分", "1時間"], "answer": 1, "explain": "simmer for about 15 minutes"},
+      {"type": "detail", "q": "最後にのせるものは？", "choices": ["チーズ", "フレッシュバジル", "オリーブ", "黒こしょう"], "answer": 1, "explain": "add some fresh basil on top"}
+    ],
+    "vocab": [["simmer", "とろ火で煮る"], ["garlic", "ニンニク"]]
+  },
+  {
+    "id": "l3-lecture-intro", "level": 3, "pool": "train", "kind": "lecture", "title": "大学の講義の導入",
+    "voices": {"A": "Daniel"},
+    "lines": [
+      ["A", "Good morning, everyone, and welcome to Introduction to Psychology."],
+      ["A", "Before we begin, a few quick notes about the course."],
+      ["A", "There'll be 2 short essays and a final exam, which counts for half of your grade."],
+      ["A", "All the readings are available online, so you don't need to buy a textbook."],
+      ["A", "Today, we're going to look at a simple question: why do we forget things?"]
+    ],
+    "questions": [
+      {"type": "detail", "q": "期末試験の比重は？", "choices": ["4分の1", "半分", "3分の2", "全部"], "answer": 1, "explain": "counts for half of your grade"},
+      {"type": "detail", "q": "教科書について正しいのは？", "choices": ["購入が必要", "買う必要はない（資料はオンライン）", "図書館で借りる", "初回に配られる"], "answer": 1, "explain": "you don't need to buy a textbook"}
+    ],
+    "vocab": [["grade", "成績"], ["available", "入手できる、利用可能な"]]
+  },
+  {
+    "id": "l3-delayed-flight", "level": 3, "pool": "train", "kind": "dialogue", "title": "フライト遅延",
+    "voices": {"A": "Samantha", "B": "Daniel"},
+    "lines": [
+      ["A", "Excuse me, the board says my flight to Denver has been delayed."],
+      ["B", "Yes, there's a technical problem with the plane. It should leave in about 3 hours."],
+      ["A", "Three hours? I'll miss my connecting flight."],
+      ["B", "Let me see what I can do. I can put you on a direct flight that leaves at 6:40."],
+      ["A", "Oh, that would be even better. Thank you so much."],
+      ["B", "Here's a meal voucher as well, since you'll have to wait a while."]
+    ],
+    "questions": [
+      {"type": "detail", "q": "遅延の理由は？", "choices": ["悪天候", "機体の技術的な問題", "乗務員不足", "空港の混雑"], "answer": 1, "explain": "a technical problem with the plane"},
+      {"type": "detail", "q": "客が受け取ったものは？", "choices": ["ホテルの宿泊券", "食事券", "現金", "ラウンジ招待券"], "answer": 1, "explain": "Here's a meal voucher"}
+    ],
+    "vocab": [["connecting flight", "乗り継ぎ便"], ["voucher", "引換券"]]
+  },
+  {
+    "id": "l3-coworker", "level": 3, "pool": "train", "kind": "dialogue", "title": "同僚との雑談",
+    "voices": {"A": "Moira", "B": "Daniel"},
+    "lines": [
+      ["A", "Hey, did you end up going to that new ramen place?"],
+      ["B", "Yeah, I went on Tuesday. Honestly, it wasn't worth the wait."],
+      ["A", "Really? Everybody's been talking about it."],
+      ["B", "We waited in line for nearly an hour, and the soup was just OK."],
+      ["A", "Well, I guess I'll stick to the place around the corner then."]
+    ],
+    "questions": [
+      {"type": "gist", "q": "B のラーメン店の評価は？", "choices": ["最高だった", "待つほどの価値はなかった", "高すぎた", "閉まっていた"], "answer": 1, "explain": "it wasn't worth the wait"},
+      {"type": "inference", "q": "A はどうすることにした？", "choices": ["新しい店に行く", "近所のいつもの店に行き続ける", "自分で作る", "B を誘う"], "answer": 1, "explain": "I'll stick to the place around the corner"}
+    ],
+    "vocab": [["worth", "〜の価値がある"], ["nearly", "ほぼ"]]
+  }
+]

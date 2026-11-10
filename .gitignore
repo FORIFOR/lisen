@@ -1,0 +1,16 @@
+data/
+backend/.venv/
+backend/**/__pycache__/
+frontend/node_modules/
+frontend/.next/
+.DS_Store
+backend/.venv-asr/
+backend/.models/
+# generated audio (rebuilt by ./start.sh / scripts.build_audio)
+backend/media/
+# caches / local secrets
+**/.pytest_cache/
+frontend/tsconfig.tsbuildinfo
+.env
+.env.*
+*.key

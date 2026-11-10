@@ -1,0 +1,3581 @@
+{
+ "dataset": {
+  "name": "ListenFlow TOEIC-style business vocabulary",
+  "version": 1,
+  "license": "CC0-1.0",
+  "source": "ListenFlow project (original). Words, Japanese glosses and example sentences were written for this app; nothing is copied from official TOEIC materials or third-party word lists.",
+  "fields": {
+   "tier": "Internal difficulty band 1-4 assigned by the ListenFlow authors. It is NOT a CEFR level and NOT an official TOEIC statistic.",
+   "cefr_level": "Left null: no licensed CEFR source has been imported. Fill only from a dataset that publishes it.",
+   "toeic_relevance": "Left null for the same reason.",
+   "pronunciation": "Left null; learners hear the word through synthesized audio instead.",
+   "group": "Words with overlapping meanings. Never used as each other's distractors."
+  }
+ },
+ "words": [
+  {
+   "id": "schedule",
+   "lemma": "schedule",
+   "pos": "v",
+   "meaning": "予定する",
+   "tier": 1,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The interview is scheduled for ten o'clock tomorrow morning.",
+     "form": "scheduled"
+    }
+   ]
+  },
+  {
+   "id": "deliver",
+   "lemma": "deliver",
+   "pos": "v",
+   "meaning": "配達する",
+   "tier": 1,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We can deliver the furniture to your office on Monday.",
+     "form": "deliver"
+    }
+   ]
+  },
+  {
+   "id": "receipt",
+   "lemma": "receipt",
+   "pos": "n",
+   "meaning": "領収書、レシート",
+   "tier": 1,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please keep the receipt in case you need to return the item.",
+     "form": "receipt"
+    }
+   ]
+  },
+  {
+   "id": "department",
+   "lemma": "department",
+   "pos": "n",
+   "meaning": "部署、部門",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "She works in the accounting department on the third floor.",
+     "form": "department"
+    }
+   ]
+  },
+  {
+   "id": "available",
+   "lemma": "available",
+   "pos": "adj",
+   "meaning": "手が空いている、入手できる",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Is the manager available to meet this afternoon?",
+     "form": "available"
+    }
+   ]
+  },
+  {
+   "id": "customer",
+   "lemma": "customer",
+   "pos": "n",
+   "meaning": "客、顧客",
+   "tier": 1,
+   "topic": "sales",
+   "group": "customer",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Our customers can now order online twenty-four hours a day.",
+     "form": "customers"
+    }
+   ]
+  },
+  {
+   "id": "client",
+   "lemma": "client",
+   "pos": "n",
+   "meaning": "取引先、依頼人",
+   "tier": 1,
+   "topic": "sales",
+   "group": "customer",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "I have lunch with a new client at noon.",
+     "form": "client"
+    }
+   ]
+  },
+  {
+   "id": "invoice",
+   "lemma": "invoice",
+   "pos": "n",
+   "meaning": "請求書",
+   "tier": 1,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We will send the invoice by email at the end of the month.",
+     "form": "invoice"
+    }
+   ]
+  },
+  {
+   "id": "reserve",
+   "lemma": "reserve",
+   "pos": "v",
+   "meaning": "予約する",
+   "tier": 1,
+   "topic": "travel",
+   "group": "reserve",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "I'd like to reserve a table for four at seven.",
+     "form": "reserve"
+    }
+   ]
+  },
+  {
+   "id": "deadline",
+   "lemma": "deadline",
+   "pos": "n",
+   "meaning": "締め切り",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The deadline for the sales report is this Friday.",
+     "form": "deadline"
+    }
+   ]
+  },
+  {
+   "id": "colleague",
+   "lemma": "colleague",
+   "pos": "n",
+   "meaning": "同僚",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "A colleague of mine recommended this restaurant.",
+     "form": "colleague"
+    }
+   ]
+  },
+  {
+   "id": "discount",
+   "lemma": "discount",
+   "pos": "n",
+   "meaning": "割引",
+   "tier": 1,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Members receive a ten percent discount on all purchases.",
+     "form": "discount"
+    }
+   ]
+  },
+  {
+   "id": "repair",
+   "lemma": "repair",
+   "pos": "v",
+   "meaning": "修理する",
+   "tier": 1,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The technician will repair the copier this afternoon.",
+     "form": "repair"
+    }
+   ]
+  },
+  {
+   "id": "brochure",
+   "lemma": "brochure",
+   "pos": "n",
+   "meaning": "パンフレット、案内冊子",
+   "tier": 1,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "You can find our prices in the brochure at the front desk.",
+     "form": "brochure"
+    }
+   ]
+  },
+  {
+   "id": "employee",
+   "lemma": "employee",
+   "pos": "n",
+   "meaning": "従業員",
+   "tier": 1,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "All employees must attend the safety training next week.",
+     "form": "employees"
+    }
+   ]
+  },
+  {
+   "id": "cancel",
+   "lemma": "cancel",
+   "pos": "v",
+   "meaning": "中止する、取り消す",
+   "tier": 1,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The flight was canceled because of the storm.",
+     "form": "canceled"
+    }
+   ]
+  },
+  {
+   "id": "confirm",
+   "lemma": "confirm",
+   "pos": "v",
+   "meaning": "確認して確定させる",
+   "tier": 1,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Could you confirm your booking by replying to this email?",
+     "form": "confirm"
+    }
+   ]
+  },
+  {
+   "id": "refund",
+   "lemma": "refund",
+   "pos": "n",
+   "meaning": "返金",
+   "tier": 1,
+   "topic": "sales",
+   "group": "refund",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "If the product is damaged, you can ask for a full refund.",
+     "form": "refund"
+    }
+   ]
+  },
+  {
+   "id": "package",
+   "lemma": "package",
+   "pos": "n",
+   "meaning": "小包",
+   "tier": 1,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "A package arrived for you while you were at lunch.",
+     "form": "package"
+    }
+   ]
+  },
+  {
+   "id": "apply",
+   "lemma": "apply",
+   "pos": "v",
+   "meaning": "応募する、申し込む",
+   "tier": 1,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Anyone interested in the position should apply by June first.",
+     "form": "apply"
+    }
+   ]
+  },
+  {
+   "id": "interview",
+   "lemma": "interview",
+   "pos": "n",
+   "meaning": "面接",
+   "tier": 1,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "How did your job interview go yesterday?",
+     "form": "interview"
+    }
+   ]
+  },
+  {
+   "id": "equipment",
+   "lemma": "equipment",
+   "pos": "n",
+   "meaning": "機器、装置",
+   "tier": 1,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The new kitchen equipment will be installed on Thursday.",
+     "form": "equipment"
+    }
+   ]
+  },
+  {
+   "id": "supplies",
+   "lemma": "supplies",
+   "pos": "n",
+   "meaning": "備品、消耗品",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We are running low on office supplies again.",
+     "form": "supplies"
+    }
+   ]
+  },
+  {
+   "id": "attend",
+   "lemma": "attend",
+   "pos": "v",
+   "meaning": "出席する",
+   "tier": 1,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Will you attend the sales conference in Chicago?",
+     "form": "attend"
+    }
+   ]
+  },
+  {
+   "id": "register",
+   "lemma": "register",
+   "pos": "v",
+   "meaning": "登録する",
+   "tier": 1,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please register online before the workshop begins.",
+     "form": "register"
+    }
+   ]
+  },
+  {
+   "id": "location",
+   "lemma": "location",
+   "pos": "n",
+   "meaning": "場所、店舗",
+   "tier": 1,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Our new location is right across from the train station.",
+     "form": "location"
+    }
+   ]
+  },
+  {
+   "id": "contract",
+   "lemma": "contract",
+   "pos": "n",
+   "meaning": "契約、契約書",
+   "tier": 1,
+   "topic": "finance",
+   "group": "contract",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Both companies signed the contract last Tuesday.",
+     "form": "contract"
+    }
+   ]
+  },
+  {
+   "id": "purchase",
+   "lemma": "purchase",
+   "pos": "v",
+   "meaning": "購入する",
+   "tier": 1,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company purchased ten new laptops for the design team.",
+     "form": "purchased"
+    }
+   ]
+  },
+  {
+   "id": "delay",
+   "lemma": "delay",
+   "pos": "n",
+   "meaning": "遅れ、遅延",
+   "tier": 1,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We apologize for the delay in shipping your order.",
+     "form": "delay"
+    }
+   ]
+  },
+  {
+   "id": "announce",
+   "lemma": "announce",
+   "pos": "v",
+   "meaning": "発表する",
+   "tier": 1,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The mayor announced plans for a new public library.",
+     "form": "announced"
+    }
+   ]
+  },
+  {
+   "id": "hire",
+   "lemma": "hire",
+   "pos": "v",
+   "meaning": "雇う",
+   "tier": 1,
+   "topic": "hr",
+   "group": "hire",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We plan to hire three new engineers this year.",
+     "form": "hire"
+    }
+   ]
+  },
+  {
+   "id": "inform",
+   "lemma": "inform",
+   "pos": "v",
+   "meaning": "知らせる",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please inform the staff that the meeting has moved to room B.",
+     "form": "inform"
+    }
+   ]
+  },
+  {
+   "id": "directions",
+   "lemma": "directions",
+   "pos": "n",
+   "meaning": "道順",
+   "tier": 1,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Can you give me directions to the convention center?",
+     "form": "directions"
+    }
+   ]
+  },
+  {
+   "id": "fee",
+   "lemma": "fee",
+   "pos": "n",
+   "meaning": "料金、手数料",
+   "tier": 1,
+   "topic": "finance",
+   "group": "fee",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "There is a small fee for late payment.",
+     "form": "fee"
+    }
+   ]
+  },
+  {
+   "id": "sign",
+   "lemma": "sign",
+   "pos": "v",
+   "meaning": "署名する",
+   "tier": 1,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please sign the form at the bottom of the page.",
+     "form": "sign"
+    }
+   ]
+  },
+  {
+   "id": "agenda",
+   "lemma": "agenda",
+   "pos": "n",
+   "meaning": "議題、予定表",
+   "tier": 1,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The first item on the agenda is the new budget.",
+     "form": "agenda"
+    }
+   ]
+  },
+  {
+   "id": "branch",
+   "lemma": "branch",
+   "pos": "n",
+   "meaning": "支店",
+   "tier": 1,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The bank is opening a branch in our neighborhood.",
+     "form": "branch"
+    }
+   ]
+  },
+  {
+   "id": "reception",
+   "lemma": "reception",
+   "pos": "n",
+   "meaning": "受付",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please leave the documents at reception.",
+     "form": "reception"
+    }
+   ]
+  },
+  {
+   "id": "update",
+   "lemma": "update",
+   "pos": "v",
+   "meaning": "更新する、最新にする",
+   "tier": 1,
+   "topic": "office",
+   "group": "update",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "I need to update the customer list before the meeting.",
+     "form": "update"
+    }
+   ]
+  },
+  {
+   "id": "arrival",
+   "lemma": "arrival",
+   "pos": "n",
+   "meaning": "到着",
+   "tier": 1,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The arrival of the train has been delayed by twenty minutes.",
+     "form": "arrival"
+    }
+   ]
+  },
+  {
+   "id": "parking",
+   "lemma": "parking",
+   "pos": "n",
+   "meaning": "駐車",
+   "tier": 1,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Free parking is available behind the building.",
+     "form": "parking"
+    }
+   ]
+  },
+  {
+   "id": "presentation",
+   "lemma": "presentation",
+   "pos": "n",
+   "meaning": "発表、プレゼン",
+   "tier": 1,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Her presentation on the new product went very well.",
+     "form": "presentation"
+    }
+   ]
+  },
+  {
+   "id": "account",
+   "lemma": "account",
+   "pos": "n",
+   "meaning": "口座、取引先",
+   "tier": 1,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "You can transfer money between accounts using our app.",
+     "form": "accounts"
+    }
+   ]
+  },
+  {
+   "id": "order",
+   "lemma": "order",
+   "pos": "n",
+   "meaning": "注文",
+   "tier": 1,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Your order will be shipped within two business days.",
+     "form": "order"
+    }
+   ]
+  },
+  {
+   "id": "guest",
+   "lemma": "guest",
+   "pos": "n",
+   "meaning": "宿泊客、招待客",
+   "tier": 1,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Hotel guests can use the pool until ten at night.",
+     "form": "guests"
+    }
+   ]
+  },
+  {
+   "id": "document",
+   "lemma": "document",
+   "pos": "n",
+   "meaning": "書類、文書",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "I left the documents on your desk.",
+     "form": "documents"
+    }
+   ]
+  },
+  {
+   "id": "warehouse",
+   "lemma": "warehouse",
+   "pos": "n",
+   "meaning": "倉庫",
+   "tier": 1,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The boxes are stored in the warehouse next to the factory.",
+     "form": "warehouse"
+    }
+   ]
+  },
+  {
+   "id": "lobby",
+   "lemma": "lobby",
+   "pos": "n",
+   "meaning": "ロビー",
+   "tier": 1,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Let's meet in the hotel lobby at nine.",
+     "form": "lobby"
+    }
+   ]
+  },
+  {
+   "id": "receptionist",
+   "lemma": "receptionist",
+   "pos": "n",
+   "meaning": "受付係",
+   "tier": 1,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The receptionist will give you a visitor badge.",
+     "form": "receptionist"
+    }
+   ]
+  },
+  {
+   "id": "inventory",
+   "lemma": "inventory",
+   "pos": "n",
+   "meaning": "在庫、在庫一覧",
+   "tier": 2,
+   "topic": "shipping",
+   "group": "stock",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We check the inventory at the end of every month.",
+     "form": "inventory"
+    }
+   ]
+  },
+  {
+   "id": "shipment",
+   "lemma": "shipment",
+   "pos": "n",
+   "meaning": "発送品、出荷",
+   "tier": 2,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The shipment from our supplier arrived two days late.",
+     "form": "shipment"
+    }
+   ]
+  },
+  {
+   "id": "estimate",
+   "lemma": "estimate",
+   "pos": "n",
+   "meaning": "見積もり",
+   "tier": 2,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The contractor gave us an estimate of five thousand dollars.",
+     "form": "estimate"
+    }
+   ]
+  },
+  {
+   "id": "budget",
+   "lemma": "budget",
+   "pos": "n",
+   "meaning": "予算",
+   "tier": 2,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We have to stay within the budget for this project.",
+     "form": "budget"
+    }
+   ]
+  },
+  {
+   "id": "revenue",
+   "lemma": "revenue",
+   "pos": "n",
+   "meaning": "収益、歳入",
+   "tier": 2,
+   "topic": "finance",
+   "group": "revenue",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Online sales now account for half of our revenue.",
+     "form": "revenue"
+    }
+   ]
+  },
+  {
+   "id": "expense",
+   "lemma": "expense",
+   "pos": "n",
+   "meaning": "費用、経費",
+   "tier": 2,
+   "topic": "finance",
+   "group": "expense",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Travel expenses will be paid by the company.",
+     "form": "expenses"
+    }
+   ]
+  },
+  {
+   "id": "reimburse",
+   "lemma": "reimburse",
+   "pos": "v",
+   "meaning": "払い戻す、経費を精算する",
+   "tier": 2,
+   "topic": "finance",
+   "group": "reimburse",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We will reimburse you for the cost of the taxi.",
+     "form": "reimburse"
+    }
+   ]
+  },
+  {
+   "id": "postpone",
+   "lemma": "postpone",
+   "pos": "v",
+   "meaning": "延期する",
+   "tier": 2,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We had to postpone the meeting until next week.",
+     "form": "postpone"
+    }
+   ]
+  },
+  {
+   "id": "extend",
+   "lemma": "extend",
+   "pos": "v",
+   "meaning": "延長する",
+   "tier": 2,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Can I extend my stay for two more nights?",
+     "form": "extend"
+    }
+   ]
+  },
+  {
+   "id": "submit",
+   "lemma": "submit",
+   "pos": "v",
+   "meaning": "提出する",
+   "tier": 2,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please submit your timesheet by Friday afternoon.",
+     "form": "submit"
+    }
+   ]
+  },
+  {
+   "id": "approve",
+   "lemma": "approve",
+   "pos": "v",
+   "meaning": "承認する",
+   "tier": 2,
+   "topic": "office",
+   "group": "approve",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The director approved the new design yesterday.",
+     "form": "approved"
+    }
+   ]
+  },
+  {
+   "id": "candidate",
+   "lemma": "candidate",
+   "pos": "n",
+   "meaning": "候補者",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We interviewed five candidates for the sales position.",
+     "form": "candidates"
+    }
+   ]
+  },
+  {
+   "id": "promote",
+   "lemma": "promote",
+   "pos": "v",
+   "meaning": "昇進させる",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Ms. Lee was promoted to senior manager last month.",
+     "form": "promoted"
+    }
+   ]
+  },
+  {
+   "id": "transfer",
+   "lemma": "transfer",
+   "pos": "v",
+   "meaning": "転勤させる、異動させる",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "He was transferred to our Tokyo office in April.",
+     "form": "transferred"
+    }
+   ]
+  },
+  {
+   "id": "retire",
+   "lemma": "retire",
+   "pos": "v",
+   "meaning": "退職する、引退する",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Mr. Brown plans to retire at the end of the year.",
+     "form": "retire"
+    }
+   ]
+  },
+  {
+   "id": "recruit",
+   "lemma": "recruit",
+   "pos": "v",
+   "meaning": "人材を募集する",
+   "tier": 2,
+   "topic": "hr",
+   "group": "hire",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The firm is trying to recruit more young engineers.",
+     "form": "recruit"
+    }
+   ]
+  },
+  {
+   "id": "supervisor",
+   "lemma": "supervisor",
+   "pos": "n",
+   "meaning": "監督者、上司",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Ask your supervisor before you change the schedule.",
+     "form": "supervisor"
+    }
+   ]
+  },
+  {
+   "id": "headquarters",
+   "lemma": "headquarters",
+   "pos": "n",
+   "meaning": "本社",
+   "tier": 2,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Our headquarters is located in Boston.",
+     "form": "headquarters"
+    }
+   ]
+  },
+  {
+   "id": "facility",
+   "lemma": "facility",
+   "pos": "n",
+   "meaning": "施設",
+   "tier": 2,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The new research facility will open in March.",
+     "form": "facility"
+    }
+   ]
+  },
+  {
+   "id": "renovate",
+   "lemma": "renovate",
+   "pos": "v",
+   "meaning": "改装する",
+   "tier": 2,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The hotel lobby was renovated last spring.",
+     "form": "renovated"
+    }
+   ]
+  },
+  {
+   "id": "install",
+   "lemma": "install",
+   "pos": "v",
+   "meaning": "設置する、取り付ける",
+   "tier": 2,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "A technician is coming to install the new printer.",
+     "form": "install"
+    }
+   ]
+  },
+  {
+   "id": "maintenance",
+   "lemma": "maintenance",
+   "pos": "n",
+   "meaning": "保守、整備",
+   "tier": 2,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The elevator is closed for maintenance today.",
+     "form": "maintenance"
+    }
+   ]
+  },
+  {
+   "id": "merchandise",
+   "lemma": "merchandise",
+   "pos": "n",
+   "meaning": "商品",
+   "tier": 2,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "All merchandise on this shelf is half price.",
+     "form": "merchandise"
+    }
+   ]
+  },
+  {
+   "id": "warranty",
+   "lemma": "warranty",
+   "pos": "n",
+   "meaning": "保証",
+   "tier": 2,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The camera comes with a two-year warranty.",
+     "form": "warranty"
+    }
+   ]
+  },
+  {
+   "id": "complimentary",
+   "lemma": "complimentary",
+   "pos": "adj",
+   "meaning": "無料の、優待の",
+   "tier": 2,
+   "topic": "travel",
+   "group": "free",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Breakfast is complimentary for all hotel guests.",
+     "form": "complimentary"
+    }
+   ]
+  },
+  {
+   "id": "voucher",
+   "lemma": "voucher",
+   "pos": "n",
+   "meaning": "引換券、割引券",
+   "tier": 2,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "You can use this voucher for your next purchase.",
+     "form": "voucher"
+    }
+   ]
+  },
+  {
+   "id": "itinerary",
+   "lemma": "itinerary",
+   "pos": "n",
+   "meaning": "旅程、旅行計画",
+   "tier": 2,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "I'll email you the itinerary for the business trip.",
+     "form": "itinerary"
+    }
+   ]
+  },
+  {
+   "id": "accommodation",
+   "lemma": "accommodation",
+   "pos": "n",
+   "meaning": "宿泊施設",
+   "tier": 2,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company will arrange accommodation for all speakers.",
+     "form": "accommodation"
+    }
+   ]
+  },
+  {
+   "id": "luggage",
+   "lemma": "luggage",
+   "pos": "n",
+   "meaning": "手荷物",
+   "tier": 2,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please do not leave your luggage unattended.",
+     "form": "luggage"
+    }
+   ]
+  },
+  {
+   "id": "departure",
+   "lemma": "departure",
+   "pos": "n",
+   "meaning": "出発",
+   "tier": 2,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The departure time has been changed to six fifteen.",
+     "form": "departure"
+    }
+   ]
+  },
+  {
+   "id": "destination",
+   "lemma": "destination",
+   "pos": "n",
+   "meaning": "目的地",
+   "tier": 2,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Kyoto is a popular destination for international tourists.",
+     "form": "destination"
+    }
+   ]
+  },
+  {
+   "id": "quarterly",
+   "lemma": "quarterly",
+   "pos": "adj",
+   "meaning": "四半期の",
+   "tier": 2,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The quarterly report will be released next Monday.",
+     "form": "quarterly"
+    }
+   ]
+  },
+  {
+   "id": "annual",
+   "lemma": "annual",
+   "pos": "adj",
+   "meaning": "年に一度の、年間の",
+   "tier": 2,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The annual company picnic will be held in June.",
+     "form": "annual"
+    }
+   ]
+  },
+  {
+   "id": "proposal",
+   "lemma": "proposal",
+   "pos": "n",
+   "meaning": "提案、企画書",
+   "tier": 2,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The board will review your proposal on Thursday.",
+     "form": "proposal"
+    }
+   ]
+  },
+  {
+   "id": "negotiate",
+   "lemma": "negotiate",
+   "pos": "v",
+   "meaning": "交渉する",
+   "tier": 2,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We need to negotiate a better price with the supplier.",
+     "form": "negotiate"
+    }
+   ]
+  },
+  {
+   "id": "launch",
+   "lemma": "launch",
+   "pos": "v",
+   "meaning": "発売する、開始する",
+   "tier": 2,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company will launch its new smartphone in the fall.",
+     "form": "launch"
+    }
+   ]
+  },
+  {
+   "id": "advertise",
+   "lemma": "advertise",
+   "pos": "v",
+   "meaning": "広告を出す、宣伝する",
+   "tier": 2,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We advertise our services on local radio stations.",
+     "form": "advertise"
+    }
+   ]
+  },
+  {
+   "id": "survey",
+   "lemma": "survey",
+   "pos": "n",
+   "meaning": "調査、アンケート",
+   "tier": 2,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please take a few minutes to complete our customer survey.",
+     "form": "survey"
+    }
+   ]
+  },
+  {
+   "id": "attach",
+   "lemma": "attach",
+   "pos": "v",
+   "meaning": "添付する",
+   "tier": 2,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "I've attached the updated price list to this email.",
+     "form": "attached"
+    }
+   ]
+  },
+  {
+   "id": "forward",
+   "lemma": "forward",
+   "pos": "v",
+   "meaning": "転送する",
+   "tier": 2,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Could you forward me the message from the client?",
+     "form": "forward"
+    }
+   ]
+  },
+  {
+   "id": "distribute",
+   "lemma": "distribute",
+   "pos": "v",
+   "meaning": "配布する、流通させる",
+   "tier": 2,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We will distribute the handouts at the start of the session.",
+     "form": "distribute"
+    }
+   ]
+  },
+  {
+   "id": "assemble",
+   "lemma": "assemble",
+   "pos": "v",
+   "meaning": "組み立てる",
+   "tier": 2,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "It takes about an hour to assemble the bookshelf.",
+     "form": "assemble"
+    }
+   ]
+  },
+  {
+   "id": "vendor",
+   "lemma": "vendor",
+   "pos": "n",
+   "meaning": "販売業者、売り手",
+   "tier": 2,
+   "topic": "sales",
+   "group": "supplier",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "More than fifty vendors will sell food at the festival.",
+     "form": "vendors"
+    }
+   ]
+  },
+  {
+   "id": "supplier",
+   "lemma": "supplier",
+   "pos": "n",
+   "meaning": "仕入れ先、供給業者",
+   "tier": 2,
+   "topic": "shipping",
+   "group": "supplier",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We are looking for a new supplier of paper products.",
+     "form": "supplier"
+    }
+   ]
+  },
+  {
+   "id": "deposit",
+   "lemma": "deposit",
+   "pos": "n",
+   "meaning": "手付金、保証金",
+   "tier": 2,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "A deposit of two hundred dollars is required to book the hall.",
+     "form": "deposit"
+    }
+   ]
+  },
+  {
+   "id": "tenant",
+   "lemma": "tenant",
+   "pos": "n",
+   "meaning": "入居者、賃借人",
+   "tier": 2,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "All tenants must park in the lot behind the building.",
+     "form": "tenants"
+    }
+   ]
+  },
+  {
+   "id": "lease",
+   "lemma": "lease",
+   "pos": "n",
+   "meaning": "賃貸借契約",
+   "tier": 2,
+   "topic": "facilities",
+   "group": "contract",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The lease on our office space ends in December.",
+     "form": "lease"
+    }
+   ]
+  },
+  {
+   "id": "commute",
+   "lemma": "commute",
+   "pos": "v",
+   "meaning": "通勤する",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Many of our staff commute by train.",
+     "form": "commute"
+    }
+   ]
+  },
+  {
+   "id": "overtime",
+   "lemma": "overtime",
+   "pos": "n",
+   "meaning": "残業、時間外労働",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We worked overtime to finish the project on time.",
+     "form": "overtime"
+    }
+   ]
+  },
+  {
+   "id": "shift",
+   "lemma": "shift",
+   "pos": "n",
+   "meaning": "勤務時間、交代制の勤務",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "My shift starts at six in the morning.",
+     "form": "shift"
+    }
+   ]
+  },
+  {
+   "id": "reference",
+   "lemma": "reference",
+   "pos": "n",
+   "meaning": "推薦状、照会先",
+   "tier": 2,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Could you write a reference for my job application?",
+     "form": "reference"
+    }
+   ]
+  },
+  {
+   "id": "stock",
+   "lemma": "stock",
+   "pos": "n",
+   "meaning": "在庫品",
+   "tier": 2,
+   "topic": "shipping",
+   "group": "stock",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "That model is currently out of stock.",
+     "form": "stock"
+    }
+   ]
+  },
+  {
+   "id": "allocate",
+   "lemma": "allocate",
+   "pos": "v",
+   "meaning": "割り当てる",
+   "tier": 3,
+   "topic": "finance",
+   "group": "allocate",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We need to allocate more time to testing.",
+     "form": "allocate"
+    }
+   ]
+  },
+  {
+   "id": "reimbursement",
+   "lemma": "reimbursement",
+   "pos": "n",
+   "meaning": "払い戻し、経費精算",
+   "tier": 3,
+   "topic": "finance",
+   "group": "reimburse",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Submit your receipts to receive reimbursement for travel costs.",
+     "form": "reimbursement"
+    }
+   ]
+  },
+  {
+   "id": "expire",
+   "lemma": "expire",
+   "pos": "v",
+   "meaning": "期限が切れる",
+   "tier": 3,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Your membership expires at the end of this month.",
+     "form": "expires"
+    }
+   ]
+  },
+  {
+   "id": "renewal",
+   "lemma": "renewal",
+   "pos": "n",
+   "meaning": "更新、契約の延長",
+   "tier": 3,
+   "topic": "sales",
+   "group": "update",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We'll send you a reminder before your contract renewal.",
+     "form": "renewal"
+    }
+   ]
+  },
+  {
+   "id": "comply",
+   "lemma": "comply",
+   "pos": "v",
+   "meaning": "従う、順守する",
+   "tier": 3,
+   "topic": "office",
+   "group": "comply",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "All visitors must comply with the safety rules.",
+     "form": "comply"
+    }
+   ]
+  },
+  {
+   "id": "regulation",
+   "lemma": "regulation",
+   "pos": "n",
+   "meaning": "規則、規制",
+   "tier": 3,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "New regulations require us to recycle all paper waste.",
+     "form": "regulations"
+    }
+   ]
+  },
+  {
+   "id": "mandatory",
+   "lemma": "mandatory",
+   "pos": "adj",
+   "meaning": "義務の、必須の",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Attendance at the training session is mandatory.",
+     "form": "mandatory"
+    }
+   ]
+  },
+  {
+   "id": "eligible",
+   "lemma": "eligible",
+   "pos": "adj",
+   "meaning": "資格がある",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Full-time employees are eligible for paid vacation.",
+     "form": "eligible"
+    }
+   ]
+  },
+  {
+   "id": "incentive",
+   "lemma": "incentive",
+   "pos": "n",
+   "meaning": "奨励策、報奨金",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company offers a bonus as an incentive to sell more.",
+     "form": "incentive"
+    }
+   ]
+  },
+  {
+   "id": "compensation",
+   "lemma": "compensation",
+   "pos": "n",
+   "meaning": "報酬、補償",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The job offers competitive compensation and flexible hours.",
+     "form": "compensation"
+    }
+   ]
+  },
+  {
+   "id": "benefits",
+   "lemma": "benefits",
+   "pos": "n",
+   "meaning": "福利厚生",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Our benefits include health insurance and a pension plan.",
+     "form": "benefits"
+    }
+   ]
+  },
+  {
+   "id": "personnel",
+   "lemma": "personnel",
+   "pos": "n",
+   "meaning": "人員、人事部",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Only authorized personnel may enter this area.",
+     "form": "personnel"
+    }
+   ]
+  },
+  {
+   "id": "appraisal",
+   "lemma": "appraisal",
+   "pos": "n",
+   "meaning": "査定、評価",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Your performance appraisal is scheduled for next Tuesday.",
+     "form": "appraisal"
+    }
+   ]
+  },
+  {
+   "id": "subsidiary",
+   "lemma": "subsidiary",
+   "pos": "n",
+   "meaning": "子会社",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company opened a subsidiary in Singapore.",
+     "form": "subsidiary"
+    }
+   ]
+  },
+  {
+   "id": "acquisition",
+   "lemma": "acquisition",
+   "pos": "n",
+   "meaning": "買収、取得",
+   "tier": 3,
+   "topic": "finance",
+   "group": "merger",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The acquisition of the smaller firm was completed in May.",
+     "form": "acquisition"
+    }
+   ]
+  },
+  {
+   "id": "merger",
+   "lemma": "merger",
+   "pos": "n",
+   "meaning": "合併",
+   "tier": 3,
+   "topic": "finance",
+   "group": "merger",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "After the merger, the two banks will share one name.",
+     "form": "merger"
+    }
+   ]
+  },
+  {
+   "id": "shareholder",
+   "lemma": "shareholder",
+   "pos": "n",
+   "meaning": "株主",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The shareholders will vote on the proposal next month.",
+     "form": "shareholders"
+    }
+   ]
+  },
+  {
+   "id": "dividend",
+   "lemma": "dividend",
+   "pos": "n",
+   "meaning": "配当金",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company will pay a dividend to investors this quarter.",
+     "form": "dividend"
+    }
+   ]
+  },
+  {
+   "id": "audit",
+   "lemma": "audit",
+   "pos": "n",
+   "meaning": "監査",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The accounting team is preparing for the annual audit.",
+     "form": "audit"
+    }
+   ]
+  },
+  {
+   "id": "fiscal",
+   "lemma": "fiscal",
+   "pos": "adj",
+   "meaning": "会計の、財政の",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Sales rose by ten percent in the last fiscal year.",
+     "form": "fiscal"
+    }
+   ]
+  },
+  {
+   "id": "forecast",
+   "lemma": "forecast",
+   "pos": "n",
+   "meaning": "予測、予報",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The sales forecast for next year looks very positive.",
+     "form": "forecast"
+    }
+   ]
+  },
+  {
+   "id": "surplus",
+   "lemma": "surplus",
+   "pos": "n",
+   "meaning": "余剰、黒字",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The city ended the year with a budget surplus.",
+     "form": "surplus"
+    }
+   ]
+  },
+  {
+   "id": "deficit",
+   "lemma": "deficit",
+   "pos": "n",
+   "meaning": "赤字、不足額",
+   "tier": 3,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company reported a deficit for the second year in a row.",
+     "form": "deficit"
+    }
+   ]
+  },
+  {
+   "id": "procurement",
+   "lemma": "procurement",
+   "pos": "n",
+   "meaning": "調達",
+   "tier": 3,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The procurement team handles all orders for raw materials.",
+     "form": "procurement"
+    }
+   ]
+  },
+  {
+   "id": "logistics",
+   "lemma": "logistics",
+   "pos": "n",
+   "meaning": "物流、業務の段取り",
+   "tier": 3,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We hired an outside company to manage our logistics.",
+     "form": "logistics"
+    }
+   ]
+  },
+  {
+   "id": "freight",
+   "lemma": "freight",
+   "pos": "n",
+   "meaning": "貨物、運送料",
+   "tier": 3,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The freight will be delivered by truck on Wednesday.",
+     "form": "freight"
+    }
+   ]
+  },
+  {
+   "id": "expedite",
+   "lemma": "expedite",
+   "pos": "v",
+   "meaning": "早める、迅速に処理する",
+   "tier": 3,
+   "topic": "shipping",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "For an extra fee, we can expedite your delivery.",
+     "form": "expedite"
+    }
+   ]
+  },
+  {
+   "id": "defective",
+   "lemma": "defective",
+   "pos": "adj",
+   "meaning": "欠陥のある",
+   "tier": 3,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Customers can exchange defective items at any store.",
+     "form": "defective"
+    }
+   ]
+  },
+  {
+   "id": "recall",
+   "lemma": "recall",
+   "pos": "v",
+   "meaning": "製品を回収する",
+   "tier": 3,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The manufacturer recalled thousands of cars last week.",
+     "form": "recalled"
+    }
+   ]
+  },
+  {
+   "id": "specifications",
+   "lemma": "specifications",
+   "pos": "n",
+   "meaning": "仕様、仕様書",
+   "tier": 3,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The parts must meet the client's exact specifications.",
+     "form": "specifications"
+    }
+   ]
+  },
+  {
+   "id": "prototype",
+   "lemma": "prototype",
+   "pos": "n",
+   "meaning": "試作品",
+   "tier": 3,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The engineers showed us a prototype of the new drone.",
+     "form": "prototype"
+    }
+   ]
+  },
+  {
+   "id": "implement",
+   "lemma": "implement",
+   "pos": "v",
+   "meaning": "実行する、導入する",
+   "tier": 3,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We will implement the new filing system next quarter.",
+     "form": "implement"
+    }
+   ]
+  },
+  {
+   "id": "streamline",
+   "lemma": "streamline",
+   "pos": "v",
+   "meaning": "効率化する",
+   "tier": 3,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The new software will streamline the ordering process.",
+     "form": "streamline"
+    }
+   ]
+  },
+  {
+   "id": "outsource",
+   "lemma": "outsource",
+   "pos": "v",
+   "meaning": "外部委託する",
+   "tier": 3,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Many firms outsource their customer support.",
+     "form": "outsource"
+    }
+   ]
+  },
+  {
+   "id": "consolidate",
+   "lemma": "consolidate",
+   "pos": "v",
+   "meaning": "統合する、まとめる",
+   "tier": 3,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We plan to consolidate our two warehouses into one.",
+     "form": "consolidate"
+    }
+   ]
+  },
+  {
+   "id": "relocate",
+   "lemma": "relocate",
+   "pos": "v",
+   "meaning": "移転する",
+   "tier": 3,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The office will relocate to a larger building in May.",
+     "form": "relocate"
+    }
+   ]
+  },
+  {
+   "id": "vacancy",
+   "lemma": "vacancy",
+   "pos": "n",
+   "meaning": "欠員、空室",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "There is a vacancy in the marketing department.",
+     "form": "vacancy"
+    }
+   ]
+  },
+  {
+   "id": "probation",
+   "lemma": "probation",
+   "pos": "n",
+   "meaning": "試用期間",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "New hires are on probation for the first three months.",
+     "form": "probation"
+    }
+   ]
+  },
+  {
+   "id": "tentative",
+   "lemma": "tentative",
+   "pos": "adj",
+   "meaning": "仮の、暫定的な",
+   "tier": 3,
+   "topic": "meeting",
+   "group": "provisional",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The tentative date for the launch is October fifth.",
+     "form": "tentative"
+    }
+   ]
+  },
+  {
+   "id": "preliminary",
+   "lemma": "preliminary",
+   "pos": "adj",
+   "meaning": "予備の、準備段階の",
+   "tier": 3,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The preliminary results of the study will be shared today.",
+     "form": "preliminary"
+    }
+   ]
+  },
+  {
+   "id": "venue",
+   "lemma": "venue",
+   "pos": "n",
+   "meaning": "会場",
+   "tier": 3,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The venue for the conference has not been decided yet.",
+     "form": "venue"
+    }
+   ]
+  },
+  {
+   "id": "attendee",
+   "lemma": "attendee",
+   "pos": "n",
+   "meaning": "出席者、参加者",
+   "tier": 3,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "All attendees will receive a name tag at the entrance.",
+     "form": "attendees"
+    }
+   ]
+  },
+  {
+   "id": "keynote",
+   "lemma": "keynote",
+   "pos": "n",
+   "meaning": "基調講演",
+   "tier": 3,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The keynote speech will begin at nine sharp.",
+     "form": "keynote"
+    }
+   ]
+  },
+  {
+   "id": "inquiry",
+   "lemma": "inquiry",
+   "pos": "n",
+   "meaning": "問い合わせ",
+   "tier": 3,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Thank you for your inquiry about our cleaning services.",
+     "form": "inquiry"
+    }
+   ]
+  },
+  {
+   "id": "testimonial",
+   "lemma": "testimonial",
+   "pos": "n",
+   "meaning": "利用者の推薦の声",
+   "tier": 3,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Our website features testimonials from satisfied customers.",
+     "form": "testimonials"
+    }
+   ]
+  },
+  {
+   "id": "endorse",
+   "lemma": "endorse",
+   "pos": "v",
+   "meaning": "支持する、推奨する",
+   "tier": 3,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The product was endorsed by a famous tennis player.",
+     "form": "endorsed"
+    }
+   ]
+  },
+  {
+   "id": "prospective",
+   "lemma": "prospective",
+   "pos": "adj",
+   "meaning": "見込みのある、将来の",
+   "tier": 3,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We are meeting a prospective buyer for the building.",
+     "form": "prospective"
+    }
+   ]
+  },
+  {
+   "id": "turnover",
+   "lemma": "turnover",
+   "pos": "n",
+   "meaning": "離職率、売上高",
+   "tier": 3,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "High staff turnover is a problem in the restaurant industry.",
+     "form": "turnover"
+    }
+   ]
+  },
+  {
+   "id": "pending",
+   "lemma": "pending",
+   "pos": "adj",
+   "meaning": "未決定の、保留中の",
+   "tier": 3,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Your application is still pending.",
+     "form": "pending"
+    }
+   ]
+  },
+  {
+   "id": "contingency",
+   "lemma": "contingency",
+   "pos": "n",
+   "meaning": "不測の事態への備え",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We set aside money as a contingency for unexpected costs.",
+     "form": "contingency"
+    }
+   ]
+  },
+  {
+   "id": "discrepancy",
+   "lemma": "discrepancy",
+   "pos": "n",
+   "meaning": "食い違い、不一致",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "There is a discrepancy between the invoice and the receipt.",
+     "form": "discrepancy"
+    }
+   ]
+  },
+  {
+   "id": "stipulate",
+   "lemma": "stipulate",
+   "pos": "v",
+   "meaning": "明記する、規定する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The contract stipulates that payment is due within thirty days.",
+     "form": "stipulates"
+    }
+   ]
+  },
+  {
+   "id": "adjacent",
+   "lemma": "adjacent",
+   "pos": "adj",
+   "meaning": "隣接した",
+   "tier": 4,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The parking garage is adjacent to the main building.",
+     "form": "adjacent"
+    }
+   ]
+  },
+  {
+   "id": "consecutive",
+   "lemma": "consecutive",
+   "pos": "adj",
+   "meaning": "連続した",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Sales have increased for five consecutive months.",
+     "form": "consecutive"
+    }
+   ]
+  },
+  {
+   "id": "commensurate",
+   "lemma": "commensurate",
+   "pos": "adj",
+   "meaning": "見合った、釣り合った",
+   "tier": 4,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Salary will be commensurate with experience.",
+     "form": "commensurate"
+    }
+   ]
+  },
+  {
+   "id": "feasible",
+   "lemma": "feasible",
+   "pos": "adj",
+   "meaning": "実現可能な",
+   "tier": 4,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Is it feasible to finish the project by June?",
+     "form": "feasible"
+    }
+   ]
+  },
+  {
+   "id": "meticulous",
+   "lemma": "meticulous",
+   "pos": "adj",
+   "meaning": "細心の注意を払った",
+   "tier": 4,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "She is meticulous about checking every detail.",
+     "form": "meticulous"
+    }
+   ]
+  },
+  {
+   "id": "proficient",
+   "lemma": "proficient",
+   "pos": "adj",
+   "meaning": "熟達した、堪能な",
+   "tier": 4,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Applicants must be proficient in at least two languages.",
+     "form": "proficient"
+    }
+   ]
+  },
+  {
+   "id": "reconcile",
+   "lemma": "reconcile",
+   "pos": "v",
+   "meaning": "照合して一致させる",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The accountant will reconcile the bank statements tonight.",
+     "form": "reconcile"
+    }
+   ]
+  },
+  {
+   "id": "depreciation",
+   "lemma": "depreciation",
+   "pos": "n",
+   "meaning": "減価償却、価値の下落",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Depreciation of the equipment reduced our profit.",
+     "form": "depreciation"
+    }
+   ]
+  },
+  {
+   "id": "liability",
+   "lemma": "liability",
+   "pos": "n",
+   "meaning": "法的責任、負債",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company accepts no liability for lost items.",
+     "form": "liability"
+    }
+   ]
+  },
+  {
+   "id": "collateral",
+   "lemma": "collateral",
+   "pos": "n",
+   "meaning": "担保",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The bank asked for the building as collateral for the loan.",
+     "form": "collateral"
+    }
+   ]
+  },
+  {
+   "id": "arbitration",
+   "lemma": "arbitration",
+   "pos": "n",
+   "meaning": "仲裁",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The dispute was settled through arbitration.",
+     "form": "arbitration"
+    }
+   ]
+  },
+  {
+   "id": "waive",
+   "lemma": "waive",
+   "pos": "v",
+   "meaning": "免除する、放棄する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We will waive the delivery charge for orders over fifty dollars.",
+     "form": "waive"
+    }
+   ]
+  },
+  {
+   "id": "ratify",
+   "lemma": "ratify",
+   "pos": "v",
+   "meaning": "正式に承認する、批准する",
+   "tier": 4,
+   "topic": "meeting",
+   "group": "approve",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The new labor agreement was ratified by union members.",
+     "form": "ratified"
+    }
+   ]
+  },
+  {
+   "id": "mitigate",
+   "lemma": "mitigate",
+   "pos": "v",
+   "meaning": "軽減する、和らげる",
+   "tier": 4,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We installed new software to mitigate security risks.",
+     "form": "mitigate"
+    }
+   ]
+  },
+  {
+   "id": "scrutinize",
+   "lemma": "scrutinize",
+   "pos": "v",
+   "meaning": "精査する",
+   "tier": 4,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Investors will scrutinize the annual report carefully.",
+     "form": "scrutinize"
+    }
+   ]
+  },
+  {
+   "id": "disburse",
+   "lemma": "disburse",
+   "pos": "v",
+   "meaning": "支払う、支出する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The funds will be disbursed to each branch next week.",
+     "form": "disbursed"
+    }
+   ]
+  },
+  {
+   "id": "remittance",
+   "lemma": "remittance",
+   "pos": "n",
+   "meaning": "送金",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please include the invoice number with your remittance.",
+     "form": "remittance"
+    }
+   ]
+  },
+  {
+   "id": "surcharge",
+   "lemma": "surcharge",
+   "pos": "n",
+   "meaning": "追加料金",
+   "tier": 4,
+   "topic": "travel",
+   "group": "fee",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "There is a fuel surcharge on all international flights.",
+     "form": "surcharge"
+    }
+   ]
+  },
+  {
+   "id": "inaugural",
+   "lemma": "inaugural",
+   "pos": "adj",
+   "meaning": "初の、就任の",
+   "tier": 4,
+   "topic": "meeting",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The inaugural meeting of the club will be held on Monday.",
+     "form": "inaugural"
+    }
+   ]
+  },
+  {
+   "id": "unprecedented",
+   "lemma": "unprecedented",
+   "pos": "adj",
+   "meaning": "前例のない",
+   "tier": 4,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The new model has seen unprecedented demand.",
+     "form": "unprecedented"
+    }
+   ]
+  },
+  {
+   "id": "tenure",
+   "lemma": "tenure",
+   "pos": "n",
+   "meaning": "在任期間",
+   "tier": 4,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "During her tenure as CEO, the company doubled in size.",
+     "form": "tenure"
+    }
+   ]
+  },
+  {
+   "id": "succession",
+   "lemma": "succession",
+   "pos": "n",
+   "meaning": "継承、後任の決定",
+   "tier": 4,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The board is discussing a succession plan for the president.",
+     "form": "succession"
+    }
+   ]
+  },
+  {
+   "id": "delegate",
+   "lemma": "delegate",
+   "pos": "v",
+   "meaning": "仕事や権限を任せる",
+   "tier": 4,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Good managers know how to delegate tasks to their team.",
+     "form": "delegate"
+    }
+   ]
+  },
+  {
+   "id": "oversee",
+   "lemma": "oversee",
+   "pos": "v",
+   "meaning": "監督する、統括する",
+   "tier": 4,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Mr. Patel will oversee the construction of the new plant.",
+     "form": "oversee"
+    }
+   ]
+  },
+  {
+   "id": "leverage",
+   "lemma": "leverage",
+   "pos": "v",
+   "meaning": "活用する、てこにする",
+   "tier": 4,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We can leverage our social media following to promote the event.",
+     "form": "leverage"
+    }
+   ]
+  },
+  {
+   "id": "incur",
+   "lemma": "incur",
+   "pos": "v",
+   "meaning": "費用などを負う、被る",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company incurred heavy losses during the strike.",
+     "form": "incurred"
+    }
+   ]
+  },
+  {
+   "id": "solicit",
+   "lemma": "solicit",
+   "pos": "v",
+   "meaning": "求める、募る",
+   "tier": 4,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We regularly solicit feedback from our customers.",
+     "form": "solicit"
+    }
+   ]
+  },
+  {
+   "id": "adhere",
+   "lemma": "adhere",
+   "pos": "v",
+   "meaning": "固守する、忠実に守る",
+   "tier": 4,
+   "topic": "office",
+   "group": "comply",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "All staff must adhere to the dress code.",
+     "form": "adhere"
+    }
+   ]
+  },
+  {
+   "id": "intermittent",
+   "lemma": "intermittent",
+   "pos": "adj",
+   "meaning": "断続的な",
+   "tier": 4,
+   "topic": "facilities",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We've had intermittent problems with the internet connection.",
+     "form": "intermittent"
+    }
+   ]
+  },
+  {
+   "id": "obsolete",
+   "lemma": "obsolete",
+   "pos": "adj",
+   "meaning": "時代遅れの、廃れた",
+   "tier": 4,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Much of our older equipment is now obsolete.",
+     "form": "obsolete"
+    }
+   ]
+  },
+  {
+   "id": "proprietary",
+   "lemma": "proprietary",
+   "pos": "adj",
+   "meaning": "独自開発の、専有の",
+   "tier": 4,
+   "topic": "manufacturing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The company uses proprietary software to track orders.",
+     "form": "proprietary"
+    }
+   ]
+  },
+  {
+   "id": "comprehensive",
+   "lemma": "comprehensive",
+   "pos": "adj",
+   "meaning": "包括的な",
+   "tier": 4,
+   "topic": "office",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The manual gives a comprehensive overview of the system.",
+     "form": "comprehensive"
+    }
+   ]
+  },
+  {
+   "id": "substantial",
+   "lemma": "substantial",
+   "pos": "adj",
+   "meaning": "相当な、かなりの",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "We received a substantial order from a hotel chain.",
+     "form": "substantial"
+    }
+   ]
+  },
+  {
+   "id": "interim",
+   "lemma": "interim",
+   "pos": "adj",
+   "meaning": "暫定の、臨時の",
+   "tier": 4,
+   "topic": "hr",
+   "group": "provisional",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Ms. Diaz will serve as interim director until June.",
+     "form": "interim"
+    }
+   ]
+  },
+  {
+   "id": "accrue",
+   "lemma": "accrue",
+   "pos": "v",
+   "meaning": "利子などが生じる、累積する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Interest will accrue on any unpaid balance.",
+     "form": "accrue"
+    }
+   ]
+  },
+  {
+   "id": "consortium",
+   "lemma": "consortium",
+   "pos": "n",
+   "meaning": "共同事業体",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "A consortium of five banks funded the new airport.",
+     "form": "consortium"
+    }
+   ]
+  },
+  {
+   "id": "fluctuate",
+   "lemma": "fluctuate",
+   "pos": "v",
+   "meaning": "変動する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Fuel prices fluctuate from month to month.",
+     "form": "fluctuate"
+    }
+   ]
+  },
+  {
+   "id": "plummet",
+   "lemma": "plummet",
+   "pos": "v",
+   "meaning": "急落する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Sales of the old model plummeted after the new one came out.",
+     "form": "plummeted"
+    }
+   ]
+  },
+  {
+   "id": "surge",
+   "lemma": "surge",
+   "pos": "n",
+   "meaning": "急増、高まり",
+   "tier": 4,
+   "topic": "marketing",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "There was a surge in online orders during the holidays.",
+     "form": "surge"
+    }
+   ]
+  },
+  {
+   "id": "stagnant",
+   "lemma": "stagnant",
+   "pos": "adj",
+   "meaning": "停滞した",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Wages have remained stagnant for several years.",
+     "form": "stagnant"
+    }
+   ]
+  },
+  {
+   "id": "reciprocal",
+   "lemma": "reciprocal",
+   "pos": "adj",
+   "meaning": "相互の、互恵的な",
+   "tier": 4,
+   "topic": "sales",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The two firms signed a reciprocal agreement to share data.",
+     "form": "reciprocal"
+    }
+   ]
+  },
+  {
+   "id": "itemize",
+   "lemma": "itemize",
+   "pos": "v",
+   "meaning": "項目別に記載する",
+   "tier": 4,
+   "topic": "finance",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "Please send us an itemized bill for the repairs.",
+     "form": "itemized"
+    }
+   ]
+  },
+  {
+   "id": "prerequisite",
+   "lemma": "prerequisite",
+   "pos": "n",
+   "meaning": "前提条件、必須条件",
+   "tier": 4,
+   "topic": "hr",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "A business degree is a prerequisite for this position.",
+     "form": "prerequisite"
+    }
+   ]
+  },
+  {
+   "id": "expenditure",
+   "lemma": "expenditure",
+   "pos": "n",
+   "meaning": "支出、経費支出",
+   "tier": 4,
+   "topic": "finance",
+   "group": "expense",
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The city plans to cut public expenditure next year.",
+     "form": "expenditure"
+    }
+   ]
+  },
+  {
+   "id": "amenity",
+   "lemma": "amenity",
+   "pos": "n",
+   "meaning": "快適な設備、生活の便",
+   "tier": 4,
+   "topic": "travel",
+   "group": null,
+   "cefr_level": null,
+   "toeic_relevance": null,
+   "pronunciation": null,
+   "examples": [
+    {
+     "en": "The hotel's amenities include a gym and a rooftop pool.",
+     "form": "amenities"
+    }
+   ]
+  }
+ ]
+}
