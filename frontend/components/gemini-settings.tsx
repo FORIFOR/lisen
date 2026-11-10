@@ -9,9 +9,9 @@ import { api, type GeneratorStatus, type Settings } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const MODELS = [
-  { id: "gemini-2.5-flash", label: "2.5 Flash", hint: "標準" },
-  { id: "gemini-2.5-flash-lite", label: "2.5 Flash-Lite", hint: "安い・速い" },
-  { id: "gemini-2.5-pro", label: "2.5 Pro", hint: "高品質・高い" },
+  { id: "gemini-flash-latest", label: "Flash（最新）", hint: "標準" },
+  { id: "gemini-flash-lite-latest", label: "Flash-Lite（最新）", hint: "安い・速い" },
+  { id: "gemini-pro-latest", label: "Pro（最新）", hint: "高品質・高い" },
 ];
 const ENGINES: { id: Settings["lesson_engine"]; label: string; hint: string }[] = [
   { id: "auto", label: "自動", hint: "Gemini を使い、失敗したらローカル生成" },
@@ -67,7 +67,7 @@ export function GeminiSettings({ settings, update }: { settings: Settings; updat
     api<GeneratorStatus>("/v1/integrations/gemini").then(setSt).catch(() => {});
   };
 
-  const model = st?.gemini_model ?? settings.gemini_model ?? "gemini-2.5-flash";
+  const model = st?.gemini_model ?? settings.gemini_model ?? "gemini-flash-latest";
 
   return (
     <section className="rounded-2xl border bg-card p-4 md:p-5">

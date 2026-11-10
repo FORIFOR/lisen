@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
     // NotebookLM audio uploads (/api/v1/imports/notebooklm) are proxied to FastAPI, which caps them at 300MB.
     // The default 10MB proxy limit would silently truncate them.
     proxyClientMaxBodySize: "310mb",
+    // lesson generation with Gemini TTS calls the API once per line and can take over a minute;
+    // the default proxy timeout (30 s) cut those requests off with "socket hang up"
+    proxyTimeout: 300_000,
   },
   partialPrefetching: true,
   turbopack: {

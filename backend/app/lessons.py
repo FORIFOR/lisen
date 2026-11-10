@@ -25,14 +25,19 @@ from .vocab_data import Word, vocab_library
 GENERATOR_VERSION = 2   # 2: speech-recognition checks
 MIN_SECONDS, MAX_SECONDS = 8.0, 150.0
 WORDS_PER_SECOND = (1.0, 4.8)          # outside this range the synthesized speech is suspect
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+# "-latest" alias: Google retires versioned models for new keys (2.5 was refused with 404 in Nov 2026)
+DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 MODEL_RE = re.compile(r"^gemini-[a-z0-9][a-z0-9.\-]{1,60}$")
-KEY_RE = re.compile(r"^[A-Za-z0-9_\-]{20,200}$")
+KEY_RE = re.compile(r"^[\x21-\x7E]{20,300}$")   # any printable ASCII without spaces (key formats vary)
 GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models"
 VOICES = {"A": "Samantha", "B": "Daniel"}
-GEMINI_TTS_MODEL = os.environ.get("LISTENFLOW_GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
-# prebuilt Gemini voices; each lesson draws a different pair so the same word is heard from different speakers
-GEMINI_VOICES = ["Kore", "Puck", "Charon", "Aoede", "Fenrir", "Leda", "Orus", "Zephyr"]
+GEMINI_TTS_MODEL = os.environ.get("LISTENFLOW_GEMINI_TTS_MODEL", "gemini-3.8-flash-tts")
+# prebuilt Gemini voices; each lesson draws a different pair so the same word is heard from different speakers.
+# One lower and one higher voice per pair: in a real lesson, two same-register voices measured only ~26 Hz
+# apart in median pitch (157 vs 183 Hz), too close to tell the speakers apart easily.
+GEMINI_VOICES_LOW = ["Puck", "Charon", "Fenrir", "Orus"]
+GEMINI_VOICES_HIGH = ["Kore", "Aoede", "Leda", "Zephyr"]
+GEMINI_VOICES = GEMINI_VOICES_LOW + GEMINI_VOICES_HIGH
 GEMINI_TTS_RATE = 24000
 
 
@@ -69,10 +74,36 @@ def gemini_key() -> str | None:
         return None
 
 
+def normalize_key(raw: str) -> str:
+    """Clean up what people actually paste: full-width characters, zero-width/no-break spaces, surrounding
+    quotes, and `GEMINI_API_KEY=...` / `export ...` lines copied from documentation."""
+    import unicodedata
+    k = unicodedata.normalize("NFKC", raw)
+    k = re.sub(r"[\u200b-\u200f\u2060\ufeff]", "", k).strip()
+    k = re.sub(r"^(export\s+)?(GEMINI_API_KEY|GOOGLE_API_KEY)\s*[:=]\s*", "", k, flags=re.I).strip()
+    if len(k) >= 2 and k[0] == k[-1] and k[0] in "'\"`":
+        k = k[1:-1].strip()
+    return k
+
+
+def key_problem(k: str) -> str | None:
+    """Why a key is rejected, without echoing it."""
+    if re.search(r"\s", k):
+        return "空白や改行が含まれています。キーだけを1行で貼り付けてください"
+    if any(ord(c) > 0x7E or ord(c) < 0x21 for c in k):
+        return "英数字・記号以外の文字（全角文字など）が含まれています"
+    if len(k) < 20:
+        return f"短すぎます（{len(k)}文字）。キー全体をコピーできているか確認してください"
+    if len(k) > 300:
+        return f"長すぎます（{len(k)}文字）。キーだけを貼り付けてください"
+    return None
+
+
 def save_key(key: str) -> None:
-    key = key.strip()
-    if not KEY_RE.match(key):
-        raise LessonError(400, "API キーの形式が正しくありません（英数字・- _ のみ、20文字以上）")
+    key = normalize_key(key)
+    problem = key_problem(key)
+    if problem:
+        raise LessonError(400, f"API キーを保存できません：{problem}")
     d = key_file().parent
     d.mkdir(parents=True, exist_ok=True)
     os.chmod(d, 0o700)
@@ -132,17 +163,22 @@ def gemini_speak(text: str, voice: str, rate: int, out) -> None:
             data = json.loads(r.read().decode())
         part = next(p for p in data["candidates"][0]["content"]["parts"] if "inlineData" in p)
         pcm = base64.b64decode(part["inlineData"]["data"])
+        mime = (part["inlineData"].get("mimeType") or "").lower()
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
         raise _gemini_error(e) from e
     except (KeyError, IndexError, StopIteration, ValueError) as e:
         raise LessonError(502, "Gemini TTS の応答から音声を取り出せませんでした") from e
     if len(pcm) < GEMINI_TTS_RATE // 2:   # under ~0.25 s of audio
         raise LessonError(502, "Gemini TTS の音声が短すぎます")
+    # models answer either raw 16-bit PCM ("audio/L16;rate=24000", 2.5 TTS) or a container ("audio/wav", 3.8 TTS)
+    m = re.search(r"rate=(\d+)", mime)
+    raw_pcm = "l16" in mime or "pcm" in mime
     with tempfile.TemporaryDirectory() as td:
-        raw = Path(td) / "g.pcm"
-        raw.write_bytes(pcm)
-        subprocess.run(["ffmpeg", "-nostdin", "-y", "-v", "error", "-f", "s16le", "-ar", str(GEMINI_TTS_RATE), "-ac", "1",
-                        "-i", str(raw), "-ar", str(tts.SAMPLE_RATE), "-ac", "1", "-sample_fmt", "s16", str(out)],
+        src = Path(td) / ("g.pcm" if raw_pcm else "g.audio")
+        src.write_bytes(pcm)
+        fmt = ["-f", "s16le", "-ar", m.group(1) if m else str(GEMINI_TTS_RATE), "-ac", "1"] if raw_pcm else []
+        subprocess.run(["ffmpeg", "-nostdin", "-y", "-v", "error", *fmt, "-i", str(src),
+                        "-ar", str(tts.SAMPLE_RATE), "-ac", "1", "-sample_fmt", "s16", str(out)],
                        check=True, capture_output=True, timeout=60)
 
 
@@ -159,13 +195,20 @@ def engine_status() -> dict:
 def _gemini_error(e: Exception) -> LessonError:
     if isinstance(e, urllib.error.HTTPError):
         msg = {400: "API キーまたはリクエストが無効です", 401: "API キーが無効です", 403: "API キーが無効か、Gemini API が有効になっていません",
-               404: "モデルが見つかりません", 429: "利用上限に達しました（しばらく待つか、Google AI Studio で上限を確認）"}
-        return LessonError(502, f"Gemini エラー {e.code}: {msg.get(e.code, 'サーバーエラー')}")
+               404: "モデルが見つからないか、このキーでは使えません", 429: "利用上限に達しました（しばらく待つか、Google AI Studio で上限を確認）"}
+        detail = ""
+        try:
+            detail = json.loads(e.read().decode() or "{}").get("error", {}).get("message", "")
+        except Exception:  # noqa: BLE001 - the body is optional
+            pass
+        detail = re.sub(r"AIza[0-9A-Za-z_\-]+", "…", detail)[:160]    # never echo a key
+        return LessonError(502, f"Gemini エラー {e.code}: {msg.get(e.code, 'サーバーエラー')}" + (f"（{detail}）" if detail else ""))
     return LessonError(502, f"Gemini に接続できませんでした: {type(e).__name__}")
 
 
-def test_gemini(timeout: float = 15.0) -> dict:
-    """Check the key and model with a metadata request (models.get), which does not consume generation quota."""
+def test_gemini(timeout: float = 30.0) -> dict:
+    """Check the key and model with metadata (models.get) and then a tiny generation (a few tokens):
+    models.get succeeds even for models Google no longer serves to new keys, so it alone is not enough."""
     key = gemini_key()
     if not key:
         raise LessonError(400, "Gemini の API キーが設定されていません")
@@ -174,11 +217,16 @@ def test_gemini(timeout: float = 15.0) -> dict:
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.loads(r.read().decode())
+        methods = data.get("supportedGenerationMethods") or []
+        if methods and "generateContent" not in methods:
+            raise LessonError(400, f"{model} は文章生成（generateContent）に対応していません")
+        body = {"contents": [{"parts": [{"text": "Reply with the single word: ok"}]}], "generationConfig": {"maxOutputTokens": 16}}
+        gen = urllib.request.Request(f"{GEMINI_API}/{model}:generateContent", data=json.dumps(body).encode(), method="POST",
+                                     headers={"Content-Type": "application/json", "x-goog-api-key": key})
+        with urllib.request.urlopen(gen, timeout=timeout) as r:
+            json.loads(r.read().decode())
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
         raise _gemini_error(e) from e
-    methods = data.get("supportedGenerationMethods") or []
-    if methods and "generateContent" not in methods:
-        raise LessonError(400, f"{model} は文章生成（generateContent）に対応していません")
     return {"ok": True, "model": model, "display_name": data.get("displayName") or model}
 
 
@@ -498,7 +546,8 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
         key = cache_key(targets, level, engine, v)
         lid = f"g-{key[:10]}"
         if v == "gemini":
-            pair = rng.sample(GEMINI_VOICES, 2)
+            pair = [rng.choice(GEMINI_VOICES_LOW), rng.choice(GEMINI_VOICES_HIGH)]
+            rng.shuffle(pair)
             voices = {"A": pair[0], "B": pair[1]}
         else:
             voices = dict(VOICES)

@@ -333,8 +333,18 @@ def test_gemini_key_is_write_only(client, tmp_path):
     from app import lessons
     st = client.get("/v1/integrations/gemini").json()
     assert not st["gemini_configured"] and st["engine"] == "local" and st["mode"] == "auto"
-    assert client.put("/v1/integrations/gemini", json={"api_key": "short"}).status_code == 422
-    assert client.put("/v1/integrations/gemini", json={"api_key": "bad key with spaces " * 2}).status_code == 400
+    r = client.put("/v1/integrations/gemini", json={"api_key": "short"})
+    assert r.status_code == 400 and "短すぎます" in r.json()["detail"]
+    r = client.put("/v1/integrations/gemini", json={"api_key": "bad key with spaces " * 2})
+    assert r.status_code == 400 and "空白" in r.json()["detail"]
+    r = client.put("/v1/integrations/gemini", json={"api_key": "ＡＢＣ" + "é" * 30})
+    assert r.status_code == 400 and "全角" in r.json()["detail"]
+    # what people paste: quotes, env lines, full-width letters, zero-width spaces, dotted key formats
+    from app import lessons
+    for pasted in (f'"{FAKE_KEY}"', f"GEMINI_API_KEY={FAKE_KEY}", f"export GEMINI_API_KEY='{FAKE_KEY}'",
+                   "\u200b" + FAKE_KEY + "\ufeff", FAKE_KEY.replace("A", "Ａ", 1)):
+        assert lessons.normalize_key(pasted) == FAKE_KEY, pasted
+    assert lessons.key_problem(lessons.normalize_key("AQ.Ab8RN6" + "x" * 40)) is None
     r = client.put("/v1/integrations/gemini", json={"api_key": f"  {FAKE_KEY}\n"})
     assert r.status_code == 200
     st = r.json()
@@ -346,11 +356,11 @@ def test_gemini_key_is_write_only(client, tmp_path):
     for path in ("/v1/integrations/gemini", "/v1/vocabulary/stats", "/v1/audio-lessons", "/profile", "/export"):
         assert FAKE_KEY not in client.get(path).text, path
     # engine mode and model are settings
-    s = client.put("/settings", json={"lesson_engine": "local", "gemini_model": "gemini-2.5-flash-lite"}).json()
-    assert s["lesson_engine"] == "local" and s["gemini_model"] == "gemini-2.5-flash-lite"
+    s = client.put("/settings", json={"lesson_engine": "local", "gemini_model": "gemini-flash-lite-latest"}).json()
+    assert s["lesson_engine"] == "local" and s["gemini_model"] == "gemini-flash-lite-latest"
     assert client.put("/settings", json={"gemini_model": "../../etc"}).status_code == 422
     st = client.get("/v1/integrations/gemini").json()
-    assert st["engine"] == "local" and st["gemini_model"] == "gemini-2.5-flash-lite"
+    assert st["engine"] == "local" and st["gemini_model"] == "gemini-flash-lite-latest"
     assert not client.delete("/v1/integrations/gemini").json()["gemini_configured"]
     assert not f.exists()
 
@@ -361,17 +371,30 @@ def test_gemini_connection_test(client, monkeypatch):
     from app import lessons
     assert client.post("/v1/integrations/gemini/test").status_code == 400  # no key yet
     client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
-    seen = {}
+    seen = []
 
     def ok(req, timeout=0):
-        seen["url"], seen["key"] = req.full_url, req.get_header("X-goog-api-key")
-        return _FakeResp({"name": "models/gemini-2.5-flash", "displayName": "Gemini 2.5 Flash",
+        seen.append((req.full_url, req.get_header("X-goog-api-key"), req.data))
+        if req.data:   # the tiny generation that proves the model is actually served to this key
+            return _FakeResp({"candidates": [{"content": {"parts": [{"text": "ok"}]}}]})
+        return _FakeResp({"name": "models/gemini-flash-latest", "displayName": "Gemini Flash Latest",
                           "supportedGenerationMethods": ["generateContent"]})
     monkeypatch.setattr(lessons.urllib.request, "urlopen", ok)
     r = client.post("/v1/integrations/gemini/test").json()
-    assert r["ok"] and r["display_name"] == "Gemini 2.5 Flash"
-    assert seen["url"].endswith("/models/gemini-2.5-flash") and seen["key"] == FAKE_KEY
-    assert FAKE_KEY not in seen["url"]  # key goes in the header, not the URL
+    assert r["ok"] and r["display_name"] == "Gemini Flash Latest"
+    assert seen[0][0].endswith("/models/gemini-flash-latest") and seen[1][0].endswith(":generateContent")
+    assert all(k == FAKE_KEY and FAKE_KEY not in u for u, k, _ in seen)   # key in the header, not the URL
+    assert json.loads(seen[1][2])["generationConfig"]["maxOutputTokens"] <= 16
+
+    def retired(req, timeout=0):   # what Google answered for gemini-2.5-flash with a new key (Nov 2026)
+        if not req.data:
+            return _FakeResp({"name": "models/x", "supportedGenerationMethods": ["generateContent"]})
+        import io
+        body = io.BytesIO(json.dumps({"error": {"message": "This model is no longer available to new users. key AIzaLEAK1234567890123456"}}).encode())
+        raise urllib.error.HTTPError(req.full_url, 404, "Not Found", {}, body)
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", retired)
+    r = client.post("/v1/integrations/gemini/test")
+    assert r.status_code == 502 and "no longer available" in r.json()["detail"] and "AIzaLEAK" not in r.text
 
     def denied(req, timeout=0):
         raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", {}, None)
@@ -396,7 +419,7 @@ def test_gemini_lesson_generation(client, tmp_path, monkeypatch):
     def fake(req, timeout=0):
         body = json.loads(req.data.decode())
         calls.append(body)
-        assert req.full_url.endswith("/models/gemini-2.5-flash:generateContent")
+        assert req.full_url.endswith("/models/gemini-flash-latest:generateContent")
         return _FakeResp(_gemini_reply(GOOD_DIALOGUE))
     monkeypatch.setattr(lessons.urllib.request, "urlopen", fake)
     r = client.post("/v1/audio-lessons/generate", json={"words": ["allocate", "postpone", "reimbursement"]})
@@ -497,7 +520,7 @@ def test_asr_rejects_audio_that_does_not_match_script():
     assert not all(c["ok"] for c in lessons.asr_checks(backwards, own, []))
 
 
-def _fake_tts_and_text(calls, tts_fail=False):
+def _fake_tts_and_text(calls, tts_fail=False, wav=False):
     """urlopen stand-in: text requests get GOOD_DIALOGUE, TTS requests get real speech (macOS say, 24 kHz PCM)."""
     import base64
     import subprocess
@@ -521,19 +544,30 @@ def _fake_tts_and_text(calls, tts_fail=False):
                             body["contents"][0]["parts"][0]["text"]], check=True)
             with wave.open(str(w)) as f:
                 pcm = f.readframes(f.getnframes())
+        if wav:   # 3.8 TTS answers with a WAV container instead of raw PCM
+            return _FakeResp({"candidates": [{"content": {"parts": [
+                {"inlineData": {"mimeType": "audio/wav", "data": base64.b64encode(wav_bytes(pcm)).decode()}}]}}]})
         return _FakeResp({"candidates": [{"content": {"parts": [
             {"inlineData": {"mimeType": "audio/L16;rate=24000", "data": base64.b64encode(pcm).decode()}}]}}]})
+
+    def wav_bytes(pcm):
+        import io
+        buf = io.BytesIO()
+        with wave.open(buf, "wb") as f:
+            f.setnchannels(1); f.setsampwidth(2); f.setframerate(24000); f.writeframes(pcm)
+        return buf.getvalue()
     return fake
 
 
-def test_gemini_tts_voices_lesson(client, tmp_path, monkeypatch):
+@pytest.mark.parametrize("wav", [False, True], ids=["pcm", "wav"])
+def test_gemini_tts_voices_lesson(client, tmp_path, monkeypatch, wav):
     from app import asr, lessons, tts
     _need_tts(tmp_path, monkeypatch)
     client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
     client.put("/settings", json={"lesson_voice": "gemini"})
     assert client.get("/v1/integrations/gemini").json()["voice"] == "gemini"
     calls = []
-    monkeypatch.setattr(lessons.urllib.request, "urlopen", _fake_tts_and_text(calls))
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", _fake_tts_and_text(calls, wav=wav))
     r = client.post("/v1/audio-lessons/generate", json={"words": ["allocate", "postpone", "reimbursement"]})
     assert r.status_code == 200, r.text
     lesson = r.json()
@@ -541,6 +575,8 @@ def test_gemini_tts_voices_lesson(client, tmp_path, monkeypatch):
     assert raw["voice_engine"] == "gemini", lesson["checks"]
     assert set(raw["voices"].values()) <= set(lessons.GEMINI_VOICES)
     assert len(set(raw["voices"].values())) == 2
+    v = set(raw["voices"].values())   # one lower and one higher voice, so the speakers are easy to tell apart
+    assert v & set(lessons.GEMINI_VOICES_LOW) and v & set(lessons.GEMINI_VOICES_HIGH)
     assert calls.count("text") == 1 and len(calls) == 1 + len(GOOD_DIALOGUE)   # one TTS call per line
     assert all(c["ok"] for c in lesson["checks"])
     if asr.available()[0]:

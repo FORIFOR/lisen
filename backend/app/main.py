@@ -487,7 +487,7 @@ def delete_audio_lesson(lid: str):
 
 
 class GeminiKeyIn(BaseModel):
-    api_key: str = Field(min_length=20, max_length=200)
+    api_key: str = Field(min_length=1, max_length=2000)   # cleaned and checked in lessons.save_key
 
 
 # The key is write-only over HTTP: it is stored in DATA_DIR/secrets (0600) and never returned,
