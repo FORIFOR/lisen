@@ -3,6 +3,7 @@
 import { Loader2, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnalyticsTabs } from "@/components/analytics-tabs";
+import { ListeningProfilePanel } from "@/components/listening-profile";
 import { BarChart, LineChart, Meter } from "@/components/charts";
 import { api, LEVEL_LABEL } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ type Analytics = {
   curriculum: { start: number; end: number; name: string; description: string }[];
 };
 
-const TEST_NAME: Record<string, string> = { A: "初回診断", B: "Day 30", C: "Day 60" };
+const TEST_NAME: Record<string, string> = { A: "初回診断", B: "Day 15", C: "Day 29", D: "Day 43", E: "Day 57" };
 
 function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
@@ -70,6 +71,7 @@ export default function AnalyticsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">分析</h1>
         <AnalyticsTabs />
       </div>
+      <ListeningProfilePanel />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="累計学習時間" value={`${Math.floor(a.total_minutes / 60)}時間${a.total_minutes % 60}分`} />
         <Stat label="学習日数" value={`${a.study_days}日`} sub={`${a.streak}日連続`} />

@@ -1,214 +1,1528 @@
 [
-  {
-    "id": "tA-1", "level": 1, "pool": "test-A", "kind": "dialogue", "title": "診断A-1 本屋で",
-    "voices": {"A": "Samantha", "B": "Daniel"},
-    "lines": [
-      ["A", "Excuse me, do you have any books about cooking?"],
-      ["B", "Yes, they're on the second floor, near the stairs."],
-      ["A", "Thanks. Do you sell magazines too?"],
-      ["B", "We do. They're by the front door."]
-    ],
-    "questions": [
-      {"type": "detail", "q": "料理の本はどこにある？", "choices": ["1階の入口", "2階の階段の近く", "3階", "雑誌の隣"], "answer": 1, "explain": "on the second floor, near the stairs"},
-      {"type": "detail", "q": "雑誌はどこにある？", "choices": ["入口のそば", "2階", "レジの後ろ", "置いていない"], "answer": 0, "explain": "They're by the front door."}
-    ],
-    "vocab": [["stairs", "階段"], ["magazines", "雑誌"]]
+ {
+  "id": "tA-1",
+  "level": 1,
+  "pool": "test-A",
+  "kind": "dialogue",
+  "title": "診断A-1 本屋で",
+  "voices": {
+   "A": "Samantha",
+   "B": "Daniel"
   },
-  {
-    "id": "tA-2", "level": 2, "pool": "test-A", "kind": "monologue", "title": "診断A-2 歯医者からの電話",
-    "voices": {"A": "Karen"},
-    "lines": [
-      ["A", "Hello, this is Green Dental calling to remind you about your appointment on Wednesday at 2:45."],
-      ["A", "Please try to arrive 10 minutes early to fill out a short form."],
-      ["A", "If you need to cancel, let us know at least 24 hours in advance."]
+  "lines": [
+   [
+    "A",
+    "Excuse me, do you have any books about cooking?"
+   ],
+   [
+    "B",
+    "Yes, they're on the second floor, near the stairs."
+   ],
+   [
+    "A",
+    "Thanks. Do you sell magazines too?"
+   ],
+   [
+    "B",
+    "We do. They're by the front door."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "料理の本はどこにある？",
+    "choices": [
+     "1階の入口",
+     "2階の階段の近く",
+     "3階",
+     "雑誌の隣"
     ],
-    "questions": [
-      {"type": "detail", "q": "予約日時は？", "choices": ["水曜2時15分", "水曜2時45分", "木曜2時45分", "水曜12時45分"], "answer": 1, "explain": "Wednesday at 2:45"},
-      {"type": "detail", "q": "キャンセルの連絡期限は？", "choices": ["当日まで", "24時間前まで", "2日前まで", "1週間前まで"], "answer": 1, "explain": "at least 24 hours in advance"}
+    "answer": 1,
+    "explain": "on the second floor, near the stairs"
+   },
+   {
+    "type": "detail",
+    "q": "雑誌はどこにある？",
+    "choices": [
+     "入口のそば",
+     "2階",
+     "レジの後ろ",
+     "置いていない"
     ],
-    "vocab": [["remind", "思い出させる"], ["cancel", "取り消す"]]
+    "answer": 0,
+    "explain": "They're by the front door."
+   }
+  ],
+  "vocab": [
+   [
+    "stairs",
+    "階段"
+   ],
+   [
+    "magazines",
+    "雑誌"
+   ]
+  ]
+ },
+ {
+  "id": "tA-2",
+  "level": 2,
+  "pool": "test-A",
+  "kind": "monologue",
+  "title": "診断A-2 歯医者からの電話",
+  "voices": {
+   "A": "Karen"
   },
-  {
-    "id": "tA-3", "level": 3, "pool": "test-A", "kind": "dialogue", "title": "診断A-3 引っ越しの相談",
-    "voices": {"A": "Daniel", "B": "Moira"},
-    "lines": [
-      ["A", "Have you decided whether you're moving to the new office?"],
-      ["B", "Not yet. It'd cut my commute in half, but the rent around there is crazy."],
-      ["A", "Couldn't you just take the train? It's only 3 stops from your place."],
-      ["B", "True, but the trains are packed in the morning. I'd rather drive."]
+  "lines": [
+   [
+    "A",
+    "Hello, this is Green Dental calling to remind you about your appointment on Wednesday at 2:45."
+   ],
+   [
+    "A",
+    "Please try to arrive 10 minutes early to fill out a short form."
+   ],
+   [
+    "A",
+    "If you need to cancel, let us know at least 24 hours in advance."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "予約日時は？",
+    "choices": [
+     "水曜2時15分",
+     "水曜2時45分",
+     "木曜2時45分",
+     "水曜12時45分"
     ],
-    "questions": [
-      {"type": "gist", "q": "B が迷っている理由は？", "choices": ["仕事が合わない", "通勤は半分になるが周辺の家賃が高い", "車がない", "上司が嫌い"], "answer": 1, "explain": "cut my commute in half, but the rent around there is crazy"},
-      {"type": "detail", "q": "B が電車を避けたい理由は？", "choices": ["駅が遠い", "朝は混んでいる", "運賃が高い", "遅延が多い"], "answer": 1, "explain": "the trains are packed in the morning"}
+    "answer": 1,
+    "explain": "Wednesday at 2:45"
+   },
+   {
+    "type": "detail",
+    "q": "キャンセルの連絡期限は？",
+    "choices": [
+     "当日まで",
+     "24時間前まで",
+     "2日前まで",
+     "1週間前まで"
     ],
-    "vocab": [["commute", "通勤"], ["packed", "混雑した"]]
+    "answer": 1,
+    "explain": "at least 24 hours in advance"
+   }
+  ],
+  "vocab": [
+   [
+    "remind",
+    "思い出させる"
+   ],
+   [
+    "cancel",
+    "取り消す"
+   ]
+  ]
+ },
+ {
+  "id": "tA-3",
+  "level": 3,
+  "pool": "test-A",
+  "kind": "dialogue",
+  "title": "診断A-3 引っ越しの相談",
+  "voices": {
+   "A": "Daniel",
+   "B": "Moira"
   },
-  {
-    "id": "tA-4", "level": 4, "pool": "test-A", "kind": "announcement", "title": "診断A-4 ニュース：図書館",
-    "voices": {"A": "Daniel"},
-    "lines": [
-      ["A", "The central library will close for renovations starting next month, and is expected to reopen in early spring."],
-      ["A", "In the meantime, a temporary branch will operate out of the community center on Elm Street."],
-      ["A", "Borrowing limits will be reduced from ten items to five while the work is underway."]
+  "lines": [
+   [
+    "A",
+    "Have you decided whether you're moving to the new office?"
+   ],
+   [
+    "B",
+    "Not yet. It'd cut my commute in half, but the rent around there is crazy."
+   ],
+   [
+    "A",
+    "Couldn't you just take the train? It's only 3 stops from your place."
+   ],
+   [
+    "B",
+    "True, but the trains are packed in the morning. I'd rather drive."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "B が迷っている理由は？",
+    "choices": [
+     "仕事が合わない",
+     "通勤は半分になるが周辺の家賃が高い",
+     "車がない",
+     "上司が嫌い"
     ],
-    "questions": [
-      {"type": "detail", "q": "改装中の代替施設は？", "choices": ["市役所", "Elm Street のコミュニティセンター", "学校", "オンラインのみ"], "answer": 1, "explain": "a temporary branch ... community center on Elm Street"},
-      {"type": "detail", "q": "貸出上限はどうなる？", "choices": ["10冊から5冊", "5冊から10冊", "変わらない", "貸出停止"], "answer": 0, "explain": "reduced from ten items to five"}
+    "answer": 1,
+    "explain": "cut my commute in half, but the rent around there is crazy"
+   },
+   {
+    "type": "detail",
+    "q": "B が電車を避けたい理由は？",
+    "choices": [
+     "駅が遠い",
+     "朝は混んでいる",
+     "運賃が高い",
+     "遅延が多い"
     ],
-    "vocab": [["renovations", "改装"], ["temporary", "一時的な"]]
+    "answer": 1,
+    "explain": "the trains are packed in the morning"
+   }
+  ],
+  "vocab": [
+   [
+    "commute",
+    "通勤"
+   ],
+   [
+    "packed",
+    "混雑した"
+   ]
+  ]
+ },
+ {
+  "id": "tA-4",
+  "level": 4,
+  "pool": "test-A",
+  "kind": "announcement",
+  "title": "診断A-4 ニュース：図書館",
+  "voices": {
+   "A": "Daniel"
   },
-  {
-    "id": "tA-5", "level": 5, "pool": "test-A", "kind": "lecture", "title": "診断A-5 講義：習慣",
-    "voices": {"A": "Samantha"},
-    "lines": [
-      ["A", "Contrary to popular belief, habits aren't formed through willpower so much as through carefully designed environments."],
-      ["A", "People who appear disciplined have often simply removed the friction from the behaviors they want and added it to the ones they don't."]
+  "lines": [
+   [
+    "A",
+    "The central library will close for renovations starting next month, and is expected to reopen in early spring."
+   ],
+   [
+    "A",
+    "In the meantime, a temporary branch will operate out of the community center on Elm Street."
+   ],
+   [
+    "A",
+    "Borrowing limits will be reduced from ten items to five while the work is underway."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "改装中の代替施設は？",
+    "choices": [
+     "市役所",
+     "Elm Street のコミュニティセンター",
+     "学校",
+     "オンラインのみ"
     ],
-    "questions": [
-      {"type": "gist", "q": "講師の主張は？", "choices": ["習慣は意志の力で作る", "習慣は環境の設計で作られる", "習慣は変えられない", "規律は生まれつき"], "answer": 1, "explain": "not through willpower so much as through carefully designed environments"},
-      {"type": "inference", "q": "規律正しく見える人がしていることは？", "choices": ["我慢を重ねている", "望む行動の障壁を減らし、望まない行動に障壁を加えている", "早起きしている", "目標を公言している"], "answer": 1, "explain": "removed the friction from the behaviors they want and added it to the ones they don't"}
+    "answer": 1,
+    "explain": "a temporary branch ... community center on Elm Street"
+   },
+   {
+    "type": "detail",
+    "q": "貸出上限はどうなる？",
+    "choices": [
+     "10冊から5冊",
+     "5冊から10冊",
+     "変わらない",
+     "貸出停止"
     ],
-    "vocab": [["willpower", "意志の力"], ["friction", "摩擦、障壁"]]
+    "answer": 0,
+    "explain": "reduced from ten items to five"
+   }
+  ],
+  "vocab": [
+   [
+    "renovations",
+    "改装"
+   ],
+   [
+    "temporary",
+    "一時的な"
+   ]
+  ]
+ },
+ {
+  "id": "tA-5",
+  "level": 5,
+  "pool": "test-A",
+  "kind": "lecture",
+  "title": "診断A-5 講義：習慣",
+  "voices": {
+   "A": "Samantha"
   },
-  {
-    "id": "tB-1", "level": 1, "pool": "test-B", "kind": "dialogue", "title": "中間B-1 バス停で",
-    "voices": {"A": "Moira", "B": "Daniel"},
-    "lines": [
-      ["A", "Does this bus go to the airport?"],
-      ["B", "No, you need the number 12. It stops across the street."],
-      ["A", "How often does it come?"],
-      ["B", "Every 20 minutes, I think."]
+  "lines": [
+   [
+    "A",
+    "Contrary to popular belief, habits aren't formed through willpower so much as through carefully designed environments."
+   ],
+   [
+    "A",
+    "People who appear disciplined have often simply removed the friction from the behaviors they want and added it to the ones they don't."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "講師の主張は？",
+    "choices": [
+     "習慣は意志の力で作る",
+     "習慣は環境の設計で作られる",
+     "習慣は変えられない",
+     "規律は生まれつき"
     ],
-    "questions": [
-      {"type": "detail", "q": "空港へ行くバスは？", "choices": ["2番", "12番", "20番", "このバス"], "answer": 1, "explain": "you need the number 12"},
-      {"type": "detail", "q": "運行間隔は？", "choices": ["10分ごと", "12分ごと", "20分ごと", "1時間ごと"], "answer": 2, "explain": "Every 20 minutes"}
+    "answer": 1,
+    "explain": "not through willpower so much as through carefully designed environments"
+   },
+   {
+    "type": "inference",
+    "q": "規律正しく見える人がしていることは？",
+    "choices": [
+     "我慢を重ねている",
+     "望む行動の障壁を減らし、望まない行動に障壁を加えている",
+     "早起きしている",
+     "目標を公言している"
     ],
-    "vocab": [["airport", "空港"], ["often", "しばしば"]]
+    "answer": 1,
+    "explain": "removed the friction from the behaviors they want and added it to the ones they don't"
+   }
+  ],
+  "vocab": [
+   [
+    "willpower",
+    "意志の力"
+   ],
+   [
+    "friction",
+    "摩擦、障壁"
+   ]
+  ]
+ },
+ {
+  "id": "tB-1",
+  "level": 1,
+  "pool": "test-B",
+  "kind": "dialogue",
+  "title": "確認B-1 バス停で",
+  "voices": {
+   "A": "Moira",
+   "B": "Daniel"
   },
-  {
-    "id": "tB-2", "level": 2, "pool": "test-B", "kind": "monologue", "title": "中間B-2 店内放送",
-    "voices": {"A": "Samantha"},
-    "lines": [
-      ["A", "Good afternoon, shoppers. For the next 30 minutes, all winter coats are 40 percent off."],
-      ["A", "You'll find them on the third floor, next to the shoe department."],
-      ["A", "The store will close at 8 tonight instead of 9."]
+  "lines": [
+   [
+    "A",
+    "Does this bus go to the airport?"
+   ],
+   [
+    "B",
+    "No, you need the number 12. It stops across the street."
+   ],
+   [
+    "A",
+    "How often does it come?"
+   ],
+   [
+    "B",
+    "Every 20 minutes, I think."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "空港へ行くバスは？",
+    "choices": [
+     "2番",
+     "12番",
+     "20番",
+     "このバス"
     ],
-    "questions": [
-      {"type": "detail", "q": "セールの内容は？", "choices": ["冬のコート30%引き", "冬のコート40%引き", "靴が40%引き", "全品半額"], "answer": 1, "explain": "all winter coats are 40 percent off"},
-      {"type": "detail", "q": "今夜の閉店時間は？", "choices": ["7時", "8時", "9時", "10時"], "answer": 1, "explain": "close at 8 tonight instead of 9"}
+    "answer": 1,
+    "explain": "you need the number 12"
+   },
+   {
+    "type": "detail",
+    "q": "運行間隔は？",
+    "choices": [
+     "10分ごと",
+     "12分ごと",
+     "20分ごと",
+     "1時間ごと"
     ],
-    "vocab": [["department", "売り場"], ["coats", "コート"]]
+    "answer": 2,
+    "explain": "Every 20 minutes"
+   }
+  ],
+  "vocab": [
+   [
+    "airport",
+    "空港"
+   ],
+   [
+    "often",
+    "しばしば"
+   ]
+  ]
+ },
+ {
+  "id": "tB-2",
+  "level": 2,
+  "pool": "test-B",
+  "kind": "monologue",
+  "title": "確認B-2 店内放送",
+  "voices": {
+   "A": "Samantha"
   },
-  {
-    "id": "tB-3", "level": 3, "pool": "test-B", "kind": "dialogue", "title": "中間B-3 締め切り",
-    "voices": {"A": "Karen", "B": "Daniel"},
-    "lines": [
-      ["A", "Is there any chance you could finish the report by Thursday instead of Friday?"],
-      ["B", "I could, but I'd have to skip the data check, and I wouldn't recommend that."],
-      ["A", "Fair enough. Let's keep Friday, then, and I'll let the client know."]
+  "lines": [
+   [
+    "A",
+    "Good afternoon, shoppers. For the next 30 minutes, all winter coats are 40 percent off."
+   ],
+   [
+    "A",
+    "You'll find them on the third floor, next to the shoe department."
+   ],
+   [
+    "A",
+    "The store will close at 8 tonight instead of 9."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "セールの内容は？",
+    "choices": [
+     "冬のコート30%引き",
+     "冬のコート40%引き",
+     "靴が40%引き",
+     "全品半額"
     ],
-    "questions": [
-      {"type": "detail", "q": "A の依頼は？", "choices": ["締め切りを延ばす", "木曜に前倒しする", "データを追加する", "顧客に電話する"], "answer": 1, "explain": "finish the report by Thursday instead of Friday"},
-      {"type": "inference", "q": "結論は？", "choices": ["木曜に提出", "金曜のまま", "来週に延期", "データ確認を省く"], "answer": 1, "explain": "Let's keep Friday"}
+    "answer": 1,
+    "explain": "all winter coats are 40 percent off"
+   },
+   {
+    "type": "detail",
+    "q": "今夜の閉店時間は？",
+    "choices": [
+     "7時",
+     "8時",
+     "9時",
+     "10時"
     ],
-    "vocab": [["recommend", "勧める"], ["skip", "飛ばす"]]
+    "answer": 1,
+    "explain": "close at 8 tonight instead of 9"
+   }
+  ],
+  "vocab": [
+   [
+    "department",
+    "売り場"
+   ],
+   [
+    "coats",
+    "コート"
+   ]
+  ]
+ },
+ {
+  "id": "tB-3",
+  "level": 3,
+  "pool": "test-B",
+  "kind": "dialogue",
+  "title": "確認B-3 締め切り",
+  "voices": {
+   "A": "Karen",
+   "B": "Daniel"
   },
-  {
-    "id": "tB-4", "level": 4, "pool": "test-B", "kind": "monologue", "title": "中間B-4 研究紹介",
-    "voices": {"A": "Daniel"},
-    "lines": [
-      ["A", "A recent study tracked over two thousand office workers and found that short walking breaks improved focus more than coffee did."],
-      ["A", "The effect was strongest in the mid-afternoon, when most participants reported feeling sluggish."],
-      ["A", "The researchers suggest that companies schedule fewer meetings during that window."]
+  "lines": [
+   [
+    "A",
+    "Is there any chance you could finish the report by Thursday instead of Friday?"
+   ],
+   [
+    "B",
+    "I could, but I'd have to skip the data check, and I wouldn't recommend that."
+   ],
+   [
+    "A",
+    "Fair enough. Let's keep Friday, then, and I'll let the client know."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "A の依頼は？",
+    "choices": [
+     "締め切りを延ばす",
+     "木曜に前倒しする",
+     "データを追加する",
+     "顧客に電話する"
     ],
-    "questions": [
-      {"type": "detail", "q": "研究の結果は？", "choices": ["コーヒーが最も効果的", "短い散歩休憩がコーヒーより集中力を高めた", "会議が集中力を高めた", "効果はなかった"], "answer": 1, "explain": "short walking breaks improved focus more than coffee did"},
-      {"type": "detail", "q": "研究者の提案は？", "choices": ["朝の会議を増やす", "午後半ばの会議を減らす", "コーヒーを禁止", "勤務時間を短縮"], "answer": 1, "explain": "schedule fewer meetings during that window (mid-afternoon)"}
+    "answer": 1,
+    "explain": "finish the report by Thursday instead of Friday"
+   },
+   {
+    "type": "inference",
+    "q": "結論は？",
+    "choices": [
+     "木曜に提出",
+     "金曜のまま",
+     "来週に延期",
+     "データ確認を省く"
     ],
-    "vocab": [["participants", "参加者"], ["sluggish", "だるい、のろい"]]
+    "answer": 1,
+    "explain": "Let's keep Friday"
+   }
+  ],
+  "vocab": [
+   [
+    "recommend",
+    "勧める"
+   ],
+   [
+    "skip",
+    "飛ばす"
+   ]
+  ]
+ },
+ {
+  "id": "tB-4",
+  "level": 4,
+  "pool": "test-B",
+  "kind": "monologue",
+  "title": "確認B-4 研究紹介",
+  "voices": {
+   "A": "Daniel"
   },
-  {
-    "id": "tB-5", "level": 5, "pool": "test-B", "kind": "lecture", "title": "中間B-5 講義：言語変化",
-    "voices": {"A": "Moira"},
-    "lines": [
-      ["A", "Linguists tend to resist the idea that languages are deteriorating; what looks like decay to one generation is usually just change."],
-      ["A", "Many of the forms purists complain about today were themselves once condemned as sloppy innovations."]
+  "lines": [
+   [
+    "A",
+    "A recent study tracked over two thousand office workers and found that short walking breaks improved focus more than coffee did."
+   ],
+   [
+    "A",
+    "The effect was strongest in the mid-afternoon, when most participants reported feeling sluggish."
+   ],
+   [
+    "A",
+    "The researchers suggest that companies schedule fewer meetings during that window."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "研究の結果は？",
+    "choices": [
+     "コーヒーが最も効果的",
+     "短い散歩休憩がコーヒーより集中力を高めた",
+     "会議が集中力を高めた",
+     "効果はなかった"
     ],
-    "questions": [
-      {"type": "gist", "q": "言語学者の立場は？", "choices": ["言語は劣化している", "劣化ではなく変化にすぎない", "若者の言葉は誤り", "変化は止めるべき"], "answer": 1, "explain": "what looks like decay ... is usually just change"},
-      {"type": "inference", "q": "2文目が示すことは？", "choices": ["純粋主義者が正しい", "今批判される形も、かつての批判対象が定着したものが多い", "新語は消える", "文法は不変"], "answer": 1, "explain": "were themselves once condemned as sloppy innovations"}
+    "answer": 1,
+    "explain": "short walking breaks improved focus more than coffee did"
+   },
+   {
+    "type": "detail",
+    "q": "研究者の提案は？",
+    "choices": [
+     "朝の会議を増やす",
+     "午後半ばの会議を減らす",
+     "コーヒーを禁止",
+     "勤務時間を短縮"
     ],
-    "vocab": [["deteriorating", "悪化している"], ["condemned", "非難された"]]
+    "answer": 1,
+    "explain": "schedule fewer meetings during that window (mid-afternoon)"
+   }
+  ],
+  "vocab": [
+   [
+    "participants",
+    "参加者"
+   ],
+   [
+    "sluggish",
+    "だるい、のろい"
+   ]
+  ]
+ },
+ {
+  "id": "tB-5",
+  "level": 5,
+  "pool": "test-B",
+  "kind": "lecture",
+  "title": "確認B-5 講義：言語変化",
+  "voices": {
+   "A": "Moira"
   },
-  {
-    "id": "tC-1", "level": 1, "pool": "test-C", "kind": "dialogue", "title": "最終C-1 図書館で",
-    "voices": {"A": "Daniel", "B": "Karen"},
-    "lines": [
-      ["A", "Hi, I'd like to return these books."],
-      ["B", "Thank you. Oh, this one is 3 days late."],
-      ["A", "Sorry about that. Is there a fee?"],
-      ["B", "Yes, it's one dollar a day."]
+  "lines": [
+   [
+    "A",
+    "Linguists tend to resist the idea that languages are deteriorating; what looks like decay to one generation is usually just change."
+   ],
+   [
+    "A",
+    "Many of the forms purists complain about today were themselves once condemned as sloppy innovations."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "言語学者の立場は？",
+    "choices": [
+     "言語は劣化している",
+     "劣化ではなく変化にすぎない",
+     "若者の言葉は誤り",
+     "変化は止めるべき"
     ],
-    "questions": [
-      {"type": "detail", "q": "本は何日遅れた？", "choices": ["1日", "2日", "3日", "13日"], "answer": 2, "explain": "this one is 3 days late"},
-      {"type": "detail", "q": "延滞料は？", "choices": ["無料", "1日1ドル", "1日3ドル", "一律10ドル"], "answer": 1, "explain": "one dollar a day"}
+    "answer": 1,
+    "explain": "what looks like decay ... is usually just change"
+   },
+   {
+    "type": "inference",
+    "q": "2文目が示すことは？",
+    "choices": [
+     "純粋主義者が正しい",
+     "今批判される形も、かつての批判対象が定着したものが多い",
+     "新語は消える",
+     "文法は不変"
     ],
-    "vocab": [["return", "返す"], ["fee", "料金"]]
+    "answer": 1,
+    "explain": "were themselves once condemned as sloppy innovations"
+   }
+  ],
+  "vocab": [
+   [
+    "deteriorating",
+    "悪化している"
+   ],
+   [
+    "condemned",
+    "非難された"
+   ]
+  ]
+ },
+ {
+  "id": "tC-1",
+  "level": 1,
+  "pool": "test-C",
+  "kind": "dialogue",
+  "title": "確認C-1 図書館で",
+  "voices": {
+   "A": "Daniel",
+   "B": "Karen"
   },
-  {
-    "id": "tC-2", "level": 2, "pool": "test-C", "kind": "monologue", "title": "最終C-2 ツアー案内",
-    "voices": {"A": "Daniel"},
-    "lines": [
-      ["A", "Our boat tour leaves at 11:15 and comes back at about 1 o'clock."],
-      ["A", "Lunch isn't included, but there's a snack bar on the lower deck."],
-      ["A", "Please keep your life jacket on at all times."]
+  "lines": [
+   [
+    "A",
+    "Hi, I'd like to return these books."
+   ],
+   [
+    "B",
+    "Thank you. Oh, this one is 3 days late."
+   ],
+   [
+    "A",
+    "Sorry about that. Is there a fee?"
+   ],
+   [
+    "B",
+    "Yes, it's one dollar a day."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "本は何日遅れた？",
+    "choices": [
+     "1日",
+     "2日",
+     "3日",
+     "13日"
     ],
-    "questions": [
-      {"type": "detail", "q": "出発時刻は？", "choices": ["10時15分", "11時", "11時15分", "1時"], "answer": 2, "explain": "leaves at 11:15"},
-      {"type": "detail", "q": "昼食について正しいのは？", "choices": ["含まれている", "含まれないが下のデッキに軽食売り場がある", "持ち込み禁止", "到着後に出る"], "answer": 1, "explain": "Lunch isn't included, but there's a snack bar on the lower deck."}
+    "answer": 2,
+    "explain": "this one is 3 days late"
+   },
+   {
+    "type": "detail",
+    "q": "延滞料は？",
+    "choices": [
+     "無料",
+     "1日1ドル",
+     "1日3ドル",
+     "一律10ドル"
     ],
-    "vocab": [["included", "含まれた"], ["deck", "甲板、デッキ"]]
+    "answer": 1,
+    "explain": "one dollar a day"
+   }
+  ],
+  "vocab": [
+   [
+    "return",
+    "返す"
+   ],
+   [
+    "fee",
+    "料金"
+   ]
+  ]
+ },
+ {
+  "id": "tC-2",
+  "level": 2,
+  "pool": "test-C",
+  "kind": "monologue",
+  "title": "確認C-2 ツアー案内",
+  "voices": {
+   "A": "Daniel"
   },
-  {
-    "id": "tC-3", "level": 3, "pool": "test-C", "kind": "dialogue", "title": "最終C-3 イベント準備",
-    "voices": {"A": "Samantha", "B": "Daniel"},
-    "lines": [
-      ["A", "How many people have signed up for the workshop so far?"],
-      ["B", "About 60, which is more than the room can hold."],
-      ["A", "Then let's either move to the hall or add a second session in the afternoon."],
-      ["B", "The hall's booked, so I'll set up a second session."]
+  "lines": [
+   [
+    "A",
+    "Our boat tour leaves at 11:15 and comes back at about 1 o'clock."
+   ],
+   [
+    "A",
+    "Lunch isn't included, but there's a snack bar on the lower deck."
+   ],
+   [
+    "A",
+    "Please keep your life jacket on at all times."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "出発時刻は？",
+    "choices": [
+     "10時15分",
+     "11時",
+     "11時15分",
+     "1時"
     ],
-    "questions": [
-      {"type": "detail", "q": "問題は何？", "choices": ["参加者が少ない", "申込者が部屋の定員を超えた", "講師が来ない", "予算不足"], "answer": 1, "explain": "more than the room can hold"},
-      {"type": "detail", "q": "B が取る対応は？", "choices": ["ホールに移る", "午後に2回目を設ける", "申込を締め切る", "中止する"], "answer": 1, "explain": "The hall's booked, so I'll set up a second session."}
+    "answer": 2,
+    "explain": "leaves at 11:15"
+   },
+   {
+    "type": "detail",
+    "q": "昼食について正しいのは？",
+    "choices": [
+     "含まれている",
+     "含まれないが下のデッキに軽食売り場がある",
+     "持ち込み禁止",
+     "到着後に出る"
     ],
-    "vocab": [["workshop", "講習会"], ["booked", "予約済みの"]]
+    "answer": 1,
+    "explain": "Lunch isn't included, but there's a snack bar on the lower deck."
+   }
+  ],
+  "vocab": [
+   [
+    "included",
+    "含まれた"
+   ],
+   [
+    "deck",
+    "甲板、デッキ"
+   ]
+  ]
+ },
+ {
+  "id": "tC-3",
+  "level": 3,
+  "pool": "test-C",
+  "kind": "dialogue",
+  "title": "確認C-3 イベント準備",
+  "voices": {
+   "A": "Samantha",
+   "B": "Daniel"
   },
-  {
-    "id": "tC-4", "level": 4, "pool": "test-C", "kind": "announcement", "title": "最終C-4 ニュース：住宅",
-    "voices": {"A": "Samantha"},
-    "lines": [
-      ["A", "House prices in the region fell for the third month in a row, according to figures released this morning."],
-      ["A", "Analysts attribute the decline largely to higher borrowing costs, which have discouraged first-time buyers."],
-      ["A", "However, rents continue to climb, putting additional pressure on younger households."]
+  "lines": [
+   [
+    "A",
+    "How many people have signed up for the workshop so far?"
+   ],
+   [
+    "B",
+    "About 60, which is more than the room can hold."
+   ],
+   [
+    "A",
+    "Then let's either move to the hall or add a second session in the afternoon."
+   ],
+   [
+    "B",
+    "The hall's booked, so I'll set up a second session."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "問題は何？",
+    "choices": [
+     "参加者が少ない",
+     "申込者が部屋の定員を超えた",
+     "講師が来ない",
+     "予算不足"
     ],
-    "questions": [
-      {"type": "detail", "q": "住宅価格の下落の主な原因は？", "choices": ["人口減少", "借入コストの上昇", "供給過剰", "税制変更"], "answer": 1, "explain": "higher borrowing costs"},
-      {"type": "detail", "q": "家賃はどうなっている？", "choices": ["下落", "横ばい", "上昇が続く", "規制された"], "answer": 2, "explain": "rents continue to climb"}
+    "answer": 1,
+    "explain": "more than the room can hold"
+   },
+   {
+    "type": "detail",
+    "q": "B が取る対応は？",
+    "choices": [
+     "ホールに移る",
+     "午後に2回目を設ける",
+     "申込を締め切る",
+     "中止する"
     ],
-    "vocab": [["decline", "減少"], ["households", "世帯"]]
+    "answer": 1,
+    "explain": "The hall's booked, so I'll set up a second session."
+   }
+  ],
+  "vocab": [
+   [
+    "workshop",
+    "講習会"
+   ],
+   [
+    "booked",
+    "予約済みの"
+   ]
+  ]
+ },
+ {
+  "id": "tC-4",
+  "level": 4,
+  "pool": "test-C",
+  "kind": "announcement",
+  "title": "確認C-4 ニュース：住宅",
+  "voices": {
+   "A": "Samantha"
   },
-  {
-    "id": "tC-5", "level": 5, "pool": "test-C", "kind": "lecture", "title": "最終C-5 講義：意思決定",
-    "voices": {"A": "Daniel"},
-    "lines": [
-      ["A", "When faced with too many options, people frequently defer the decision altogether, a phenomenon sometimes called choice overload."],
-      ["A", "Paradoxically, offering fewer alternatives can increase both satisfaction and the likelihood that a choice is made at all."]
+  "lines": [
+   [
+    "A",
+    "House prices in the region fell for the third month in a row, according to figures released this morning."
+   ],
+   [
+    "A",
+    "Analysts attribute the decline largely to higher borrowing costs, which have discouraged first-time buyers."
+   ],
+   [
+    "A",
+    "However, rents continue to climb, putting additional pressure on younger households."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "住宅価格の下落の主な原因は？",
+    "choices": [
+     "人口減少",
+     "借入コストの上昇",
+     "供給過剰",
+     "税制変更"
     ],
-    "questions": [
-      {"type": "gist", "q": "choice overload とは？", "choices": ["選択肢が多すぎて決定を先延ばしにする現象", "選ぶのが速くなる現象", "高い物を選ぶ現象", "選択を後悔しない現象"], "answer": 0, "explain": "people frequently defer the decision altogether"},
-      {"type": "inference", "q": "逆説的な点は？", "choices": ["選択肢を減らすと満足度と決定率が上がる", "選択肢を増やすと満足度が上がる", "価格が上がる", "決定が遅くなる"], "answer": 0, "explain": "offering fewer alternatives can increase both satisfaction and the likelihood that a choice is made"}
+    "answer": 1,
+    "explain": "higher borrowing costs"
+   },
+   {
+    "type": "detail",
+    "q": "家賃はどうなっている？",
+    "choices": [
+     "下落",
+     "横ばい",
+     "上昇が続く",
+     "規制された"
     ],
-    "vocab": [["defer", "延期する"], ["alternatives", "選択肢"]]
-  }
+    "answer": 2,
+    "explain": "rents continue to climb"
+   }
+  ],
+  "vocab": [
+   [
+    "decline",
+    "減少"
+   ],
+   [
+    "households",
+    "世帯"
+   ]
+  ]
+ },
+ {
+  "id": "tC-5",
+  "level": 5,
+  "pool": "test-C",
+  "kind": "lecture",
+  "title": "確認C-5 講義：意思決定",
+  "voices": {
+   "A": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "When faced with too many options, people frequently defer the decision altogether, a phenomenon sometimes called choice overload."
+   ],
+   [
+    "A",
+    "Paradoxically, offering fewer alternatives can increase both satisfaction and the likelihood that a choice is made at all."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "choice overload とは？",
+    "choices": [
+     "選択肢が多すぎて決定を先延ばしにする現象",
+     "選ぶのが速くなる現象",
+     "高い物を選ぶ現象",
+     "選択を後悔しない現象"
+    ],
+    "answer": 0,
+    "explain": "people frequently defer the decision altogether"
+   },
+   {
+    "type": "inference",
+    "q": "逆説的な点は？",
+    "choices": [
+     "選択肢を減らすと満足度と決定率が上がる",
+     "選択肢を増やすと満足度が上がる",
+     "価格が上がる",
+     "決定が遅くなる"
+    ],
+    "answer": 0,
+    "explain": "offering fewer alternatives can increase both satisfaction and the likelihood that a choice is made"
+   }
+  ],
+  "vocab": [
+   [
+    "defer",
+    "延期する"
+   ],
+   [
+    "alternatives",
+    "選択肢"
+   ]
+  ]
+ },
+ {
+  "id": "tD-1",
+  "level": 1,
+  "pool": "test-D",
+  "kind": "dialogue",
+  "title": "確認D-1 駅の窓口で",
+  "voices": {
+   "A": "Karen",
+   "B": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "Hi, I'd like a return ticket to Hampton, please."
+   ],
+   [
+    "B",
+    "Sure. The next train leaves at 10:20 from platform 4."
+   ],
+   [
+    "A",
+    "How long does it take to get there?"
+   ],
+   [
+    "B",
+    "About forty minutes, so you'll arrive just after eleven."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "次の電車は何番線から？",
+    "choices": [
+     "2番線",
+     "4番線",
+     "10番線",
+     "14番線"
+    ],
+    "answer": 1,
+    "explain": "from platform 4"
+   },
+   {
+    "type": "detail",
+    "q": "到着はおよそ何時？",
+    "choices": [
+     "10時20分",
+     "10時40分",
+     "11時過ぎ",
+     "12時"
+    ],
+    "answer": 2,
+    "explain": "you'll arrive just after eleven"
+   }
+  ],
+  "vocab": [
+   [
+    "return ticket",
+    "往復切符"
+   ],
+   [
+    "platform",
+    "ホーム"
+   ]
+  ]
+ },
+ {
+  "id": "tD-2",
+  "level": 2,
+  "pool": "test-D",
+  "kind": "monologue",
+  "title": "確認D-2 美容院からの電話",
+  "voices": {
+   "A": "Samantha"
+  },
+  "lines": [
+   [
+    "A",
+    "Hi, this is Lisa from Park Hair Salon. I'm afraid your stylist is sick on Thursday."
+   ],
+   [
+    "A",
+    "We can move your appointment to Friday at the same time, or Saturday morning at ten."
+   ],
+   [
+    "A",
+    "Please call us back by tomorrow evening to let us know which you prefer."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "予約が変更になる理由は？",
+    "choices": [
+     "店が休み",
+     "担当者が病気",
+     "設備の故障",
+     "予約の重複"
+    ],
+    "answer": 1,
+    "explain": "your stylist is sick on Thursday"
+   },
+   {
+    "type": "detail",
+    "q": "提案された候補は？",
+    "choices": [
+     "木曜か金曜",
+     "金曜の同じ時間か土曜の朝10時",
+     "土曜の午後",
+     "来週の木曜"
+    ],
+    "answer": 1,
+    "explain": "Friday at the same time, or Saturday morning at ten"
+   }
+  ],
+  "vocab": [
+   [
+    "appointment",
+    "予約"
+   ],
+   [
+    "prefer",
+    "好む"
+   ]
+  ]
+ },
+ {
+  "id": "tD-3",
+  "level": 3,
+  "pool": "test-D",
+  "kind": "dialogue",
+  "title": "確認D-3 出張の準備",
+  "voices": {
+   "A": "Moira",
+   "B": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "Did you book the hotel for the Singapore trip yet?"
+   ],
+   [
+    "B",
+    "I was going to, but the conference organizers said they have a discount with a hotel next to the venue."
+   ],
+   [
+    "A",
+    "Oh, nice. Is it much cheaper?"
+   ],
+   [
+    "B",
+    "About thirty percent, and we wouldn't need a taxi every morning."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "B がまだホテルを予約していない理由は？",
+    "choices": [
+     "出張が中止になった",
+     "会議の主催者が会場隣のホテルの割引を案内した",
+     "予算が決まっていない",
+     "ホテルが満室"
+    ],
+    "answer": 1,
+    "explain": "the conference organizers said they have a discount with a hotel next to the venue"
+   },
+   {
+    "type": "detail",
+    "q": "そのホテルの利点は？",
+    "choices": [
+     "朝食付き",
+     "約3割安く、毎朝タクシーが不要",
+     "空港に近い",
+     "部屋が広い"
+    ],
+    "answer": 1,
+    "explain": "About thirty percent, and we wouldn't need a taxi every morning"
+   }
+  ],
+  "vocab": [
+   [
+    "venue",
+    "会場"
+   ],
+   [
+    "discount",
+    "割引"
+   ]
+  ]
+ },
+ {
+  "id": "tD-4",
+  "level": 4,
+  "pool": "test-D",
+  "kind": "announcement",
+  "title": "確認D-4 ニュース：電動バス",
+  "voices": {
+   "A": "Karen"
+  },
+  "lines": [
+   [
+    "A",
+    "The city council has approved a plan to replace half of its diesel buses with electric models by the end of next year."
+   ],
+   [
+    "A",
+    "Officials say the change will cut fuel costs significantly, although the new buses are more expensive to purchase."
+   ],
+   [
+    "A",
+    "Charging stations will be built at the three main depots first, with more locations added later."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "計画の内容は？",
+    "choices": [
+     "全バスを来年中に電動化",
+     "来年末までにディーゼルバスの半分を電動バスに",
+     "バス路線を半分に削減",
+     "新しい車庫を3つ建設"
+    ],
+    "answer": 1,
+    "explain": "replace half of its diesel buses with electric models by the end of next year"
+   },
+   {
+    "type": "detail",
+    "q": "電動バスの欠点として挙げられたのは？",
+    "choices": [
+     "燃料費が高い",
+     "購入費が高い",
+     "充電に時間がかかる",
+     "乗車定員が少ない"
+    ],
+    "answer": 1,
+    "explain": "the new buses are more expensive to purchase"
+   }
+  ],
+  "vocab": [
+   [
+    "approved",
+    "承認した"
+   ],
+   [
+    "depots",
+    "車庫"
+   ]
+  ]
+ },
+ {
+  "id": "tD-5",
+  "level": 5,
+  "pool": "test-D",
+  "kind": "lecture",
+  "title": "確認D-5 講義：注意の切り替え",
+  "voices": {
+   "A": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "When people switch between tasks, they rarely notice the cost, because each switch only takes a fraction of a second."
+   ],
+   [
+    "A",
+    "Yet over a whole day, these small delays add up, and the work done after frequent switching tends to contain noticeably more errors."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "講師の主張は？",
+    "choices": [
+     "作業の切り替えは時間の節約になる",
+     "切り替えの代償は小さく見えるが、積み重なり誤りも増える",
+     "切り替えは1日に1回が理想",
+     "切り替えの影響は個人差がない"
+    ],
+    "answer": 1,
+    "explain": "these small delays add up … more errors"
+   },
+   {
+    "type": "inference",
+    "q": "人が切り替えのコストに気づきにくい理由は？",
+    "choices": [
+     "1回の切り替えが一瞬だから",
+     "切り替えが楽しいから",
+     "誤りがすぐ直るから",
+     "他人が気づかせないから"
+    ],
+    "answer": 0,
+    "explain": "each switch only takes a fraction of a second"
+   }
+  ],
+  "vocab": [
+   [
+    "fraction",
+    "わずかな部分"
+   ],
+   [
+    "noticeably",
+    "目立って"
+   ]
+  ]
+ },
+ {
+  "id": "tE-1",
+  "level": 1,
+  "pool": "test-E",
+  "kind": "dialogue",
+  "title": "確認E-1 パン屋で",
+  "voices": {
+   "A": "Daniel",
+   "B": "Moira"
+  },
+  "lines": [
+   [
+    "A",
+    "Good morning. Do you still have any chocolate muffins?"
+   ],
+   [
+    "B",
+    "Sorry, we just sold the last one. We have blueberry ones, though."
+   ],
+   [
+    "A",
+    "OK, I'll take two blueberry muffins and a small coffee."
+   ],
+   [
+    "B",
+    "That's six fifty, please."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "客が買ったものは？",
+    "choices": [
+     "チョコマフィン2個とコーヒー",
+     "ブルーベリーマフィン2個と小さいコーヒー",
+     "ブルーベリーマフィン1個",
+     "チョコマフィン1個と紅茶"
+    ],
+    "answer": 1,
+    "explain": "two blueberry muffins and a small coffee"
+   },
+   {
+    "type": "detail",
+    "q": "合計金額は？",
+    "choices": [
+     "5ドル50セント",
+     "6ドル15セント",
+     "6ドル50セント",
+     "16ドル50セント"
+    ],
+    "answer": 2,
+    "explain": "That's six fifty"
+   }
+  ],
+  "vocab": [
+   [
+    "muffins",
+    "マフィン"
+   ],
+   [
+    "though",
+    "でも"
+   ]
+  ]
+ },
+ {
+  "id": "tE-2",
+  "level": 2,
+  "pool": "test-E",
+  "kind": "monologue",
+  "title": "確認E-2 ジムからのお知らせ",
+  "voices": {
+   "A": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "Attention, members. The swimming pool will be closed this Saturday for cleaning."
+   ],
+   [
+    "A",
+    "All other areas of the gym will be open as usual, from seven in the morning until nine at night."
+   ],
+   [
+    "A",
+    "Yoga classes on Saturday will move from the pool hall to studio B."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "土曜日に閉まるのは？",
+    "choices": [
+     "ジム全体",
+     "プール",
+     "スタジオB",
+     "ヨガ教室"
+    ],
+    "answer": 1,
+    "explain": "The swimming pool will be closed this Saturday"
+   },
+   {
+    "type": "detail",
+    "q": "土曜のヨガはどこで行う？",
+    "choices": [
+     "プールホール",
+     "スタジオA",
+     "スタジオB",
+     "中止"
+    ],
+    "answer": 2,
+    "explain": "Yoga classes on Saturday will move … to studio B"
+   }
+  ],
+  "vocab": [
+   [
+    "members",
+    "会員"
+   ],
+   [
+    "as usual",
+    "いつもどおり"
+   ]
+  ]
+ },
+ {
+  "id": "tE-3",
+  "level": 3,
+  "pool": "test-E",
+  "kind": "dialogue",
+  "title": "確認E-3 新しいツール",
+  "voices": {
+   "A": "Samantha",
+   "B": "Karen"
+  },
+  "lines": [
+   [
+    "A",
+    "Have you tried the new scheduling tool yet? Everyone's supposed to switch by Monday."
+   ],
+   [
+    "B",
+    "I have, and it's faster, but I can't find a way to share my calendar with people outside the company."
+   ],
+   [
+    "A",
+    "I think you need to ask IT to turn that on for your account."
+   ],
+   [
+    "B",
+    "Really? I'll send them a request this afternoon, then."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "B が困っていることは？",
+    "choices": [
+     "ツールが遅い",
+     "社外の人とカレンダーを共有できない",
+     "月曜までに移行できない",
+     "IT部門に連絡がつかない"
+    ],
+    "answer": 1,
+    "explain": "I can't find a way to share my calendar with people outside the company"
+   },
+   {
+    "type": "detail",
+    "q": "B はこの後どうする？",
+    "choices": [
+     "古いツールに戻る",
+     "今日の午後IT部門に依頼を送る",
+     "月曜に上司に相談する",
+     "自分で設定を変える"
+    ],
+    "answer": 1,
+    "explain": "I'll send them a request this afternoon"
+   }
+  ],
+  "vocab": [
+   [
+    "supposed to",
+    "…することになっている"
+   ],
+   [
+    "request",
+    "依頼"
+   ]
+  ]
+ },
+ {
+  "id": "tE-4",
+  "level": 4,
+  "pool": "test-E",
+  "kind": "monologue",
+  "title": "確認E-4 四半期の報告",
+  "voices": {
+   "A": "Moira"
+  },
+  "lines": [
+   [
+    "A",
+    "Overall, online sales grew by twelve percent this quarter, while sales in our physical stores remained flat."
+   ],
+   [
+    "A",
+    "The growth came mainly from repeat customers, which suggests the new loyalty program is starting to work."
+   ],
+   [
+    "A",
+    "Next quarter, we'll focus on reducing delivery times, which customers still rate as our weakest area."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "今四半期の売上について正しいのは？",
+    "choices": [
+     "店舗もオンラインも12%増",
+     "オンラインは12%増、店舗は横ばい",
+     "オンラインは横ばい、店舗は12%増",
+     "どちらも減少"
+    ],
+    "answer": 1,
+    "explain": "online sales grew by twelve percent … physical stores remained flat"
+   },
+   {
+    "type": "inference",
+    "q": "来期の重点は？",
+    "choices": [
+     "新規顧客の獲得",
+     "配送時間の短縮",
+     "店舗の増設",
+     "ポイント制度の廃止"
+    ],
+    "answer": 1,
+    "explain": "we'll focus on reducing delivery times"
+   }
+  ],
+  "vocab": [
+   [
+    "flat",
+    "横ばいの"
+   ],
+   [
+    "loyalty program",
+    "会員優待制度"
+   ]
+  ]
+ },
+ {
+  "id": "tE-5",
+  "level": 5,
+  "pool": "test-E",
+  "kind": "lecture",
+  "title": "確認E-5 講義：予測の誤り",
+  "voices": {
+   "A": "Karen"
+  },
+  "lines": [
+   [
+    "A",
+    "Experts are often no better than simple statistical rules at predicting outcomes, largely because they rely on vivid individual cases rather than base rates."
+   ],
+   [
+    "A",
+    "The rules, by contrast, apply the same weights every time, so they don't get distracted by details that feel important but carry little information."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "講師の主張は？",
+    "choices": [
+     "専門家の予測は統計的なルールより常に優れている",
+     "専門家は単純な統計ルールより予測が上手いとは限らない",
+     "統計ルールは誤りが多い",
+     "予測は不可能である"
+    ],
+    "answer": 1,
+    "explain": "Experts are often no better than simple statistical rules"
+   },
+   {
+    "type": "inference",
+    "q": "統計的なルールが有利な理由は？",
+    "choices": [
+     "毎回同じ重みで判断し、印象的な細部に惑わされない",
+     "専門家より多くの事例を覚えている",
+     "最新の情報を使う",
+     "計算が速い"
+    ],
+    "answer": 0,
+    "explain": "apply the same weights every time … don't get distracted"
+   }
+  ],
+  "vocab": [
+   [
+    "base rates",
+    "基準率"
+   ],
+   [
+    "vivid",
+    "鮮明な"
+   ]
+  ]
+ }
 ]

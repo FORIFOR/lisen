@@ -126,8 +126,10 @@ def today_seconds() -> int:
     return r["seconds"] if r else 0
 
 
-TEST_SCHEDULE = {"A": 1, "B": 30, "C": 60}
-TEST_NAMES = {"A": "初回レベル診断", "B": "Day 30 中間テスト", "C": "Day 60 最終テスト"}
+# every 14 days, always on never-heard audio built to the same structure (levels 1-5, 2 questions each)
+TEST_SCHEDULE = {"A": 1, "B": 15, "C": 29, "D": 43, "E": 57}
+TEST_NAMES = {"A": "初回レベル診断", "B": "Day 15 確認テスト", "C": "Day 29 確認テスト", "D": "Day 43 確認テスト",
+              "E": "Day 57 確認テスト"}
 
 
 def tests_status() -> list[dict]:

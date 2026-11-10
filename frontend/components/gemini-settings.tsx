@@ -161,6 +161,33 @@ export function GeminiSettings({ settings, update }: { settings: Settings; updat
           </div>
 
           <div>
+            <div className="mb-1.5 text-xs font-medium text-muted-foreground">教材の音声</div>
+            <div className="grid gap-1.5 sm:grid-cols-2">
+              {([
+                ["mac", "Mac の音声合成", "無料・オフライン。6種類の声"],
+                ["gemini", "Gemini TTS", `教材ごとに別の話者の組み合わせ（${st.gemini_tts_model}）。1行ごとに呼び出し`],
+              ] as const).map(([id, label, hint]) => (
+                <button
+                  key={id}
+                  type="button"
+                  disabled={id === "gemini" && !st.gemini_configured}
+                  onClick={async () => {
+                    await update({ lesson_voice: id });
+                    api<GeneratorStatus>("/v1/integrations/gemini").then(setSt).catch(() => {});
+                  }}
+                  className={cn("rounded-lg border px-3 py-2 text-left text-sm disabled:opacity-50", (st.voice_setting ?? "mac") === id ? "border-primary bg-brand-soft" : "hover:bg-muted")}
+                >
+                  <div className="font-medium">{label}</div>
+                  <div className="text-xs text-muted-foreground">{hint}</div>
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              どちらの音声も、音声認識で台本どおりか・指定語が聞き取れるかを確認してから採用します。Gemini TTS が使えないときは、「自動」なら Mac の音声に切り替えます。
+            </p>
+          </div>
+
+          <div>
             <div className="mb-1.5 text-xs font-medium text-muted-foreground">教材の作り方</div>
             <div className="grid gap-1.5 sm:grid-cols-3">
               {ENGINES.map((m) => (

@@ -26,10 +26,11 @@ if [ "${1:-}" = "--setup-asr" ] && [ ! -x .venv-asr/bin/python ]; then
   fi
 fi
 [ -x .venv-asr/bin/python ] || echo "ℹ 音声認識は未導入です（教材の音声照合・NotebookLM 取り込みに必要）: ./start.sh --setup-asr"
-if [ ! -f media/manifest.json ] || [ "${1:-}" = "--rebuild-audio" ]; then
+if [ ! -f media/manifest.json ]; then
   echo "▶ 教材の音声を生成しています（初回のみ・数分）…"
-  .venv/bin/python -m scripts.build_audio
 fi
+# incremental: only new or changed material is synthesized (new content after an update gets its audio here)
+if [ "${1:-}" = "--rebuild-audio" ]; then .venv/bin/python -m scripts.build_audio --force; else .venv/bin/python -m scripts.build_audio | grep -v "^done$" || true; fi
 
 # --- frontend ------------------------------------------------------------------
 cd "$ROOT/frontend"

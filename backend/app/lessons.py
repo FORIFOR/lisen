@@ -9,6 +9,7 @@ Only the target words and a level are sent to Gemini; no learning history leaves
 """
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
@@ -29,6 +30,10 @@ MODEL_RE = re.compile(r"^gemini-[a-z0-9][a-z0-9.\-]{1,60}$")
 KEY_RE = re.compile(r"^[A-Za-z0-9_\-]{20,200}$")
 GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models"
 VOICES = {"A": "Samantha", "B": "Daniel"}
+GEMINI_TTS_MODEL = os.environ.get("LISTENFLOW_GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+# prebuilt Gemini voices; each lesson draws a different pair so the same word is heard from different speakers
+GEMINI_VOICES = ["Kore", "Puck", "Charon", "Aoede", "Fenrir", "Leda", "Orus", "Zephyr"]
+GEMINI_TTS_RATE = 24000
 
 
 class LessonError(Exception):
@@ -103,10 +108,50 @@ def effective_engine(mode: str | None = None) -> str:
     return mode
 
 
+def voice_engine() -> str:
+    """'gemini' (Gemini TTS, varied speakers) only when chosen and a key is configured; otherwise macOS voices."""
+    v = db.profile()["settings"].get("lesson_voice", "mac")
+    return "gemini" if v == "gemini" and gemini_key() else "mac"
+
+
+def gemini_speak(text: str, voice: str, rate: int, out) -> None:
+    """tts.synthesize_clip speaker: one line through Gemini TTS, resampled to the app's wav format."""
+    import subprocess
+    import tempfile
+    from pathlib import Path
+    key = gemini_key()
+    if not key:
+        raise LessonError(503, "Gemini の API キーが設定されていません")
+    body = {"contents": [{"parts": [{"text": text}]}],
+            "generationConfig": {"responseModalities": ["AUDIO"],
+                                 "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}}}}
+    req = urllib.request.Request(f"{GEMINI_API}/{GEMINI_TTS_MODEL}:generateContent", data=json.dumps(body).encode(),
+                                 method="POST", headers={"Content-Type": "application/json", "x-goog-api-key": key})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            data = json.loads(r.read().decode())
+        part = next(p for p in data["candidates"][0]["content"]["parts"] if "inlineData" in p)
+        pcm = base64.b64decode(part["inlineData"]["data"])
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
+        raise _gemini_error(e) from e
+    except (KeyError, IndexError, StopIteration, ValueError) as e:
+        raise LessonError(502, "Gemini TTS の応答から音声を取り出せませんでした") from e
+    if len(pcm) < GEMINI_TTS_RATE // 2:   # under ~0.25 s of audio
+        raise LessonError(502, "Gemini TTS の音声が短すぎます")
+    with tempfile.TemporaryDirectory() as td:
+        raw = Path(td) / "g.pcm"
+        raw.write_bytes(pcm)
+        subprocess.run(["ffmpeg", "-nostdin", "-y", "-v", "error", "-f", "s16le", "-ar", str(GEMINI_TTS_RATE), "-ac", "1",
+                        "-i", str(raw), "-ar", str(tts.SAMPLE_RATE), "-ac", "1", "-sample_fmt", "s16", str(out)],
+                       check=True, capture_output=True, timeout=60)
+
+
 def engine_status() -> dict:
     ok, msg = tts.available()
     key = gemini_key()
     return {"engine": effective_engine(), "mode": engine_mode(), "gemini_configured": bool(key),
+            "voice": voice_engine(), "voice_setting": db.profile()["settings"].get("lesson_voice", "mac"),
+            "gemini_tts_model": GEMINI_TTS_MODEL,
             "key_source": key_source(), "key_hint": f"…{key[-4:]}" if key else None,
             "gemini_model": gemini_model(), "tts_available": ok, "tts_message": msg}
 
@@ -322,9 +367,10 @@ def check_audio(res: dict, lines: list) -> list[dict]:
     ]
 
 
-# Calibrated on the 55 bundled clips (base.en): WER median 1.4%, p90 5.3%, max 24% (a 2-minute podcast);
-# mean word probability >= 0.88; share of words under 0.3 <= 8.9%. Lessons are short dialogues, so the
-# limits below leave margin for real speech while rejecting audio that does not match its script.
+# Calibrated with base.en, transcribing line by line as check_asr does, on all 74 bundled clips:
+# WER median 1.5%, p90 6.7%, max 12.9%; mean word probability >= 0.906; none rejected. (A whole-clip pass
+# gave a 24% maximum on a 2-minute podcast.) The limits leave margin for natural speech while rejecting
+# audio that does not match its script (other script: 100% WER; reversed audio: rejected).
 ASR_MAX_WER = 0.15
 ASR_MIN_MEAN_PROB = 0.80
 ASR_LOW_PROB, ASR_MAX_LOW_SHARE = 0.3, 0.15
@@ -335,10 +381,16 @@ def check_asr(res: dict, lines: list, targets: list[Word]) -> list[dict]:
     ok, msg = asr.available()
     if not ok:
         return [{"check": "音声認識による照合", "ok": True, "skipped": True, "detail": f"未実施: {msg}"}]
+    # line by line: a whole-dialogue pass lets neighbouring speech bias recognition (observed: "postpone new"
+    # heard as "post porn news" only inside the full clip), which would reject correct audio
+    files = [config.AUDIO_DIR / sg["audio"] for sg in res.get("segments", []) if sg.get("audio")]
+    if len(files) != len(lines):
+        files = [config.AUDIO_DIR / res["audio"]]
     try:
-        r = asr.transcribe([config.AUDIO_DIR / res["audio"]], timeout=180)[0]
+        parts = asr.transcribe(files, timeout=240)
     except asr.AsrError as e:
         return [{"check": "音声認識による照合", "ok": False, "detail": str(e)}]
+    r = {"text": " ".join(p["text"] for p in parts), "words": [w for p in parts for w in p["words"]]}
     return asr_checks(r, lines, targets)
 
 
@@ -363,8 +415,9 @@ def asr_checks(r: dict, lines: list, targets: list[Word]) -> list[dict]:
 
 # --- main entry -------------------------------------------------------------------------------
 
-def cache_key(targets: list[Word], level: int, engine: str) -> str:
-    raw = json.dumps([sorted(w.id for w in targets), level, engine, GENERATOR_VERSION])
+def cache_key(targets: list[Word], level: int, engine: str, voice: str = "mac") -> str:
+    parts = [sorted(w.id for w in targets), level, engine, GENERATOR_VERSION] + ([voice] if voice != "mac" else [])
+    raw = json.dumps(parts)
     return hashlib.sha1(raw.encode()).hexdigest()[:16]
 
 
@@ -396,9 +449,10 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
         raise LessonError(503, "Gemini の API キーが設定されていません")
     level = db.profile()["level"]
     rng = random.Random(seed)
+    voice = voice_engine()
 
     def cached(eng: str):
-        row = db.q1("SELECT * FROM audio_lessons WHERE cache_key=?", (cache_key(targets, level, eng),))
+        row = db.q1("SELECT * FROM audio_lessons WHERE cache_key=?", (cache_key(targets, level, eng, voice),))
         if row and (lessons_dir() / f"{row['id']}.json").exists():
             return {**lesson_public(row), "cached": True}
         return None
@@ -437,32 +491,48 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
         script, checks, text, qs = write("local")
     if fallback:
         checks.insert(0, {"check": "生成エンジン", "ok": True, "detail": f"Gemini が使えなかったためローカル生成に切り替え（{fallback}）"})
-    key = cache_key(targets, level, engine)
-
-    lid = f"g-{key[:10]}"
-    raw = {
-        "id": lid, "level": level, "pool": "train", "kind": "dialogue",
-        "title": "語彙リスニング: " + " / ".join(w.lemma for w in targets),
-        "voices": dict(VOICES), "lines": script["lines"], "questions": qs,
-        "vocab": [[w.appears_in(text) or w.lemma, w.meaning] for w in targets],
-        "target_words": [w.id for w in targets], "engine": script["engine"], "topic": script.get("topic"),
-    }
-    res = None
-    try:
-        res = tts.synthesize_one(raw)
-        audio_checks = check_audio(res, script["lines"])
+    script_checks = checks
+    # Gemini voices first when chosen; in "auto" mode a Gemini TTS failure falls back to the Mac voices
+    attempts = [voice] + (["mac"] if voice == "gemini" and mode == "auto" else [])
+    for i, v in enumerate(attempts):
+        key = cache_key(targets, level, engine, v)
+        lid = f"g-{key[:10]}"
+        if v == "gemini":
+            pair = rng.sample(GEMINI_VOICES, 2)
+            voices = {"A": pair[0], "B": pair[1]}
+        else:
+            voices = dict(VOICES)
+        raw = {
+            "id": lid, "level": level, "pool": "train", "kind": "dialogue",
+            "title": "語彙リスニング: " + " / ".join(w.lemma for w in targets),
+            "voices": voices, "lines": script["lines"], "questions": qs,
+            "vocab": [[w.appears_in(text) or w.lemma, w.meaning] for w in targets],
+            "target_words": [w.id for w in targets], "engine": script["engine"], "topic": script.get("topic"),
+            "voice_engine": v,
+        }
+        res = None
+        try:
+            res = tts.synthesize_one(raw, gemini_speak if v == "gemini" else None)
+            audio_checks = check_audio(res, script["lines"])
+            if all(c["ok"] for c in audio_checks):
+                audio_checks += check_asr(res, script["lines"], targets)
+        except Exception as e:  # noqa: BLE001 - any synthesis failure rejects the lesson
+            audio_checks = [{"check": "音声合成" + ("（Gemini TTS）" if v == "gemini" else ""), "ok": False, "detail": str(e)[:200]}]
         if all(c["ok"] for c in audio_checks):
-            audio_checks += check_asr(res, script["lines"], targets)
-    except Exception as e:  # noqa: BLE001 - any synthesis failure rejects the lesson
-        audio_checks = [{"check": "音声合成", "ok": False, "detail": str(e)[:200]}]
-    checks += audio_checks
-    if not all(c["ok"] for c in audio_checks):
+            checks = script_checks + audio_checks
+            if i > 0:
+                checks.insert(0, {"check": "音声エンジン", "ok": True,
+                                  "detail": "Gemini TTS の音声が使えなかったため Mac の音声合成に切り替え（"
+                                            + "; ".join(c["detail"] for c in prev_checks if not c["ok"])[:160] + "）"})
+            break
         _remove_audio(res)
         with tts._manifest_lock:
             m = tts.load_manifest()
             if m.pop(lid, None) is not None:
                 tts.save_manifest(m)
-        raise LessonError(422, "音声の品質チェックに通らなかったため、教材を採用しませんでした", checks)
+        prev_checks = audio_checks
+    else:
+        raise LessonError(422, "音声の品質チェックに通らなかったため、教材を採用しませんでした", script_checks + audio_checks)
 
     lessons_dir().mkdir(parents=True, exist_ok=True)
     (lessons_dir() / f"{lid}.json").write_text(json.dumps(raw, ensure_ascii=False, indent=1))

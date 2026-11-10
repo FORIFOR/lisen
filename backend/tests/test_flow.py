@@ -8,8 +8,9 @@ def solve(item, good=True):
     lib = library()
     t = item["type"]
     if t == "comprehension":
-        clip = lib.clips[item["clip"]["id"]]
-        return {"answers": [q["answer"] if good else (q["answer"] + 1) % 4 for q in clip.questions]}
+        import json
+        sec = json.loads(db.q1("SELECT payload FROM pending_items WHERE id=?", (item["item_id"],))["payload"])["secret"]
+        return {"answers": [a if good else (a + 1) % 4 for a in sec["answers"]]}
     if t == "dictation":
         text = lib.segments[item["segment"]["id"]].text
         return {"text": text if good else " ".join(text.split()[: max(1, len(text.split()) // 2)])}
@@ -21,9 +22,11 @@ def solve(item, good=True):
         return {"text": v["word"] if good else "zzz"}
     if t == "shadowing":
         return {"rating": 3 if good else 1}
-    if t == "word":
+    if t in ("word", "sentence"):
         import json
         sec = json.loads(db.q1("SELECT payload FROM pending_items WHERE id=?", (item["item_id"],))["payload"])["secret"]
+        if sec.get("vocab_item"):   # profile diagnostic: graded by the vocabulary diagnostic
+            sec = json.loads(db.q1("SELECT payload FROM vocab_items WHERE id=?", (sec["vocab_item"],))["payload"])["secret"]
         return {"choice": sec["answer"] if good else (sec["answer"] + 1) % 4, "ms": 2000}
     raise AssertionError(t)
 

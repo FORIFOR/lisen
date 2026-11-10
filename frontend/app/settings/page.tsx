@@ -6,6 +6,7 @@ import { Download, Laptop, Loader2, Monitor, Moon, Smartphone, Sun } from "lucid
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { GeminiSettings } from "@/components/gemini-settings";
+import { InterestPicker } from "@/components/interest-picker";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { api, type Profile, type Settings } from "@/lib/api";
@@ -99,6 +100,11 @@ export default function SettingsPage() {
         <Row label="苦手語彙の音声教材を自動で作る" hint="語彙診断や学習のあと、未学習の教材がなければ1本だけ作ります">
           <Switch checked={s.auto_lessons} onCheckedChange={(v) => update({ auto_lessons: v })} />
         </Row>
+        <div className="border-b py-4">
+          <div className="text-sm font-medium">興味のある分野</div>
+          <div className="mb-2 text-xs text-muted-foreground">初見リスニングとホームの「おすすめ」で優先します（選んだ順）</div>
+          <InterestPicker value={s.interests ?? []} onChange={(v) => update({ interests: v })} />
+        </div>
         <Row label="表示テーマ">
           <Seg
             value={(theme ?? "system") as string}

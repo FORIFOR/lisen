@@ -495,3 +495,76 @@ def test_asr_rejects_audio_that_does_not_match_script():
     assert all(c["ok"] for c in lessons.asr_checks(same, own, []))
     assert not lessons.asr_checks(same, [["A", s.text] for s in b.segments], [])[0]["ok"]
     assert not all(c["ok"] for c in lessons.asr_checks(backwards, own, []))
+
+
+def _fake_tts_and_text(calls, tts_fail=False):
+    """urlopen stand-in: text requests get GOOD_DIALOGUE, TTS requests get real speech (macOS say, 24 kHz PCM)."""
+    import base64
+    import subprocess
+    import tempfile
+    import urllib.error
+    import wave
+    from pathlib import Path
+
+    def fake(req, timeout=0):
+        body = json.loads(req.data.decode())
+        if "responseModalities" not in body.get("generationConfig", {}):
+            calls.append("text")
+            return _FakeResp(_gemini_reply(GOOD_DIALOGUE))
+        calls.append(body["generationConfig"]["speechConfig"]["voiceConfig"]["prebuiltVoiceConfig"]["voiceName"])
+        if tts_fail:
+            raise urllib.error.HTTPError(req.full_url, 429, "quota", {}, None)
+        with tempfile.TemporaryDirectory() as td:
+            w = Path(td) / "a.wav"
+            # the app's level-2 speaking rate (config.LEVEL_RATE), i.e. what a lesson normally sounds like
+            subprocess.run(["say", "-v", "Samantha", "-r", "165", "-o", str(w), "--data-format=LEI16@24000",
+                            body["contents"][0]["parts"][0]["text"]], check=True)
+            with wave.open(str(w)) as f:
+                pcm = f.readframes(f.getnframes())
+        return _FakeResp({"candidates": [{"content": {"parts": [
+            {"inlineData": {"mimeType": "audio/L16;rate=24000", "data": base64.b64encode(pcm).decode()}}]}}]})
+    return fake
+
+
+def test_gemini_tts_voices_lesson(client, tmp_path, monkeypatch):
+    from app import asr, lessons, tts
+    _need_tts(tmp_path, monkeypatch)
+    client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
+    client.put("/settings", json={"lesson_voice": "gemini"})
+    assert client.get("/v1/integrations/gemini").json()["voice"] == "gemini"
+    calls = []
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", _fake_tts_and_text(calls))
+    r = client.post("/v1/audio-lessons/generate", json={"words": ["allocate", "postpone", "reimbursement"]})
+    assert r.status_code == 200, r.text
+    lesson = r.json()
+    raw = json.loads((lessons.lessons_dir() / f"{lesson['id']}.json").read_text())
+    assert raw["voice_engine"] == "gemini", lesson["checks"]
+    assert set(raw["voices"].values()) <= set(lessons.GEMINI_VOICES)
+    assert len(set(raw["voices"].values())) == 2
+    assert calls.count("text") == 1 and len(calls) == 1 + len(GOOD_DIALOGUE)   # one TTS call per line
+    assert all(c["ok"] for c in lesson["checks"])
+    if asr.available()[0]:
+        assert any("音声と英文が一致" in c["check"] for c in lesson["checks"])
+    # the bulk audio builder never tries to re-create Gemini-voiced lessons with `say`
+    built = []
+    monkeypatch.setattr(tts, "synthesize_clip", lambda raw, speak=None: built.append(raw["id"]) or {})
+    tts.build_all([raw], force=True, log=lambda *_: None)
+    assert built == []
+
+
+def test_gemini_tts_failure_falls_back_to_mac_voices_in_auto(client, tmp_path, monkeypatch):
+    from app import lessons
+    _need_tts(tmp_path, monkeypatch)
+    client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
+    client.put("/settings", json={"lesson_voice": "gemini"})
+    calls = []
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", _fake_tts_and_text(calls, tts_fail=True))
+    words = {"words": ["allocate", "postpone", "reimbursement"]}
+    lesson = client.post("/v1/audio-lessons/generate", json=words).json()
+    raw = json.loads((lessons.lessons_dir() / f"{lesson['id']}.json").read_text())
+    assert raw["voice_engine"] == "mac" and lesson["checks"][0]["check"] == "音声エンジン"
+    # explicit "Gemini only": no silent fallback
+    client.delete(f"/v1/audio-lessons/{lesson['id']}")
+    client.put("/settings", json={"lesson_engine": "gemini"})
+    r = client.post("/v1/audio-lessons/generate", json=words)
+    assert r.status_code == 422 and any("Gemini TTS" in c["check"] for c in r.json()["checks"])

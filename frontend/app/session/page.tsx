@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Coffee, Loader2, Pause, Play, Plus, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ComprehensionView, DictationView, DiscriminationView, ShadowingView, VocabView } from "@/components/items";
+import { ComprehensionView, DictationView, DiscriminationView, SentenceView, ShadowingView, VocabView } from "@/components/items";
 import { SummaryView } from "@/components/summary";
 import { WordQuestion } from "@/components/word-question";
 import { Button } from "@/components/ui/button";
@@ -215,8 +215,14 @@ export default function SessionPage() {
   const bi = session?.block_index ?? 0;
   const block = blocks[bi];
   const studied = (session?.study_seconds ?? 0) + clock.pending();
-  const isTest = session?.mode === "test";
-  const blockPct = block && block.minutes ? Math.min(100, (((block.elapsed ?? 0) + (block.kind !== "break" ? clock.pending() : 0)) / (block.minutes * 60)) * 100) : 0;
+  const isTest = session?.mode === "test" || session?.mode === "profile";
+  const isProfile = session?.mode === "profile";
+  const diagMax = block ? session?.diag_items?.[block.kind] : undefined;
+  const blockPct = diagMax
+    ? Math.min(100, ((session?.block_items?.[bi] ?? 0) / diagMax) * 100)
+    : block && block.minutes
+      ? Math.min(100, (((block.elapsed ?? 0) + (block.kind !== "break" ? clock.pending() : 0)) / (block.minutes * 60)) * 100)
+      : 0;
 
   return (
     <div className="min-h-dvh">
@@ -227,7 +233,7 @@ export default function SessionPage() {
           </Link>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium">{block?.label ?? "…"}</div>
-            {!isTest && (
+            {(!isTest || isProfile) && (
               <div className="mt-1 flex gap-1">
                 {blocks.map((b, i) => (
                   <div key={i} className={cn("h-1.5 overflow-hidden rounded-full bg-muted", b.kind === "break" ? "bg-warning-soft" : "")} style={{ flex: b.minutes }} title={`${b.label} ${b.minutes}分`}>
@@ -240,6 +246,7 @@ export default function SessionPage() {
           <div className="text-right text-xs tabular text-muted-foreground">
             <div className="text-sm font-medium text-foreground">{mmss(studied)}</div>
             {!isTest && <div>/ {session?.planned_study_minutes ?? 0}分</div>}
+            {isProfile && diagMax && <div>{Math.min(diagMax, (session?.block_items?.[bi] ?? 0))} / {diagMax}問</div>}
           </div>
           {!isTest && (
             <Button variant="outline" size="icon-lg" onClick={() => setExtendOpen(true)} aria-label="延長" title="学習を延長">
@@ -278,8 +285,15 @@ export default function SessionPage() {
               {current.item.type === "discrimination" && <DiscriminationView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "vocab" && <VocabView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "shadowing" && <ShadowingView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
+              {current.item.type === "sentence" && <SentenceView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "word" && (
-                <WordQuestion item={current.item} rate={rate} submit={(b) => submit(b) as unknown as Promise<WordFeedback | null>} next={() => loadNext()} />
+                <WordQuestion
+                  item={current.item}
+                  rate={rate}
+                  submit={(b) => submit(b) as unknown as Promise<WordFeedback | null>}
+                  next={() => loadNext()}
+                  blind={!!current.item.diagnostic}
+                />
               )}
             </motion.div>
           </AnimatePresence>

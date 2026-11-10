@@ -1,0 +1,39 @@
+{
+ "notes": "Topic tags for bundled clips that predate the per-clip `topic` field. Clips not listed are 'daily'.",
+ "topics": {
+  "business": [
+   "l2-first-day",
+   "l3-team-meeting",
+   "l3-support",
+   "l3-coworker",
+   "l4-remote-work",
+   "l4-product-launch",
+   "l4-negotiation",
+   "l4-interview",
+   "l4-startup",
+   "l5-economics",
+   "l5-strategy"
+  ],
+  "tech": [
+   "l5-panel-ai",
+   "l4-product-launch"
+  ],
+  "science": [
+   "l3-sleep-podcast",
+   "l4-memory-lecture",
+   "l5-science-news",
+   "l5-history-podcast",
+   "l3-lecture-intro",
+   "l4-city-radio"
+  ],
+  "travel": [
+   "l1-directions",
+   "l1-hotel",
+   "l2-train",
+   "l2-luggage",
+   "l3-delayed-flight",
+   "l3-travel-story",
+   "l2-museum"
+  ]
+ }
+}

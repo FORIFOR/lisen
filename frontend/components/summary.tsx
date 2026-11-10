@@ -4,8 +4,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { Award, CircleAlert, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { AbilityBars } from "@/components/listening-profile";
 import { cn } from "@/lib/utils";
-import { LEVEL_LABEL, type Summary } from "@/lib/api";
+import { ABILITY_ORDER, LEVEL_LABEL, type Summary } from "@/lib/api";
 
 const KIND_LABEL: Record<string, string> = {
   comprehension: "内容理解",
@@ -15,11 +16,14 @@ const KIND_LABEL: Record<string, string> = {
   vocab: "語彙",
   shadowing: "シャドーイング",
   word: "TOEIC 語彙",
+  sentence: "構文理解",
 };
 
 export function SummaryView({ summary }: { summary: Summary }) {
   const s = summary.session;
   const t = summary.test;
+  const p = summary.profile;
+  const isProfile = s.mode === "profile";
   const minutes = Math.round(s.study_seconds / 60);
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -27,11 +31,32 @@ export function SummaryView({ summary }: { summary: Summary }) {
         <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-success-soft">
           {t ? <Award className="size-7 text-success" /> : <Sparkles className="size-7 text-success" />}
         </div>
-        <h1 className="text-2xl font-semibold">{t ? "テスト結果" : "おつかれさまでした"}</h1>
+        <h1 className="text-2xl font-semibold">{isProfile ? "あなたの Listening Profile" : t ? "テスト結果" : "おつかれさまでした"}</h1>
         <p className="mt-1 text-muted-foreground">
           学習時間 {minutes}分 · {summary.items} 問{summary.new_clips ? ` · 新しい音声 ${summary.new_clips} 本` : ""}
         </p>
       </div>
+
+      {p && (
+        <section className="space-y-3">
+          <AbilityBars
+            priority={p.priority}
+            rows={ABILITY_ORDER.map((k) => ({
+              key: k,
+              label: p.labels[k],
+              detail: p.details[k],
+              value: p.measured[k]?.value ?? null,
+              n: p.measured[k]?.n ?? 0,
+              target: p.targets[k],
+              previous: p.previous?.[k]?.value ?? null,
+            }))}
+          />
+          {p.advice && <div className="rounded-2xl border border-primary/30 bg-brand-soft p-4 text-sm font-medium">{p.advice}</div>}
+          <p className="text-xs text-muted-foreground">
+            約50問からの暫定的な推定です。毎日の学習の回答で更新され、学習プランの時間配分（最も弱い能力に約15%を追加、初見リスニングは25%以上を維持）に反映されます。TOEIC スコアの予測ではありません。
+          </p>
+        </section>
+      )}
 
       {t && (
         <div className="rounded-2xl border bg-card p-5">
@@ -84,7 +109,7 @@ export function SummaryView({ summary }: { summary: Summary }) {
         </div>
       ))}
 
-      {!t && (
+      {!t && !isProfile && (
         <div className="grid gap-3 sm:grid-cols-2">
           {Object.entries(summary.by_kind).map(([k, v]) => (
             <div key={k} className="flex items-center justify-between rounded-2xl border bg-card p-4">

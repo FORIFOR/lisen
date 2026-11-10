@@ -52,3 +52,31 @@ def overview() -> dict:
         "curriculum": progress.curriculum(),
         "phase": progress.phase(),
     }
+
+
+def kpis() -> dict:
+    """The measures that say whether listening is actually improving (spec section 8)."""
+    today = date.fromisoformat(db.local_date())
+
+    def window(sql_where: str, days: int, offset: int = 0, extra: tuple = ()) -> dict:
+        hi = (today - timedelta(days=offset)).isoformat()
+        lo = (today - timedelta(days=offset + days - 1)).isoformat()
+        r = db.q1(f"SELECT AVG(score) s, COUNT(*) n FROM attempts WHERE {sql_where} AND date>=? AND date<=?", (*extra, lo, hi))
+        return {"value": round(r["s"], 3) if r["n"] else None, "n": r["n"]}
+
+    def pair(where: str) -> dict:
+        return {"recent": window(where, 14), "previous": window(where, 14, 14)}
+
+    unseen = "kind='comprehension' AND COALESCE(json_extract(detail,'$.relisten'),0)=0"
+    days = set(progress.study_days())
+    def rate(n: int) -> float:
+        return round(sum(1 for i in range(n) if (today - timedelta(days=i)).isoformat() in days) / n, 3)
+    return {
+        "unseen_comprehension": {"label": "初見会話理解率", "note": "最重要。初めて聞く音声の設問正答率", **pair(unseen)},
+        "first_play": {"label": "初回再生での理解率", "note": "1回だけ再生して答えた初見音声",
+                       **pair(unseen + " AND json_extract(detail,'$.plays')=1")},
+        "sound": {"label": "音声識別正答率", "note": "似た音・弱形・連結の聞き分け", **pair("kind='discrimination'")},
+        "audio_vocab": {"label": "音声語彙認識率", "note": "TOEIC 語彙を音・文脈で認識",
+                        **pair("kind='word' AND json_extract(detail,'$.modality') IN ('audio','context')")},
+        "retention": {"label": "継続率", "note": "直近7日・30日のうち学習した日の割合", "d7": rate(7), "d30": rate(30)},
+    }

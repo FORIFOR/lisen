@@ -13,13 +13,17 @@ from datetime import datetime, timedelta
 
 from fsrs import Rating
 
-from . import db, planner, progress, srs, vocab
+from . import abilities, db, planner, progress, sentences, srs, vocab
 from .content import Clip, Segment, library
 from .scoring import SKILLS, is_typo, make_discrimination, score_dictation, tokenize
 
 MAX_ELAPSED_REPORT = 120     # seconds accepted per time report (guards against sleeping tabs)
 MOVE_ON_ACCURACY = 0.9       # two consecutive segments at this accuracy -> new audio
 MOVE_ON_STREAK = 2
+# listening-profile diagnostic: blocks that end after a number of items instead of a time budget
+DIAG_ITEMS = {"d_sound": 10, "d_sentence": 10}
+DIAG_WORDS = 20
+SOUND_FOCUS = ["weak_forms", "linking", "contractions", "endings", "numbers"]
 
 
 class SessionError(Exception):
@@ -52,7 +56,7 @@ def _new_state(n_blocks: int) -> dict:
     return {"block_index": 0, "block_seconds": [0.0] * n_blocks, "study_seconds": 0.0,
             "shown": {"segment": [], "clip": [], "vocab": [], "card": [], "shadow": [], "word": []},
             "clip_queue": None, "missed_cards": [], "final_done": [], "counter": 0,
-            "test_queue": None, "events": [], "notes": []}
+            "test_queue": None, "events": [], "notes": [], "block_items": [0] * n_blocks}
 
 
 def active_session() -> dict | None:
@@ -60,16 +64,22 @@ def active_session() -> dict | None:
     return public_session(_load(row["id"])) if row else None
 
 
-def create_session(minutes: int, mode: str = "standard", replace: bool = False, form: str | None = None) -> dict:
+def create_session(minutes: int, mode: str = "standard", replace: bool = False, form: str | None = None,
+                   focus_clip: str | None = None) -> dict:
     prof = db.profile()
     if mode == "test":
-        if form not in ("A", "B", "C"):
+        if form not in progress.TEST_SCHEDULE:
             raise SessionError(400, "不明なテストです")
         plan = [planner._block("test", 0)]
+    elif mode == "profile":
+        # listening-profile diagnostic: sound -> words -> sentences -> unseen conversations (~20-25 min)
+        plan = [planner._block(k, m) for k, m in (("d_sound", 4), ("d_words", 5), ("d_sentence", 4), ("test", 10))]
+        taken = {r["form"] for r in db.q("SELECT form FROM tests")}
+        form = "A" if "A" not in taken else None
     else:
         if not 5 <= minutes <= 300:
             raise SessionError(400, "学習時間は 5〜300 分で指定してください")
-        plan = planner.build_plan(minutes, prof["settings"], mode)
+        plan = planner.build_plan(minutes, prof["settings"], mode, abilities.current())
     with db.tx() as conn:
         cur = conn.execute("SELECT id FROM sessions WHERE status IN ('active','paused')").fetchall()
         if cur and not replace:
@@ -78,8 +88,12 @@ def create_session(minutes: int, mode: str = "standard", replace: bool = False, 
             conn.execute("UPDATE sessions SET status='abandoned', updated_at=? WHERE id=?", (db.now_iso(), r["id"]))
         sid = uuid.uuid4().hex[:12]
         state = _new_state(len(plan))
+        if focus_clip and focus_clip in library().clips:
+            state["focus_clip"] = focus_clip
         if mode == "test":
             state["test_queue"] = _test_queue(form)
+        elif mode == "profile":
+            state["test_queue"] = _test_queue(form) if form else _unseen_queue(conn, prof["level"])
         conn.execute("INSERT INTO sessions (id, mode, minutes, status, created_at, updated_at, plan, state, test_form)"
                      " VALUES (?,?,?,?,?,?,?,?,?)",
                      (sid, mode, minutes, "active", db.now_iso(), db.now_iso(), json.dumps(plan), json.dumps(state), form))
@@ -95,7 +109,8 @@ def public_session(s: dict) -> dict:
     return {"id": s["id"], "mode": s["mode"], "minutes": s["minutes"], "status": s["status"],
             "test_form": s.get("test_form"), "created_at": s["created_at"], "blocks": blocks,
             "block_index": st["block_index"], "study_seconds": round(st["study_seconds"]),
-            "planned_study_minutes": planner.study_minutes(s["plan"]), "notes": st.get("notes", [])[-3:]}
+            "planned_study_minutes": planner.study_minutes(s["plan"]), "notes": st.get("notes", [])[-3:],
+            "block_items": st.get("block_items", []), "diag_items": {**DIAG_ITEMS, "d_words": DIAG_WORDS}}
 
 
 def _account_time(conn, s: dict, elapsed: float | None) -> None:
@@ -131,7 +146,8 @@ def extend(session_id: str, minutes: int) -> dict:
         s = _load(session_id, conn)
         if s["status"] in ("completed", "abandoned"):
             raise SessionError(409, "このセッションは終了しています")
-        extra = planner.extra_blocks(minutes, start=s["state"]["counter"])
+        extra = planner.extra_blocks(minutes, start=s["state"]["counter"],
+                                     first=abilities.BLOCK_FOR.get(abilities.priority(abilities.current(conn)) or ""))
         plan = s["plan"]
         idx = s["state"]["block_index"]
         # put extension before an unstarted closing block (shadowing / final review)
@@ -141,6 +157,8 @@ def extend(session_id: str, minutes: int) -> dict:
         s["plan"] = plan[:insert_at] + extra + plan[insert_at:]
         bs = s["state"]["block_seconds"]
         s["state"]["block_seconds"] = bs[:insert_at] + [0.0] * len(extra) + bs[insert_at:]
+        bit = s["state"].setdefault("block_items", [0] * len(bs))
+        s["state"]["block_items"] = bit[:insert_at] + [0] * len(extra) + bit[insert_at:]
         s["minutes"] = s["minutes"] + minutes
         conn.execute("UPDATE sessions SET minutes=? WHERE id=?", (s["minutes"], session_id))
         _save(conn, s)
@@ -162,8 +180,7 @@ def finish(session_id: str) -> dict:
             s["status"] = "completed"
             s["completed_at"] = db.now_iso()
             conn.execute("UPDATE pending_items SET answered=2 WHERE session_id=? AND answered=0", (session_id,))
-            if s["mode"] == "test":
-                _record_test(conn, s)
+            _on_complete(conn, s)
             _save(conn, s)
     return summary(session_id)
 
@@ -176,8 +193,7 @@ def _advance(conn, s: dict) -> None:
     if st["block_index"] >= len(s["plan"]):
         s["status"] = "completed"
         s["completed_at"] = db.now_iso()
-        if s["mode"] == "test":
-            _record_test(conn, s)
+        _on_complete(conn, s)
 
 
 # --- next item ---------------------------------------------------------------
@@ -206,13 +222,19 @@ def next_item(session_id: str, elapsed: float | None = None) -> dict:
                     continue
                 result = {"type": "break", "seconds_left": max(0, round(limit - st["block_seconds"][st["block_index"]]))}
                 break
-            if block["kind"] != "test" and st["block_seconds"][st["block_index"]] >= limit:
+            bi = st["block_index"]
+            st.setdefault("block_items", [0] * len(s["plan"]))
+            if block["kind"] in DIAG_ITEMS:
+                if st["block_items"][bi] >= DIAG_ITEMS[block["kind"]]:
+                    _advance(conn, s)
+                    continue
+            elif block["kind"] not in ("test", "d_words") and st["block_seconds"][bi] >= limit:
                 _advance(conn, s)
                 continue
             payload = _select(conn, s, block)
             if payload is None:
                 note = f"「{block['label']}」に出せる教材がなくなったため次へ進みました"
-                if block["kind"] != "test":
+                if block["kind"] != "test" and not block["kind"].startswith("d_"):
                     st["notes"].append(note)
                 _advance(conn, s)
                 continue
@@ -222,6 +244,7 @@ def next_item(session_id: str, elapsed: float | None = None) -> dict:
             conn.execute("INSERT INTO pending_items (id, session_id, created_at, payload) VALUES (?,?,?,?)",
                          (pid, session_id, db.now_iso(), json.dumps(payload)))
             st["counter"] += 1
+            st["block_items"][bi] += 1
             result = {"type": "item", "item": payload["public"]}
             break
         _save(conn, s)
@@ -244,6 +267,9 @@ def _pick_new_clip(conn, s: dict, kind: str, prof: dict) -> tuple[Clip, bool] | 
     lib = library()
     seen = _exposure_counts(conn, "clip")
     shown = set(s["state"]["shown"]["clip"])
+    focus = s["state"].get("focus_clip")
+    if focus and kind == "new" and focus not in shown and focus in lib.clips:
+        return lib.clips[focus], focus in seen          # chosen from the home screen
     clips = lib.train_clips()
     if kind == "multi":
         clips = [c for c in clips if c.speakers >= 2]
@@ -255,8 +281,11 @@ def _pick_new_clip(conn, s: dict, kind: str, prof: dict) -> tuple[Clip, bool] | 
         if fresh:
             if kind == "long":
                 return fresh[0], False
-            # lessons built from the learner's weak words, then user-added material, then random
-            fresh.sort(key=lambda c: ({"lesson": 0, "user": 1}.get(c.source, 2), random.random()))
+            # lessons built from the learner's weak words, then user-added material, then the learner's
+            # interests, then random
+            raw = prof.get("settings") or "{}"
+            interests = (json.loads(raw) if isinstance(raw, str) else raw).get("interests") or []
+            fresh.sort(key=lambda c: ({"lesson": 0, "user": 1}.get(c.source, 2), c.topic not in interests, random.random()))
             return fresh[0], False
     # every clip has been heard: re-listen to the one heard longest ago (never twice in one session)
     old = [c for c in clips if c.id not in shown and abs(c.level - prof["level"]) <= 1]
@@ -267,12 +296,20 @@ def _pick_new_clip(conn, s: dict, kind: str, prof: dict) -> tuple[Clip, bool] | 
 
 
 def _comprehension_payload(clip: Clip, relisten: bool, block: str) -> dict:
+    # choices are shuffled every time: the written material puts most right answers second, and a fixed
+    # position would let "always pick 2" score ~80% on the comprehension measures
+    rng = random.Random()
+    public_qs, answers = [], []
+    for q in clip.questions:
+        order = list(range(len(q["choices"])))
+        rng.shuffle(order)
+        public_qs.append({"q": q["q"], "choices": [q["choices"][i] for i in order], "type": q.get("type")})
+        answers.append(order.index(q["answer"]))
     return {
         "type": "comprehension",
         "public": {"type": "comprehension", "clip": clip.public(with_text=False), "title": clip.title,
-                   "level": clip.level, "relisten": relisten,
-                   "questions": [{"q": q["q"], "choices": q["choices"], "type": q.get("type")} for q in clip.questions]},
-        "secret": {"clip_id": clip.id, "answers": [q["answer"] for q in clip.questions]},
+                   "level": clip.level, "relisten": relisten, "questions": public_qs},
+        "secret": {"clip_id": clip.id, "answers": answers},
     }
 
 
@@ -375,6 +412,13 @@ def _due_card_payload(conn, s: dict) -> dict | None:
             if p:
                 s["state"]["shown"]["card"].append(card["id"])
                 return p
+        if card["kind"] == "sent" and card["ref"] in sentences.bank().items:
+            done = s["state"]["shown"].setdefault("sentence", [])
+            if card["ref"] in done:
+                continue
+            done.append(card["ref"])
+            s["state"]["shown"]["card"].append(card["id"])
+            return sentences.item(sentences.bank().items[card["ref"]], reason="復習（FSRS）")
         if card["kind"] in vocab.KIND_MODALITY:
             shown_words = s["state"]["shown"].setdefault("word", [])
             if card["ref"] in shown_words:
@@ -430,6 +474,8 @@ def _select(conn, s: dict, block: dict) -> dict | None:
                     p = _vocab_payload(lib.vocab[ref], review_card=cid)
                     if p:
                         return p
+                if ckind == "sent" and ref in sentences.bank().items:
+                    return sentences.item(sentences.bank().items[ref], reason="今日間違えた文をもう一度")
                 if ckind in vocab.KIND_MODALITY:
                     p = vocab.card_item(cid, "今日間違えた単語をもう一度")
                     if p:
@@ -478,6 +524,25 @@ def _select(conn, s: dict, block: dict) -> dict | None:
                 return p
         return None
 
+    if kind == "d_sound":
+        return _diag_sound(conn, s, prof)
+
+    if kind == "d_words":
+        did = st.get("vocab_diag")
+        if not did:
+            did = vocab.start_diagnostic_conn(conn, replace=False, max_items=DIAG_WORDS)["id"]
+            st["vocab_diag"] = did
+        r = vocab.diag_next_conn(conn, did)
+        if r["done"] or not r["item"]:
+            return None
+        item = dict(r["item"])
+        vid = item.pop("item_id")
+        item["reason"] = None
+        return {"type": "word", "public": {**item, "diagnostic": True}, "secret": {"vocab_item": vid}}
+
+    if kind in ("d_sentence", "sentence"):
+        return _sentence_item(conn, s, prof, diagnostic=kind == "d_sentence")
+
     if kind == "words":
         shown_words = st["shown"].setdefault("word", [])
         p = vocab.pick_next(conn, set(shown_words))
@@ -501,6 +566,84 @@ def _select(conn, s: dict, block: dict) -> dict | None:
         return _shadow_payload(seg)
 
     raise AssertionError(kind)
+
+
+def _diag_sound(conn, s: dict, prof: dict) -> dict | None:
+    """2-up/1-down over clip levels, rotating the sound category; uses bundled training audio only."""
+    st = s["state"]
+    ds = st.setdefault("d_sound", {"level": max(1, min(4, prof["level"] if prof["onboarded"] else 2)), "streak": 0})
+    lib = library()
+    shown = set(st["shown"]["segment"])
+    n = st["block_items"][st["block_index"]]
+    focus = SOUND_FOCUS[n % len(SOUND_FOCUS)]
+    for lv in _level_order(ds["level"]):
+        segs = [sg for c in lib.train_clips() if c.source == "builtin" and c.level == lv for sg in c.segments
+                if sg.id not in shown and sg.audio]
+        random.shuffle(segs)
+        for prefer in (focus, None):
+            for seg in segs:
+                d = _discrimination_payload(seg, prefer)
+                if d:
+                    st["shown"]["segment"].append(seg.id)
+                    d["public"]["reason"] = None
+                    return d
+    return None
+
+
+def _sentence_item(conn, s: dict, prof: dict, diagnostic: bool) -> dict | None:
+    st = s["state"]
+    bank = sentences.bank()
+    done = set(st["shown"].setdefault("sentence", []))
+    seen = _exposure_counts(conn, "sentence")
+    if diagnostic:
+        # spread over levels around the learner, two per level, easiest first
+        n = st["block_items"][st["block_index"]]
+        base = prof["level"] if prof["onboarded"] else 2
+        plan = sorted({max(1, min(5, base + d)) for d in (-2, -1, 0, 1, 2)})
+        lv = plan[min(len(plan) - 1, n * len(plan) // DIAG_ITEMS["d_sentence"])]
+        levels = [lv] + _level_order(lv)
+    else:
+        levels = _level_order(prof["level"])
+    for lv in levels:
+        pool = [x for x in bank.by_level(lv) if x.id not in done and bank.audio(x)]
+        if not diagnostic:
+            pool.sort(key=lambda x: (x.id in seen, (seen.get(x.id) or {}).get("best") or 0, random.random()))
+        else:
+            random.shuffle(pool)
+        if pool:
+            x = pool[0]
+            st["shown"]["sentence"].append(x.id)
+            return sentences.item(x, reason=None if diagnostic else f"構文：{sentences.FOCUS_LABEL[x.focus]}")
+    return None
+
+
+def _unseen_queue(conn, level: int) -> list[dict]:
+    """Five never-heard training clips around the learner's level, for re-taking the profile diagnostic."""
+    seen = _exposure_counts(conn, "clip")
+    lib = library()
+    out: list[str] = []
+    # five clips spread around the level; at the ends of the scale the nearest levels fill in
+    for lv in sorted((max(1, min(5, level + d)) for d in (-2, -1, 0, 1, 2)), key=lambda x: (abs(x - level), x)):
+        fresh = [c for c in lib.train_clips() if c.level == lv and c.source == "builtin" and c.id not in seen
+                 and c.questions and c.id not in out]
+        if not fresh:
+            fresh = [c for c in lib.train_clips() if c.source == "builtin" and c.id not in seen and c.questions
+                     and c.id not in out and abs(c.level - level) <= 2]
+        if fresh:
+            out.append(random.choice(fresh).id)
+    out.sort(key=lambda cid: lib.clips[cid].level)
+    return [{"type": "comprehension", "clip_id": cid} for cid in out]
+
+
+def _on_complete(conn, s: dict) -> None:
+    if s["mode"] == "test":
+        _record_test(conn, s)
+        abilities.save_snapshot(conn, s["id"], f"checkpoint-{s.get('test_form')}")
+    elif s["mode"] == "profile":
+        if s.get("test_form"):          # first diagnostic: form A also sets the starting level
+            _record_test(conn, s)
+        abilities.save_snapshot(conn, s["id"], "diagnostic")
+        conn.execute("UPDATE profile SET onboarded=1 WHERE id=1")
 
 
 def _test_queue(form: str) -> list[dict]:
@@ -542,7 +685,7 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
         _account_time(conn, s, elapsed)
         payload = json.loads(row["payload"])
         block = payload["public"]["block"]
-        is_test = s["mode"] == "test"
+        is_test = s["mode"] in ("test", "profile")   # measurement: no level changes mid-way
         typ = payload["type"]
         sec = payload["secret"]
         fb: dict = {"type": typ}
@@ -554,16 +697,24 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
             results = []
             for i, q in enumerate(clip.questions):
                 g = given[i] if i < len(given) else None
-                results.append({"correct": g == q["answer"], "given": g, "answer": q["answer"], "explain": q.get("explain", ""),
+                right = sec["answers"][i] if i < len(sec.get("answers", [])) else q["answer"]   # index in the shuffled order
+                results.append({"correct": g == right, "given": g, "answer": right, "explain": q.get("explain", ""),
                                 "type": q.get("type")})
             # a clip without questions (e.g. imported audio with no TOEIC word to ask about) is listening only:
             # it is not scored, so it can neither raise nor lower the level
             score = sum(r["correct"] for r in results) / len(results) if results else None
             fb.update({"score": score, "results": results, "transcript": clip.public(with_text=True)})
+            first_listen = not payload["public"].get("relisten") and not conn.execute(
+                "SELECT 1 FROM exposures WHERE kind='clip' AND item_id=?", (clip.id,)).fetchone()
+            plays = body.get("plays")
             if score is not None:
-                _attempt(conn, s, "comprehension", block, clip.id, clip.level, score, {"results": results})
-            if not is_test:
+                _attempt(conn, s, "comprehension", block, clip.id, clip.level, score,
+                         {"results": results, "relisten": not first_listen,
+                          "plays": int(plays) if isinstance(plays, (int, float)) else None})
+            if not is_test or (s["mode"] == "profile" and clip.pool == "train"):
+                # training clips heard in a diagnostic are no longer "never heard"
                 _expose(conn, "clip", clip.id, score if score is not None else 1.0)
+            if not is_test:
                 if score is not None:
                     progress.update_skills(conn, {"comprehension": (sum(r["correct"] for r in results), len(results))})
                     ev = progress.update_level(conn, clip.level, comprehension=score)
@@ -638,6 +789,32 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                 if not correct and cid not in s["state"]["missed_cards"]:
                     s["state"]["missed_cards"].append(cid)
 
+        elif typ == "word" and sec.get("vocab_item"):
+            # profile diagnostic: graded by the vocabulary diagnostic (staircase, follow-ups, no reveal)
+            fb = {**vocab.answer_item_conn(conn, sec["vocab_item"], body, session_id=s["id"], block=block), "type": "word"}
+            if fb.get("done"):
+                _advance(conn, s)
+
+        elif typ == "sentence":
+            x = sentences.bank().items[sec["sentence_id"]]
+            correct = body.get("choice") == sec["answer"]
+            fb.update({"correct": correct, "answer": sec["answer"], "text": x.text, "explain": x.explain,
+                       "focus": sentences.FOCUS_LABEL[x.focus], "audio": sentences.bank().audio(x)})
+            _attempt(conn, s, "sentence", block, x.id, x.level, float(correct),
+                     {"focus": x.focus, "choice": body.get("choice"), "ms": body.get("ms")})
+            before = conn.execute("SELECT best FROM exposures WHERE kind='sentence' AND item_id=?", (x.id,)).fetchone()
+            if correct and before is not None and not before["best"]:
+                from . import growth
+                growth.add(conn, "sentence", x.id, f"構文：{sentences.FOCUS_LABEL[x.focus]}",
+                           "以前間違えた文の構造を、聞いて正しく理解できました")
+            _expose(conn, "sentence", x.id, float(correct))
+            if not is_test:
+                r = srs.review(conn, "sent", x.id, Rating.Good if correct else Rating.Again, create=not correct)
+                if r:
+                    fb["srs"] = r
+                if not correct and f"sent:{x.id}" not in s["state"]["missed_cards"]:
+                    s["state"]["missed_cards"].append(f"sent:{x.id}")
+
         elif typ == "word":
             fb = {**vocab.grade(conn, payload, body, origin="session", session_id=s["id"], block=block,
                                 learn=not is_test), "type": "word"}
@@ -701,7 +878,19 @@ def summary(session_id: str) -> dict:
         "new_clips": len([r for r in rows if r["kind"] == "comprehension"]),
         "events": s["state"].get("events", []),
         "test": _test_public(test) if test else None,
+        "profile": _profile_summary(session_id) if s["mode"] in ("profile", "test") else None,
     }
+
+
+def _profile_summary(session_id: str) -> dict | None:
+    row = db.q1("SELECT * FROM ability_snapshots WHERE session_id=? ORDER BY id DESC LIMIT 1", (session_id,))
+    if not row:
+        return None
+    cur = abilities.current()
+    prev = db.q1("SELECT data FROM ability_snapshots WHERE id<? ORDER BY id DESC LIMIT 1", (row["id"],))
+    return {"measured": json.loads(row["data"]), "previous": json.loads(prev["data"]) if prev else None,
+            "labels": abilities.LABEL, "details": abilities.DETAIL, "targets": abilities.TARGET,
+            "priority": abilities.priority(cur), "advice": abilities.advice(cur), "source": row["source"]}
 
 
 def _test_public(t) -> dict:
@@ -713,7 +902,8 @@ def _test_public(t) -> dict:
 def _record_test(conn, s: dict) -> None:
     if conn.execute("SELECT 1 FROM tests WHERE session_id=?", (s["id"],)).fetchone():
         return
-    rows = conn.execute("SELECT * FROM attempts WHERE session_id=?", (s["id"],)).fetchall()
+    rows = conn.execute("SELECT * FROM attempts WHERE session_id=? AND kind IN ('dictation','review','comprehension')",
+                        (s["id"],)).fetchall()
     per_level: dict[int, dict[str, list[float]]] = {}
     for r in rows:
         k = "dictation" if r["kind"] in ("dictation", "review") else "comprehension"

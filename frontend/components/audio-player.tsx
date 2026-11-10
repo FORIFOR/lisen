@@ -20,6 +20,8 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
   const [duration, setDuration] = useState(0);
   const [slow, setSlow] = useState(false);
   const [plays, setPlays] = useState(0);
+  // listens = playbacks started from the beginning (resuming after a pause is not a new listen)
+  const [listens, setListens] = useState(0);
   const [blocked, setBlocked] = useState(false);
   const baseRate = opts?.rate ?? 1;
 
@@ -40,7 +42,12 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
     a.addEventListener("play", onPlay);
     if (opts?.autoplay) {
       a.playbackRate = baseRate;
-      a.play().then(() => setPlays(1)).catch(() => setBlocked(true)); // iOS needs a tap first
+      a.play()
+        .then(() => {
+          setPlays(1);
+          setListens(1);
+        })
+        .catch(() => setBlocked(true)); // iOS needs a tap first
     }
     return () => {
       a.pause();
@@ -62,9 +69,11 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
       a.playbackRate = s ? Math.min(baseRate, 1) * 0.75 : baseRate;
       if (from !== undefined) a.currentTime = from;
       else if (a.ended || a.currentTime >= (a.duration || Infinity) - 0.05) a.currentTime = 0;
+      const fromStart = a.currentTime < 0.3;
       a.play().then(() => {
         setBlocked(false);
         setPlays((p) => p + 1);
+        if (fromStart) setListens((n) => n + 1);
       }).catch(() => setBlocked(true));
     },
     [slow, baseRate],
@@ -83,7 +92,7 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
     if (ref.current) ref.current.currentTime = t;
   }, []);
 
-  return { ref, playing, time, duration, slow, plays, blocked, play, pause, toggle, replay, toggleSlow, seek };
+  return { ref, playing, time, duration, slow, plays, listens, blocked, play, pause, toggle, replay, toggleSlow, seek };
 }
 
 function fmt(t: number) {

@@ -59,7 +59,9 @@ def _to_mp3(wav: Path, mp3: Path) -> None:
                    check=True)
 
 
-def synthesize_clip(raw: dict) -> dict:
+def synthesize_clip(raw: dict, speak=None) -> dict:
+    """`speak(text, voice, rate, out_wav)` writes a mono 16-bit SAMPLE_RATE wav; default is macOS `say`."""
+    speak = speak or _say_to_wav
     cid = raw["id"]
     rate = config.LEVEL_RATE.get(raw["level"], 175)
     voices = raw.get("voices", {})
@@ -73,7 +75,7 @@ def synthesize_clip(raw: dict) -> dict:
         t = 0.3
         for i, (spk, text) in enumerate(raw["lines"]):
             wav_path = tdp / f"{i}.wav"
-            _say_to_wav(text, voices.get(spk, config.DEFAULT_VOICE), rate, wav_path)
+            speak(text, voices.get(spk, config.DEFAULT_VOICE), rate, wav_path)
             with wave.open(str(wav_path), "rb") as w:
                 data = w.readframes(w.getnframes())
                 dur = w.getnframes() / w.getframerate()
@@ -112,6 +114,8 @@ def save_manifest(manifest: dict) -> None:
 def build_all(raws: list[dict], force: bool = False, workers: int = 3, log=print) -> dict:
     config.ensure_dirs()
     manifest = load_manifest()
+    # imported recordings and Gemini-voiced lessons cannot be re-created with `say`; never touch them here
+    raws = [r for r in raws if r.get("source_kind") != "notebooklm" and r.get("voice_engine") != "gemini"]
     todo = [r for r in raws if force or manifest.get(r["id"], {}).get("hash") != _clip_hash(r)
             or not (config.AUDIO_DIR / manifest.get(r["id"], {}).get("audio", "missing")).exists()]
     log(f"{len(raws)} clips, {len(todo)} to synthesize")
@@ -128,9 +132,9 @@ def build_all(raws: list[dict], force: bool = False, workers: int = 3, log=print
     return manifest
 
 
-def synthesize_one(raw: dict) -> dict:
+def synthesize_one(raw: dict, speak=None) -> dict:
     config.ensure_dirs()
-    res = synthesize_clip(raw)
+    res = synthesize_clip(raw, speak)
     with _manifest_lock:
         manifest = load_manifest()
         manifest[raw["id"]] = res

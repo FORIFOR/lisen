@@ -35,6 +35,7 @@ STATUS_LABEL = {
     "sound_gap": "文字では分かるが、音で認識できない",
     "context_gap": "単語単体では聞けるが、文の中で聞き取れない",
     "learning": "学習中",
+    "forgotten": "一度覚えたが忘れた（復習間隔を短くして再学習）",
     "acquired": "習得済み（文字・音声・文脈）",
 }
 PROMPT = {
@@ -83,6 +84,8 @@ def status_of(row) -> str:
     t, a, c = m["text"], m["audio"], m["context"]
     if t is None and a is None and c is None:
         return "untested"
+    if "lapsed" in row.keys() and row["lapsed"]:
+        return "forgotten"
     if t is not None and t < 0.5:
         return "unknown"
     if None not in (t, a, c) and min(t, a, c) >= ACQUIRED:
@@ -100,8 +103,16 @@ def update_mastery(conn, word_id: str, modality: str, score: float) -> None:
     row = conn.execute("SELECT * FROM user_vocab WHERE word_id=?", (word_id,)).fetchone()
     old, n = row[f"{modality}_mastery"], row[f"{modality}_n"]
     new = score if not n or old is None else old + LEARN_RATE * (score - old)
-    conn.execute(f"UPDATE user_vocab SET {modality}_mastery=?, {modality}_n={modality}_n+1, last_tested_at=? "
-                 "WHERE word_id=?", (round(new, 3), now, word_id))
+    # forgetting: a modality that had been acquired is now missed; cleared once every tested modality is solid again
+    lapsed = row["lapsed"]
+    if old is not None and old >= ACQUIRED and score < 0.5:
+        lapsed = 1
+    elif lapsed:
+        others = [row[f"{m}_mastery"] for m in MODALITIES if m != modality and row[f"{m}_mastery"] is not None]
+        if new >= ACQUIRED and all(v >= ACQUIRED for v in others):
+            lapsed = 0
+    conn.execute(f"UPDATE user_vocab SET {modality}_mastery=?, {modality}_n={modality}_n+1, last_tested_at=?, lapsed=? "
+                 "WHERE word_id=?", (round(new, 3), now, lapsed, word_id))
 
 
 def _refresh_next_review(conn, word_id: str) -> None:
@@ -116,6 +127,14 @@ def record_context(conn, word_id: str, ok: bool) -> None:
     if word_id not in vocab_library().words:
         return
     score = 1.0 if ok else 0.0
+    if ok:
+        missed = conn.execute("SELECT 1 FROM attempts WHERE kind='word' AND item_id=? AND score < 0.5 LIMIT 1",
+                              (word_id,)).fetchone()
+        if missed:
+            from . import growth
+            w = vocab_library().words[word_id]
+            growth.add(conn, "word_in_context", word_id, f"{w.lemma}（{w.meaning}）",
+                       "以前は分からなかった単語を、初めて聞く会話の中で聞き取れました")
     update_mastery(conn, word_id, "context", score)
     srs.review(conn, CARD_KIND["context"], word_id, rating_for(score), create=not ok)
     _refresh_next_review(conn, word_id)
@@ -301,26 +320,30 @@ def answer_item(item_id: str, body: dict) -> dict:
     """Grade a stored item. Re-sending the same answer returns the stored result (safe retry);
     a different answer to an already-answered item is rejected."""
     with db.tx() as conn:
-        row = conn.execute("SELECT * FROM vocab_items WHERE id=?", (item_id,)).fetchone()
-        if not row:
-            raise VocabError(404, "問題が見つかりません")
-        sent = {"choice": body.get("choice"), "confidence": body.get("confidence") or "sure"}
-        if sent["choice"] is None:
-            sent["confidence"] = "unknown"
-        if row["answered"] == 1:
-            prev = json.loads(row["answer"])
-            if prev == sent:
-                return {**json.loads(row["feedback"]), "duplicate": True}
-            raise VocabError(409, "この問題は回答済みです（別の端末で回答された可能性があります）")
-        if row["answered"] == 2:
-            raise VocabError(409, "この問題は無効になりました（診断がやり直されました）")
-        payload = json.loads(row["payload"])
-        is_diag = row["origin"] == "diag"
-        fb = grade(conn, payload, body, origin=row["origin"])
-        if is_diag:
-            fb = _diag_after(conn, row["origin_id"], payload, fb)
-        conn.execute("UPDATE vocab_items SET answered=1, answer=?, feedback=? WHERE id=?",
-                     (json.dumps(sent), json.dumps(fb, ensure_ascii=False), item_id))
+        return answer_item_conn(conn, item_id, body)
+
+
+def answer_item_conn(conn, item_id: str, body: dict, session_id: str | None = None, block: str | None = None) -> dict:
+    row = conn.execute("SELECT * FROM vocab_items WHERE id=?", (item_id,)).fetchone()
+    if not row:
+        raise VocabError(404, "問題が見つかりません")
+    sent = {"choice": body.get("choice"), "confidence": body.get("confidence") or "sure"}
+    if sent["choice"] is None:
+        sent["confidence"] = "unknown"
+    if row["answered"] == 1:
+        prev = json.loads(row["answer"])
+        if prev == sent:
+            return {**json.loads(row["feedback"]), "duplicate": True}
+        raise VocabError(409, "この問題は回答済みです（別の端末で回答された可能性があります）")
+    if row["answered"] == 2:
+        raise VocabError(409, "この問題は無効になりました（診断がやり直されました）")
+    payload = json.loads(row["payload"])
+    is_diag = row["origin"] == "diag"
+    fb = grade(conn, payload, body, origin=row["origin"], session_id=session_id, block=block)
+    if is_diag:
+        fb = _diag_after(conn, row["origin_id"], payload, fb)
+    conn.execute("UPDATE vocab_items SET answered=1, answer=?, feedback=? WHERE id=?",
+                 (json.dumps(sent), json.dumps(fb, ensure_ascii=False), item_id))
     return fb
 
 
@@ -369,63 +392,71 @@ def diag_public(d: dict) -> dict:
             "tier": st["tier"], "created_at": d["created_at"], "result": d["result"]}
 
 
-def start_diagnostic(replace: bool = False) -> dict:
+def start_diagnostic(replace: bool = False, max_items: int = DIAG_MAX_ITEMS) -> dict:
     with db.tx() as conn:
-        active = conn.execute("SELECT id FROM vocab_diagnostics WHERE status='active' ORDER BY created_at DESC").fetchall()
-        if active and not replace:
-            return {**diag_public(_diag_load(conn, active[0]["id"])), "resumed": True}
-        for r in active:
-            conn.execute("UPDATE vocab_diagnostics SET status='abandoned', updated_at=? WHERE id=?", (db.now_iso(), r["id"]))
-            conn.execute("UPDATE vocab_items SET answered=2 WHERE origin='diag' AND origin_id=? AND answered=0", (r["id"],))
-        prof = conn.execute("SELECT level FROM profile WHERE id=1").fetchone()
-        start = {1: 1, 2: 2, 3: 2, 4: 3, 5: 3}.get(prof["level"], 2)
-        did = uuid.uuid4().hex[:12]
-        state = {"tier": start, "streak": 0, "asked": [], "queue": [], "history": [], "probes": 0,
-                 "answered": 0, "max": DIAG_MAX_ITEMS}
-        conn.execute("INSERT INTO vocab_diagnostics (id, status, created_at, updated_at, state) VALUES (?,?,?,?,?)",
-                     (did, "active", db.now_iso(), db.now_iso(), json.dumps(state)))
-        return {**diag_public(_diag_load(conn, did)), "resumed": False}
+        return start_diagnostic_conn(conn, replace, max_items)
+
+
+def start_diagnostic_conn(conn, replace: bool = False, max_items: int = DIAG_MAX_ITEMS) -> dict:
+    active = conn.execute("SELECT id FROM vocab_diagnostics WHERE status='active' ORDER BY created_at DESC").fetchall()
+    if active and not replace:
+        return {**diag_public(_diag_load(conn, active[0]["id"])), "resumed": True}
+    for r in active:
+        conn.execute("UPDATE vocab_diagnostics SET status='abandoned', updated_at=? WHERE id=?", (db.now_iso(), r["id"]))
+        conn.execute("UPDATE vocab_items SET answered=2 WHERE origin='diag' AND origin_id=? AND answered=0", (r["id"],))
+    prof = conn.execute("SELECT level FROM profile WHERE id=1").fetchone()
+    start = {1: 1, 2: 2, 3: 2, 4: 3, 5: 3}.get(prof["level"], 2)
+    did = uuid.uuid4().hex[:12]
+    state = {"tier": start, "streak": 0, "asked": [], "queue": [], "history": [], "probes": 0,
+             "answered": 0, "max": max_items}
+    conn.execute("INSERT INTO vocab_diagnostics (id, status, created_at, updated_at, state) VALUES (?,?,?,?,?)",
+                 (did, "active", db.now_iso(), db.now_iso(), json.dumps(state)))
+    return {**diag_public(_diag_load(conn, did)), "resumed": False}
 
 
 def diag_next(did: str) -> dict:
+    with db.tx() as conn:
+        return diag_next_conn(conn, did)
+
+
+def diag_next_conn(conn, did: str) -> dict:
     lib = vocab_library()
     rng = random.Random()
-    with db.tx() as conn:
-        d = _diag_load(conn, did)
-        if d["status"] != "active":
-            return {"diagnostic": diag_public(d), "item": None, "done": d["status"] == "completed"}
-        pending = conn.execute("SELECT payload FROM vocab_items WHERE origin='diag' AND origin_id=? AND answered=0"
-                               " ORDER BY created_at DESC LIMIT 1", (did,)).fetchone()
-        if pending:
-            return {"diagnostic": diag_public(d), "item": json.loads(pending["payload"])["public"], "done": False}
-        st = d["state"]
-        payload = None
-        while payload is None and st["answered"] < st["max"]:
-            ready = [q for q in st["queue"] if q["after"] <= st["answered"]]
-            if ready:
-                q = ready[0]
-                st["queue"].remove(q)
-                payload = build_item(lib.words[q["word"]], q["modality"], rng)
-                continue
-            asked = set(st["asked"])
-            fresh = [w for w in lib.by_tier(st["tier"]) if w.id not in asked]
-            if not fresh:
-                fresh = [w for w in lib.words.values() if w.id not in asked]
-            if not fresh:
-                break
-            w = rng.choice(fresh)
-            mod = "context" if st["probes"] % 4 == 3 else "audio"
-            payload = build_item(w, mod, rng, probe=True) or build_item(w, "text", rng, probe=True)
-            st["asked"].append(w.id)
-            st["probes"] += 1
-        if payload is None:
-            _diag_complete(conn, d)
-            _diag_save(conn, d)
-            return {"diagnostic": diag_public(d), "item": None, "done": True}
-        payload["public"]["progress"] = {"answered": st["answered"], "max": st["max"]}
-        item = _insert_item(conn, "diag", did, payload)
+    d = _diag_load(conn, did)
+    if d["status"] != "active":
+        return {"diagnostic": diag_public(d), "item": None, "done": d["status"] == "completed"}
+    pending = conn.execute("SELECT payload FROM vocab_items WHERE origin='diag' AND origin_id=? AND answered=0"
+                           " ORDER BY created_at DESC LIMIT 1", (did,)).fetchone()
+    if pending:
+        return {"diagnostic": diag_public(d), "item": json.loads(pending["payload"])["public"], "done": False}
+    st = d["state"]
+    payload = None
+    while payload is None and st["answered"] < st["max"]:
+        ready = [q for q in st["queue"] if q["after"] <= st["answered"]]
+        if ready:
+            q = ready[0]
+            st["queue"].remove(q)
+            payload = build_item(lib.words[q["word"]], q["modality"], rng)
+            continue
+        asked = set(st["asked"])
+        fresh = [w for w in lib.by_tier(st["tier"]) if w.id not in asked]
+        if not fresh:
+            fresh = [w for w in lib.words.values() if w.id not in asked]
+        if not fresh:
+            break
+        w = rng.choice(fresh)
+        mod = "context" if st["probes"] % 4 == 3 else "audio"
+        payload = build_item(w, mod, rng, probe=True) or build_item(w, "text", rng, probe=True)
+        st["asked"].append(w.id)
+        st["probes"] += 1
+    if payload is None:
+        _diag_complete(conn, d)
         _diag_save(conn, d)
-        return {"diagnostic": diag_public(d), "item": item, "done": False}
+        return {"diagnostic": diag_public(d), "item": None, "done": True}
+    payload["public"]["progress"] = {"answered": st["answered"], "max": st["max"]}
+    item = _insert_item(conn, "diag", did, payload)
+    _diag_save(conn, d)
+    return {"diagnostic": diag_public(d), "item": item, "done": False}
 
 
 def _diag_after(conn, did: str, payload: dict, fb: dict) -> dict:

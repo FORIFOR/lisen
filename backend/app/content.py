@@ -43,6 +43,7 @@ class Clip:
     audio: str | None = None
     duration: float = 0.0
     targets: list[str] = field(default_factory=list)   # vocabulary words a generated lesson trains
+    topic: str = "daily"                                # see TOPIC_LABEL
 
     @property
     def speakers(self) -> int:
@@ -52,7 +53,7 @@ class Clip:
         return {
             "id": self.id, "level": self.level, "kind": self.kind, "title": self.title,
             "audio": self.audio, "duration": self.duration, "speakers": self.speakers,
-            "source": self.source,
+            "source": self.source, "topic": self.topic,
             "segments": [
                 {"id": s.id, "index": s.index, "speaker": s.speaker, "start": s.start, "end": s.end,
                  "audio": s.audio, **({"text": s.text} if with_text else {})}
@@ -94,7 +95,25 @@ def _build_clip(raw: dict, source: str, manifest: dict) -> Clip:
         title=raw.get("title", cid), voices=raw.get("voices", {}), segments=segs,
         questions=raw.get("questions", []), vocab=vocab, source=source,
         audio=meta.get("audio"), duration=meta.get("duration", 0.0), targets=list(raw.get("target_words", [])),
+        topic=raw.get("topic") or _topic_map().get(cid) or ("imported" if raw.get("source_kind") == "notebooklm" else "daily"),
     )
+
+
+_TOPICS: dict[str, str] | None = None
+TOPIC_LABEL = {"daily": "日常", "business": "ビジネス", "tech": "AI・テクノロジー", "science": "科学・教養",
+               "travel": "旅行", "conversation": "自然な会話", "imported": "取り込んだ音声"}
+
+
+def _topic_map() -> dict[str, str]:
+    global _TOPICS
+    if _TOPICS is None:
+        p = config.CONTENT_DIR / "topics.json"
+        data = json.loads(p.read_text())["topics"] if p.exists() else {}
+        _TOPICS = {}
+        for topic, ids in data.items():
+            for cid in ids:
+                _TOPICS.setdefault(cid, topic)
+    return _TOPICS
 
 
 def _load_manifest() -> dict:
@@ -107,8 +126,10 @@ def _load_manifest() -> dict:
 def raw_clips() -> list[tuple[dict, str]]:
     out = []
     for p in sorted(config.CONTENT_DIR.glob("*.json")):
-        for raw in json.loads(p.read_text()):
-            out.append((raw, "builtin"))
+        data = json.loads(p.read_text())
+        if isinstance(data, list):          # clip files; sentences.json / topics.json are not clips
+            for raw in data:
+                out.append((raw, "builtin"))
     if config.USER_CONTENT_DIR.exists():
         for p in sorted(config.USER_CONTENT_DIR.glob("*.json")):
             out.append((json.loads(p.read_text()), "user"))

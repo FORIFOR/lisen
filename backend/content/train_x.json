@@ -1,0 +1,706 @@
+[
+ {
+  "id": "x2-ai-assistant",
+  "level": 2,
+  "pool": "train",
+  "kind": "dialogue",
+  "topic": "tech",
+  "title": "AIアシスタントを使ってみる",
+  "voices": {
+   "A": "Samantha",
+   "B": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "Have you tried using an AI assistant for your emails?"
+   ],
+   [
+    "B",
+    "Yeah, I use it every morning. It writes a first draft, and then I fix it."
+   ],
+   [
+    "A",
+    "Does it save you much time?"
+   ],
+   [
+    "B",
+    "Maybe twenty minutes a day. But I always check the names and dates myself."
+   ],
+   [
+    "A",
+    "Why? Does it make mistakes?"
+   ],
+   [
+    "B",
+    "Sometimes. It once sent a meeting invite for the wrong week."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "B はAIアシスタントをどう使っている？",
+    "choices": [
+     "メールの下書きを作らせて自分で直す",
+     "メールを全部自動で送らせる",
+     "会議の議事録を作らせる",
+     "翻訳に使う"
+    ],
+    "answer": 0,
+    "explain": "It writes a first draft, and then I fix it."
+   },
+   {
+    "type": "detail",
+    "q": "B が自分で確認するのは？",
+    "choices": [
+     "文法",
+     "名前と日付",
+     "件名",
+     "宛先の数"
+    ],
+    "answer": 1,
+    "explain": "I always check the names and dates myself."
+   },
+   {
+    "type": "detail",
+    "q": "以前起きた失敗は？",
+    "choices": [
+     "違う週の会議招待を送った",
+     "メールが消えた",
+     "名前を間違えた",
+     "送信が遅れた"
+    ],
+    "answer": 0,
+    "explain": "sent a meeting invite for the wrong week"
+   }
+  ],
+  "vocab": [
+   [
+    "draft",
+    "下書き"
+   ],
+   [
+    "invite",
+    "招待"
+   ]
+  ]
+ },
+ {
+  "id": "x3-ai-podcast",
+  "level": 3,
+  "pool": "train",
+  "kind": "monologue",
+  "topic": "tech",
+  "title": "ポッドキャスト：AIと学び方",
+  "voices": {
+   "A": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "Welcome back to the show. Today I want to talk about how AI is changing the way people learn new skills."
+   ],
+   [
+    "A",
+    "A few years ago, if you wanted to learn to code, you'd watch long videos and hope they covered your exact problem."
+   ],
+   [
+    "A",
+    "Now you can paste your error message into a chatbot and get an explanation in seconds."
+   ],
+   [
+    "A",
+    "That's great for getting unstuck, but there's a catch. If you never struggle, you might not remember the solution next time."
+   ],
+   [
+    "A",
+    "So my advice is simple: try for ten minutes on your own before you ask the AI."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "このポッドキャストの話題は？",
+    "choices": [
+     "AIによる学び方の変化",
+     "プログラミング言語の比較",
+     "動画配信の歴史",
+     "チャットボットの作り方"
+    ],
+    "answer": 0,
+    "explain": "how AI is changing the way people learn new skills"
+   },
+   {
+    "type": "detail",
+    "q": "話し手が指摘する問題点は？",
+    "choices": [
+     "AIの説明が遅い",
+     "苦労しないと次に解決法を覚えていないかもしれない",
+     "エラーメッセージが読めない",
+     "費用が高い"
+    ],
+    "answer": 1,
+    "explain": "If you never struggle, you might not remember the solution next time."
+   },
+   {
+    "type": "detail",
+    "q": "話し手のアドバイスは？",
+    "choices": [
+     "すぐにAIに聞く",
+     "AIに聞く前に10分は自分で試す",
+     "動画を最後まで見る",
+     "毎日1時間練習する"
+    ],
+    "answer": 1,
+    "explain": "try for ten minutes on your own before you ask the AI"
+   }
+  ],
+  "vocab": [
+   [
+    "unstuck",
+    "行き詰まりを抜けた"
+   ],
+   [
+    "catch",
+    "落とし穴"
+   ]
+  ]
+ },
+ {
+  "id": "x4-ai-launch-meeting",
+  "level": 4,
+  "pool": "train",
+  "kind": "dialogue",
+  "topic": "tech",
+  "title": "AI機能のリリース会議",
+  "voices": {
+   "A": "Karen",
+   "B": "Daniel",
+   "C": "Samantha"
+  },
+  "lines": [
+   [
+    "A",
+    "So the question is whether the summary feature is ready to ship next Tuesday."
+   ],
+   [
+    "B",
+    "Technically, yes. Accuracy on our test set is around ninety-two percent."
+   ],
+   [
+    "C",
+    "My concern is the other eight percent. When it's wrong, it sounds just as confident as when it's right."
+   ],
+   [
+    "A",
+    "Could we show a warning when the source document is very long? That's where most errors happen."
+   ],
+   [
+    "B",
+    "That's doable by Tuesday. A proper confidence score would take another month, though."
+   ],
+   [
+    "A",
+    "OK, let's ship with the warning and put the confidence score on the roadmap."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "C の懸念は？",
+    "choices": [
+     "精度が低すぎる",
+     "間違えたときも自信ありげに見える",
+     "リリースが遅れる",
+     "テストデータが少ない"
+    ],
+    "answer": 1,
+    "explain": "When it's wrong, it sounds just as confident as when it's right."
+   },
+   {
+    "type": "detail",
+    "q": "誤りが多いのはどんなとき？",
+    "choices": [
+     "元の文書が非常に長いとき",
+     "画像が含まれるとき",
+     "英語以外のとき",
+     "夜間のアクセス"
+    ],
+    "answer": 0,
+    "explain": "when the source document is very long … That's where most errors happen."
+   },
+   {
+    "type": "gist",
+    "q": "会議の結論は？",
+    "choices": [
+     "リリースを1か月延期",
+     "警告表示付きで火曜にリリースし、信頼度スコアは今後の計画に入れる",
+     "機能を中止",
+     "信頼度スコアを火曜までに完成させる"
+    ],
+    "answer": 1,
+    "explain": "let's ship with the warning and put the confidence score on the roadmap"
+   }
+  ],
+  "vocab": [
+   [
+    "ship",
+    "出荷する、公開する"
+   ],
+   [
+    "roadmap",
+    "今後の計画"
+   ]
+  ]
+ },
+ {
+  "id": "x5-ai-regulation",
+  "level": 5,
+  "pool": "train",
+  "kind": "lecture",
+  "topic": "tech",
+  "title": "講義：AI規制のジレンマ",
+  "voices": {
+   "A": "Moira"
+  },
+  "lines": [
+   [
+    "A",
+    "Regulating a technology that changes every few months poses a genuine dilemma for lawmakers."
+   ],
+   [
+    "A",
+    "Rules written too early tend to target the wrong risks, while rules written too late arrive after the harmful practices have already become standard."
+   ],
+   [
+    "A",
+    "One proposed compromise is to regulate outcomes rather than methods: instead of banning particular techniques, you hold companies responsible for measurable harms, whatever the underlying model happens to be."
+   ],
+   [
+    "A",
+    "Critics point out, however, that some harms, such as gradual erosion of trust, are notoriously hard to measure."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "gist",
+    "q": "講義の中心となる問題は？",
+    "choices": [
+     "変化の速い技術をどう規制するか",
+     "AIの開発費用",
+     "AIの歴史",
+     "企業間の競争"
+    ],
+    "answer": 0,
+    "explain": "Regulating a technology that changes every few months poses a genuine dilemma"
+   },
+   {
+    "type": "detail",
+    "q": "提案された妥協案は？",
+    "choices": [
+     "特定の技術を禁止する",
+     "手法ではなく結果を規制する",
+     "規制を一切しない",
+     "企業の自主規制に任せる"
+    ],
+    "answer": 1,
+    "explain": "regulate outcomes rather than methods"
+   },
+   {
+    "type": "inference",
+    "q": "批判者の指摘は？",
+    "choices": [
+     "企業が反対している",
+     "信頼の低下のように測りにくい害がある",
+     "規制が早すぎる",
+     "技術の変化が遅い"
+    ],
+    "answer": 1,
+    "explain": "some harms, such as gradual erosion of trust, are notoriously hard to measure"
+   }
+  ],
+  "vocab": [
+   [
+    "dilemma",
+    "板挟み"
+   ],
+   [
+    "erosion",
+    "浸食、徐々に失われること"
+   ]
+  ]
+ },
+ {
+  "id": "x3-client-call",
+  "level": 3,
+  "pool": "train",
+  "kind": "dialogue",
+  "topic": "business",
+  "title": "取引先との電話",
+  "voices": {
+   "A": "Daniel",
+   "B": "Moira"
+  },
+  "lines": [
+   [
+    "A",
+    "Hi Sarah, it's Ken from Brightline. Thanks for sending the contract."
+   ],
+   [
+    "B",
+    "No problem. Did you have any questions about it?"
+   ],
+   [
+    "A",
+    "Just one. Section four says payment is due in thirty days. Our finance team usually works with sixty."
+   ],
+   [
+    "B",
+    "I see. I can't change that myself, but I'll ask my manager and get back to you by Thursday."
+   ],
+   [
+    "A",
+    "That'd be great. Everything else looks fine to us."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "Ken が確認したいのは？",
+    "choices": [
+     "納期",
+     "支払期限",
+     "契約期間",
+     "価格"
+    ],
+    "answer": 1,
+    "explain": "payment is due in thirty days. Our finance team usually works with sixty."
+   },
+   {
+    "type": "detail",
+    "q": "Sarah はどうする？",
+    "choices": [
+     "その場で変更する",
+     "上司に確認して木曜までに返事する",
+     "契約を取り消す",
+     "経理部に直接電話する"
+    ],
+    "answer": 1,
+    "explain": "I'll ask my manager and get back to you by Thursday"
+   }
+  ],
+  "vocab": [
+   [
+    "contract",
+    "契約書"
+   ],
+   [
+    "get back to",
+    "折り返し連絡する"
+   ]
+  ]
+ },
+ {
+  "id": "x4-budget-review",
+  "level": 4,
+  "pool": "train",
+  "kind": "dialogue",
+  "topic": "business",
+  "title": "予算の見直し",
+  "voices": {
+   "A": "Samantha",
+   "B": "Karen"
+  },
+  "lines": [
+   [
+    "A",
+    "We're about fifteen percent over budget on the marketing campaign. Where did most of it go?"
+   ],
+   [
+    "B",
+    "Mostly the video production. The agency charged extra for the second round of edits."
+   ],
+   [
+    "A",
+    "Was the second round really necessary?"
+   ],
+   [
+    "B",
+    "Honestly, part of it was our fault. We changed the main message after filming had already started."
+   ],
+   [
+    "A",
+    "Then let's agree on the message before we brief any agency next time, and cap the number of revisions in the contract."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "予算超過の主な原因は？",
+    "choices": [
+     "広告の掲載費",
+     "動画制作の追加修正費",
+     "人件費",
+     "イベント会場費"
+    ],
+    "answer": 1,
+    "explain": "Mostly the video production. The agency charged extra for the second round of edits."
+   },
+   {
+    "type": "inference",
+    "q": "B が認めたことは？",
+    "choices": [
+     "代理店の請求ミス",
+     "撮影開始後にメッセージを変えた自社の責任",
+     "予算が少なすぎた",
+     "動画が不要だった"
+    ],
+    "answer": 1,
+    "explain": "part of it was our fault. We changed the main message after filming had already started."
+   },
+   {
+    "type": "detail",
+    "q": "次回の対策は？",
+    "choices": [
+     "代理店を変える",
+     "依頼前にメッセージを決め、修正回数を契約で制限する",
+     "動画をやめる",
+     "予算を増やす"
+    ],
+    "answer": 1,
+    "explain": "agree on the message before we brief any agency … cap the number of revisions"
+   }
+  ],
+  "vocab": [
+   [
+    "over budget",
+    "予算超過"
+   ],
+   [
+    "cap",
+    "上限を設ける"
+   ]
+  ]
+ },
+ {
+  "id": "x5-earnings-call",
+  "level": 5,
+  "pool": "train",
+  "kind": "monologue",
+  "topic": "business",
+  "title": "決算説明会",
+  "voices": {
+   "A": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "Revenue for the quarter came in slightly below our guidance, primarily due to delayed orders from two large enterprise customers."
+   ],
+   [
+    "A",
+    "We want to emphasize that neither order was cancelled; both have since been signed and will be recognized next quarter."
+   ],
+   [
+    "A",
+    "Excluding those deals, growth in our subscription business actually accelerated, which we view as the more important long-term indicator."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "売上が見通しを下回った理由は？",
+    "choices": [
+     "大口顧客2社からの注文が遅れた",
+     "注文がキャンセルされた",
+     "価格を下げた",
+     "新製品が売れなかった"
+    ],
+    "answer": 0,
+    "explain": "due to delayed orders from two large enterprise customers"
+   },
+   {
+    "type": "detail",
+    "q": "その注文はどうなった？",
+    "choices": [
+     "取り消された",
+     "契約済みで来期に計上される",
+     "交渉中",
+     "他社に奪われた"
+    ],
+    "answer": 1,
+    "explain": "both have since been signed and will be recognized next quarter"
+   },
+   {
+    "type": "inference",
+    "q": "話し手が長期的に重要だと考える指標は？",
+    "choices": [
+     "一時的な大口取引",
+     "サブスクリプション事業の成長",
+     "四半期の総売上",
+     "顧客数"
+    ],
+    "answer": 1,
+    "explain": "growth in our subscription business actually accelerated, which we view as the more important long-term indicator"
+   }
+  ],
+  "vocab": [
+   [
+    "guidance",
+    "業績見通し"
+   ],
+   [
+    "accelerated",
+    "加速した"
+   ]
+  ]
+ },
+ {
+  "id": "x2-weekend-plans",
+  "level": 2,
+  "pool": "train",
+  "kind": "dialogue",
+  "topic": "conversation",
+  "title": "自然な会話：週末の予定",
+  "voices": {
+   "A": "Moira",
+   "B": "Daniel"
+  },
+  "lines": [
+   [
+    "A",
+    "So, um, are you doing anything this weekend?"
+   ],
+   [
+    "B",
+    "Not really. Well, actually, I was thinking of going hiking, if the weather's OK."
+   ],
+   [
+    "A",
+    "Oh, nice. Where? The hills near the lake?"
+   ],
+   [
+    "B",
+    "Yeah, exactly. Do you, uh, want to come? We could leave around eight."
+   ],
+   [
+    "A",
+    "Eight's a bit early for me. How about nine?"
+   ],
+   [
+    "B",
+    "Sure, nine works. I'll text you on Saturday night."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "B の週末の予定は？",
+    "choices": [
+     "湖で釣り",
+     "天気がよければハイキング",
+     "家で休む",
+     "買い物"
+    ],
+    "answer": 1,
+    "explain": "I was thinking of going hiking, if the weather's OK"
+   },
+   {
+    "type": "detail",
+    "q": "出発時間は最終的に？",
+    "choices": [
+     "7時",
+     "8時",
+     "9時",
+     "10時"
+    ],
+    "answer": 2,
+    "explain": "How about nine? / Sure, nine works."
+   }
+  ],
+  "vocab": [
+   [
+    "hiking",
+    "ハイキング"
+   ],
+   [
+    "works",
+    "都合がいい"
+   ]
+  ]
+ },
+ {
+  "id": "x3-catching-up",
+  "level": 3,
+  "pool": "train",
+  "kind": "dialogue",
+  "topic": "conversation",
+  "title": "自然な会話：久しぶりの再会",
+  "voices": {
+   "A": "Karen",
+   "B": "Samantha"
+  },
+  "lines": [
+   [
+    "A",
+    "Hey! I haven't seen you in ages. How's the new job going?"
+   ],
+   [
+    "B",
+    "Oh, it's good. I mean, it was kind of crazy at first, you know, so many new people."
+   ],
+   [
+    "A",
+    "I bet. Are you still commuting by train?"
+   ],
+   [
+    "B",
+    "No, actually, they let me work from home three days a week now, so I only go in on Mondays and Thursdays."
+   ],
+   [
+    "A",
+    "That sounds perfect. You must save a ton of time."
+   ],
+   [
+    "B",
+    "I do, yeah. Although, honestly, I kind of miss chatting with people at the office."
+   ]
+  ],
+  "questions": [
+   {
+    "type": "detail",
+    "q": "B が出社するのは？",
+    "choices": [
+     "毎日",
+     "月曜と木曜",
+     "週3日",
+     "金曜だけ"
+    ],
+    "answer": 1,
+    "explain": "I only go in on Mondays and Thursdays"
+   },
+   {
+    "type": "inference",
+    "q": "B が少し寂しく思っていることは？",
+    "choices": [
+     "通勤",
+     "職場での雑談",
+     "前の仕事",
+     "電車"
+    ],
+    "answer": 1,
+    "explain": "I kind of miss chatting with people at the office"
+   }
+  ],
+  "vocab": [
+   [
+    "in ages",
+    "長い間"
+   ],
+   [
+    "a ton of",
+    "たくさんの"
+   ]
+  ]
+ }
+]

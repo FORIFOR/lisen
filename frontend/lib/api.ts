@@ -43,11 +43,13 @@ export type Block = {
   elapsed?: number;
   done?: boolean;
   current?: boolean;
+  /** why the planner gave this block extra time (listening profile) */
+  adapted?: string;
 };
 
 export type Session = {
   id: string;
-  mode: "standard" | "review" | "test";
+  mode: "standard" | "review" | "test" | "profile";
   minutes: number;
   status: "active" | "paused" | "completed" | "abandoned";
   test_form: string | null;
@@ -56,6 +58,8 @@ export type Session = {
   study_seconds: number;
   planned_study_minutes: number;
   notes: string[];
+  block_items?: number[];
+  diag_items?: Record<string, number>;
 };
 
 export type TestStatus = {
@@ -76,6 +80,8 @@ export type Settings = {
   playback_rate: number;
   auto_lessons: boolean;
   lesson_engine: "auto" | "gemini" | "local";
+  lesson_voice: "mac" | "gemini";
+  interests: string[];
   gemini_model: string | null;
 };
 
@@ -94,6 +100,7 @@ export type Profile = {
   tests: TestStatus[];
   active_session: Session | null;
   vocab: { diagnosed: boolean; active_diagnostic: boolean; due: number };
+  listening_profile: ListeningBrief;
 };
 
 export type SegmentRef = { id: string; audio: string; speaker: string; speakers?: number; index?: number };
@@ -138,6 +145,7 @@ export type VocabItem = ItemBase & {
   first_letter: string;
 };
 export type ShadowingItem = ItemBase & { type: "shadowing"; segment: SegmentRef; text: string; clip_title: string };
+export type SentenceItem = ItemBase & { type: "sentence"; audio: string; q: string; choices: string[]; focus: string };
 export type Modality = "text" | "audio" | "context";
 export type WordItem = {
   type: "word";
@@ -155,6 +163,8 @@ export type WordItem = {
   pos?: string;
   audio?: string;
   progress?: { answered: number; max: number };
+  /** part of the listening-profile diagnostic: the answer is not revealed */
+  diagnostic?: boolean;
 };
 export type Mastery = Record<Modality, number | null>;
 export type WordFeedback = {
@@ -234,6 +244,9 @@ export type GeneratorStatus = {
   gemini_model: string;
   tts_available: boolean;
   tts_message: string;
+  voice: "mac" | "gemini";
+  voice_setting: "mac" | "gemini";
+  gemini_tts_model: string;
 };
 export type VocabStats = {
   dataset: { name: string; license: string; words: number };
@@ -255,7 +268,29 @@ export type VocabStats = {
 };
 export const MODALITY_LABEL: Record<Modality, string> = { text: "文字で理解", audio: "音声で認識", context: "会話で理解" };
 
-export type Item = ComprehensionItem | DictationItem | DiscriminationItem | VocabItem | ShadowingItem | WordItem;
+export type Item = ComprehensionItem | DictationItem | DiscriminationItem | VocabItem | ShadowingItem | WordItem | SentenceItem;
+
+export type AbilityKey = "sound" | "vocab" | "sentence" | "conversation";
+export type Ability = {
+  label: string;
+  detail: string;
+  target: number;
+  value: number | null;
+  n: number;
+  low: number | null;
+  high: number | null;
+  provisional: boolean;
+};
+export type ListeningBrief = { diagnosed: boolean; abilities: Record<AbilityKey, Ability>; priority: AbilityKey | null; advice: string | null };
+export type Kpi = { label: string; note: string; recent: { value: number | null; n: number }; previous: { value: number | null; n: number } };
+export type GrowthEvent = { id: number; created_at: string; date: string; kind: string; ref: string; title: string; detail: string };
+export type ListeningProfile = ListeningBrief & {
+  history: { created_at: string; date: string; source: string; data: Record<AbilityKey, { value: number | null; n: number }> }[];
+  kpis: { unseen_comprehension: Kpi; first_play: Kpi; sound: Kpi; audio_vocab: Kpi; retention: { label: string; note: string; d7: number; d30: number } };
+  growth: GrowthEvent[];
+};
+export type Recommendation = { id: string; title: string; topic: string; topic_label: string; level: number; kind: string; duration: number; speakers: number; source: string };
+export const ABILITY_ORDER: AbilityKey[] = ["sound", "vocab", "sentence", "conversation"];
 
 export type NextResult =
   | { type: "item"; item: Item; session: Session }
@@ -291,6 +326,13 @@ export type Feedback = {
   ja?: string;
   typed?: string;
   rating?: number;
+  // sentence
+  text?: string;
+  explain?: string;
+  focus?: string;
+  audio?: string;
+  // profile diagnostic (vocabulary part): recorded without revealing the answer
+  recorded?: boolean;
 };
 
 export type Summary = {
@@ -307,6 +349,16 @@ export type Summary = {
     comprehension: number;
     level_estimate: number;
     detail: { levels: Record<string, { dictation: number | null; comprehension: number | null }> };
+  };
+  profile?: null | {
+    measured: Record<AbilityKey, { value: number | null; n: number }>;
+    previous: Record<AbilityKey, { value: number | null; n: number }> | null;
+    labels: Record<AbilityKey, string>;
+    details: Record<AbilityKey, string>;
+    targets: Record<AbilityKey, number>;
+    priority: AbilityKey | null;
+    advice: string | null;
+    source: string;
   };
 };
 

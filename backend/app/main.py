@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from . import analytics, asr, config, db, engine, imports, lessons, planner, progress, srs, tts, vocab
+from . import abilities, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, tts, vocab
 from .content import library, reload_library
 from .vocab_data import vocab_library
 
@@ -45,7 +45,8 @@ def health():
     lib = library()
     vl = vocab_library()
     return {"ok": True, "clips": len(lib.clips), "missing_audio": lib.missing_audio(),
-            "words": len(vl.words), "missing_word_audio": vl.missing_audio(), "asr": asr.available()[0]}
+            "words": len(vl.words), "missing_word_audio": vl.missing_audio(), "asr": asr.available()[0],
+            "sentences": len(sentences.bank().items), "missing_sentence_audio": sentences.bank().missing_audio()}
 
 
 @app.get("/profile")
@@ -62,7 +63,14 @@ def get_profile():
         "vocab": {"diagnosed": bool(db.q1("SELECT 1 FROM vocab_diagnostics WHERE status='completed'")),
                   "active_diagnostic": bool(db.q1("SELECT 1 FROM vocab_diagnostics WHERE status='active'")),
                   "due": vocab.due_count()},
+        "listening_profile": _listening_profile_brief(),
     }
+
+
+def _listening_profile_brief() -> dict:
+    cur = abilities.current()
+    return {"diagnosed": bool(db.q1("SELECT 1 FROM ability_snapshots WHERE source='diagnostic'")),
+            "abilities": cur, "priority": abilities.priority(cur), "advice": abilities.advice(cur)}
 
 
 class SettingsIn(BaseModel):
@@ -73,7 +81,9 @@ class SettingsIn(BaseModel):
     playback_rate: float | None = Field(None, ge=0.5, le=1.5)
     auto_lessons: bool | None = None
     lesson_engine: Literal["auto", "gemini", "local"] | None = None
+    lesson_voice: Literal["mac", "gemini"] | None = None
     gemini_model: str | None = Field(None, pattern=r"^gemini-[a-z0-9][a-z0-9.\-]{1,60}$")
+    interests: list[Literal["tech", "business", "conversation", "science", "travel", "daily"]] | None = Field(None, max_length=6)
 
 
 @app.put("/settings")
@@ -105,19 +115,49 @@ class PlanIn(BaseModel):
 
 @app.post("/plan/preview")
 def plan_preview(body: PlanIn):
-    return planner.summarize(planner.build_plan(body.minutes, db.profile()["settings"], body.mode))
+    return planner.summarize(planner.build_plan(body.minutes, db.profile()["settings"], body.mode, abilities.current()))
 
 
 class SessionIn(BaseModel):
     minutes: int = Field(30, ge=0, le=300)
-    mode: str = Field("standard", pattern="^(standard|review|test)$")
+    mode: str = Field("standard", pattern="^(standard|review|test|profile)$")
     replace: bool = False
     form: str | None = None
+    focus_clip: str | None = Field(None, max_length=80)
 
 
 @app.post("/sessions")
 def create_session(body: SessionIn):
-    return engine.create_session(body.minutes, body.mode, body.replace, body.form)
+    return engine.create_session(body.minutes, body.mode, body.replace, body.form, body.focus_clip)
+
+
+# --- listening profile / recommendations ----------------------------------------------
+
+@app.get("/v1/listening-profile")
+def listening_profile():
+    return {**_listening_profile_brief(), "history": abilities.history(), "kpis": analytics.kpis(),
+            "growth": growth.recent(14, 20)}
+
+
+@app.get("/v1/recommendations")
+def recommendations(limit: int = 6):
+    from .content import TOPIC_LABEL
+    prof = db.profile()
+    interests = prof["settings"].get("interests") or []
+    seen = {r["item_id"] for r in db.q("SELECT item_id FROM exposures WHERE kind='clip'")}
+    lv = prof["level"]
+    cands = [c for c in library().train_clips() if c.id not in seen and c.audio and abs(c.level - lv) <= 1]
+    cands.sort(key=lambda c: (c.topic not in interests, interests.index(c.topic) if c.topic in interests else 9,
+                              abs(c.level - lv), c.id))
+    return {"items": [{"id": c.id, "title": c.title, "topic": c.topic, "topic_label": TOPIC_LABEL.get(c.topic, c.topic),
+                       "level": c.level, "kind": c.kind, "duration": c.duration, "speakers": c.speakers,
+                       "source": c.source} for c in cands[:max(1, min(limit, 20))]],
+            "interests": interests, "topics": TOPIC_LABEL}
+
+
+@app.get("/v1/growth")
+def growth_events(days: int = 7):
+    return {"items": growth.recent(max(1, min(days, 60)), 20)}
 
 
 @app.get("/sessions/active")
@@ -155,6 +195,7 @@ class AnswerIn(BaseModel):
     confidence: Literal["sure", "guess", "unknown"] | None = None
     ms: int | None = Field(None, ge=0)
     replays: int = 0
+    plays: int | None = Field(None, ge=0, le=100)   # comprehension: how many times the audio was started
     slow: bool = False
 
 
@@ -316,7 +357,7 @@ def audio(path: str):
 def export():
     out = {}
     for t in ("profile", "skill_stats", "level_stats", "exposures", "sessions", "attempts", "srs_cards", "daily_log", "tests",
-              "user_vocab", "vocab_diagnostics", "audio_lessons", "imports"):
+              "user_vocab", "vocab_diagnostics", "audio_lessons", "imports", "ability_snapshots", "growth_events"):
         out[t] = [dict(r) for r in db.q(f"SELECT * FROM {t}")]
     return JSONResponse(out, headers={"Content-Disposition": "attachment; filename=listenflow-export.json"})
 

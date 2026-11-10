@@ -12,6 +12,7 @@ import type {
   DictationItem,
   DiscriminationItem,
   Feedback,
+  SentenceItem,
   ShadowingItem,
   Token,
   VocabItem,
@@ -107,7 +108,7 @@ export function ComprehensionView({ item, rate, submit, next }: Props<Comprehens
     if (!ready || busy) return;
     setBusy(true);
     ctl.pause();
-    const r = await submit({ answers, replays: ctl.plays });
+    const r = await submit({ answers, replays: ctl.plays, plays: ctl.listens });
     setBusy(false);
     if (r) setFb(r);
   };
@@ -382,6 +383,7 @@ export function DiscriminationView({ item, rate, submit, next }: Props<Discrimin
     if (fb || choice !== null) return;
     setChoice(i);
     const r = await submit({ choice: i, replays: ctl.plays });
+    if (r && item.block === "d_sound") return next();   // diagnostic: recorded, not revealed
     if (r) setFb(r);
     else setChoice(null);
   };
@@ -398,7 +400,7 @@ export function DiscriminationView({ item, rate, submit, next }: Props<Discrimin
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Header kind="聞き分け" title={item.clip_title} level={item.level} reason={item.reason ?? item.focus} />
+      <Header kind={item.block === "d_sound" ? "診断：音声識別" : "聞き分け"} title={item.block === "d_sound" ? undefined : item.clip_title} level={item.level} reason={item.reason ?? item.focus} />
       <AudioPlayer ctl={ctl} label="どちらの文が聞こえましたか？" />
       <div className="mt-4 grid gap-3">
         {item.options.map((o, i) => {
@@ -602,4 +604,89 @@ export function ShadowingView({ item, rate, submit, next }: Props<ShadowingItem>
 
 export function playUrl(rel: string) {
   new Audio(audioUrl(rel)).play().catch(() => {});
+}
+
+// ---------------------------------------------------------------- sentence (構文理解)
+
+/** Hear one sentence (no text), answer a question whose answer depends on its grammar. */
+export function SentenceView({ item, rate, submit, next }: Props<SentenceItem>) {
+  const ctl = useAudio(item.audio, { rate, autoplay: true });
+  const [fb, setFb] = useState<Feedback | null>(null);
+  const [choice, setChoice] = useState<number | null>(null);
+  const diag = item.block === "d_sentence";
+  const shownAt = useRef(0);
+  useEffect(() => {
+    shownAt.current = performance.now();
+  }, [item.item_id]);
+
+  const choose = async (i: number) => {
+    if (fb || choice !== null) return;
+    setChoice(i);
+    ctl.pause();
+    const r = await submit({ choice: i, replays: ctl.plays, ms: Math.round(performance.now() - shownAt.current) });
+    if (!r) return setChoice(null);
+    if (diag) return next();
+    setFb(r);
+  };
+  useEffect(() => {
+    if (fb) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (isTyping(e) || e.metaKey || e.ctrlKey) return;
+      if (["1", "2", "3", "4"].includes(e.key)) choose(Number(e.key) - 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+  useEnter(!!fb, next);
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <Header kind={diag ? "診断：構文理解" : "構文の聞き取り"} title={diag ? "1文を聞いて答える" : item.focus} level={item.level} reason={item.reason ?? undefined} />
+      <AudioPlayer ctl={ctl} label="1文の音声（文字は答えた後に表示）" />
+      <p className="mt-5 text-[15px] font-medium">{item.q}</p>
+      <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+        {item.choices.map((c, i) => {
+          const isAns = fb && fb.answer === i;
+          return (
+            <button
+              key={i}
+              type="button"
+              disabled={!!fb || choice !== null}
+              onClick={() => choose(i)}
+              className={cn(
+                "flex min-h-14 items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-left transition-colors",
+                !fb && choice === null && "hover:bg-muted",
+                !fb && choice === i && "border-primary bg-brand-soft",
+                fb && isAns && "border-success bg-success-soft",
+                fb && choice === i && !isAns && "border-destructive bg-danger-soft",
+              )}
+            >
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-md border text-sm tabular">{i + 1}</span>
+              <span className="flex-1">{c}</span>
+            </button>
+          );
+        })}
+      </div>
+      {!fb && <p className="mt-3 text-center text-xs text-muted-foreground">数字キー 1–4 で選択 · Space で再生/停止</p>}
+      {fb && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 space-y-3">
+          <Verdict ok={!!fb.correct}>
+            {fb.correct ? "正解" : "不正解"} — ポイント：{fb.focus}
+          </Verdict>
+          <div className="rounded-2xl border bg-card p-4">
+            <p className="text-[15px] leading-relaxed">{fb.text}</p>
+            {fb.explain && (
+              <p className="mt-2 flex gap-2 text-sm text-muted-foreground">
+                <Lightbulb className="mt-0.5 size-4 shrink-0 text-warning" />
+                {fb.explain}
+              </p>
+            )}
+          </div>
+          <div className="flex justify-end">
+            <NextButton onClick={next} />
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
 }

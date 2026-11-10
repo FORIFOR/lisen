@@ -18,7 +18,14 @@ BLOCK_INFO = {
     "final": ("総合復習", "今日間違えた箇所をもう一度確認する"),
     "break": ("休憩", "目と耳を休めましょう"),
     "test": ("初見リスニングテスト", "一度も聞いていない音声で、現在の実力を測定"),
+    "sentence": ("構文の聞き取り", "1文を聞いて、否定・時制・条件など意味を左右する構造を捉える"),
+    "d_sound": ("診断 1/4 音声識別", "似た音・弱形・音のつながりを聞き分ける（10問）"),
+    "d_words": ("診断 2/4 語彙認識", "TOEIC 語彙を音だけで認識できるか（20問）"),
+    "d_sentence": ("診断 3/4 構文理解", "1文を聞いて意味を答える（10問）"),
 }
+# minimum share of study time for never-heard audio, so drilling weaknesses never crowds out real listening
+MIN_NEW_SHARE = 0.25
+ADAPT_SHARE = 0.15
 
 TEMPLATES: dict[int, list[tuple[str, int]]] = {
     15: [("review", 5), ("new", 10)],
@@ -38,10 +45,15 @@ def _block(kind: str, minutes: float) -> dict:
     return {"kind": kind, "minutes": round(minutes, 1), "label": label, "description": desc}
 
 
-def extra_blocks(minutes: int, start: int = 0) -> list[dict]:
+def extra_blocks(minutes: int, start: int = 0, first: str | None = None) -> list[dict]:
+    """Blocks for an extension. Never starts with review; `first` (the weakest ability's block) goes first."""
     out: list[dict] = []
     remaining = minutes
     i = start
+    if first and first in BLOCK_INFO and remaining >= 5:
+        dur = min(10, remaining)
+        out.append(_block(first, dur))
+        remaining -= dur
     while remaining >= 5:
         kind, dur = EXTRA_CYCLE[i % len(EXTRA_CYCLE)]
         dur = min(dur, remaining)
@@ -74,7 +86,60 @@ def insert_breaks(blocks: list[dict], settings: dict) -> list[dict]:
     return out
 
 
-def build_plan(minutes: int, settings: dict | None = None, mode: str = "standard") -> list[dict]:
+def adapt(blocks: list[dict], profile: dict | None) -> list[dict]:
+    """Move ~15% of study time to the block that trains the weakest ability (relative to its target).
+    Donors are blocks training abilities already at target; never-heard listening keeps >= 25% of the time."""
+    from .abilities import ABILITIES, BLOCK_FOR, LABEL, TARGET
+    if not profile:
+        return blocks
+    known = {a: profile[a] for a in ABILITIES if profile.get(a) and profile[a].get("value") is not None and profile[a]["n"] >= 5}
+    weak = [(v["value"] / TARGET[a], a) for a, v in known.items() if v["value"] < TARGET[a]]
+    if not weak:
+        return blocks
+    ability = min(weak)[1]
+    target_kind = BLOCK_FOR[ability]
+    ok = {a for a, v in known.items() if v["value"] >= TARGET[a]}
+    donor_kinds = {BLOCK_FOR[a] for a in ok} | {"vocab"}
+    if "conversation" in ok:
+        donor_kinds |= {"multi", "long"}
+    donor_kinds.discard(target_kind)
+    study = [b for b in blocks if b["kind"] != "break"]
+    total = sum(b["minutes"] for b in study)
+    shift = max(2.0, round(total * ADAPT_SHARE))
+    new_min = total * MIN_NEW_SHARE
+    blocks = [dict(b) for b in blocks]
+    taken = 0.0
+    for b in blocks:
+        if taken >= shift or b["kind"] not in donor_kinds:
+            continue
+        floor = 3.0
+        if b["kind"] == "new":
+            new_total = sum(x["minutes"] for x in blocks if x["kind"] == "new")
+            room = max(0.0, new_total - new_min)
+            can = min(b["minutes"] - floor, room)
+        else:
+            can = b["minutes"] - floor
+        take = round(max(0.0, min(can, shift - taken)), 1)
+        if take > 0:
+            b["minutes"] = round(b["minutes"] - take, 1)
+            taken += take
+    if taken <= 0:
+        return blocks
+    note = f"+{taken:g}分（{LABEL[ability]} {round(known[ability]['value'] * 100)}%・目標 {round(TARGET[ability] * 100)}%）"
+    for b in blocks:
+        if b["kind"] == target_kind:
+            b["minutes"] = round(b["minutes"] + taken, 1)
+            b["adapted"] = note
+            break
+    else:
+        nb = _block(target_kind, taken)
+        nb["adapted"] = note
+        at = next((i + 1 for i, b in enumerate(blocks) if b["kind"] == "new"), 1)
+        blocks.insert(at, nb)
+    return blocks
+
+
+def build_plan(minutes: int, settings: dict | None = None, mode: str = "standard", profile: dict | None = None) -> list[dict]:
     settings = settings or {}
     minutes = int(minutes)
     if mode == "review":
@@ -93,6 +158,8 @@ def build_plan(minutes: int, settings: dict | None = None, mode: str = "standard
             tail = [b for b in blocks if b["kind"] in ("shadow", "final")]
             head = [b for b in blocks if b["kind"] not in ("shadow", "final")]
             blocks = head + extra + tail
+    if minutes >= 30:
+        blocks = adapt(blocks, profile)
     return insert_breaks(blocks, settings)
 
 

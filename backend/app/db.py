@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS user_vocab (
   word_id TEXT PRIMARY KEY,
   text_mastery REAL, audio_mastery REAL, context_mastery REAL,
   text_n INTEGER NOT NULL DEFAULT 0, audio_n INTEGER NOT NULL DEFAULT 0, context_n INTEGER NOT NULL DEFAULT 0,
-  first_seen_at TEXT, last_tested_at TEXT, next_review_at TEXT
+  first_seen_at TEXT, last_tested_at TEXT, next_review_at TEXT,
+  lapsed INTEGER NOT NULL DEFAULT 0      -- was acquired in some modality, then forgotten
 );
 CREATE TABLE IF NOT EXISTS vocab_diagnostics (
   id TEXT PRIMARY KEY, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
@@ -77,6 +78,14 @@ CREATE TABLE IF NOT EXISTS vocab_items (
   payload TEXT NOT NULL, answered INTEGER NOT NULL DEFAULT 0, answer TEXT, feedback TEXT
 );
 CREATE INDEX IF NOT EXISTS vocab_items_origin ON vocab_items(origin, origin_id, answered);
+CREATE TABLE IF NOT EXISTS ability_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, date TEXT NOT NULL, session_id TEXT,
+  source TEXT NOT NULL, data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS growth_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, date TEXT NOT NULL, kind TEXT NOT NULL,
+  ref TEXT NOT NULL, title TEXT NOT NULL, detail TEXT
+);
 CREATE TABLE IF NOT EXISTS imports (
   id TEXT PRIMARY KEY, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
   title TEXT NOT NULL, level INTEGER NOT NULL, source TEXT NOT NULL, info TEXT, error TEXT
@@ -96,7 +105,9 @@ DEFAULT_SETTINGS = {
     "show_romaji_hint": False,
     "auto_lessons": True,
     "lesson_engine": "auto",      # auto = Gemini when a key is configured, local otherwise (and on Gemini failure)
-    "gemini_model": None,         # None = LISTENFLOW_GEMINI_MODEL or the default in lessons.py
+    "gemini_model": None,
+    "lesson_voice": "mac",        # "gemini": Gemini TTS with a different voice pair per lesson (needs a key)
+    "interests": ["tech", "business", "conversation"],   # topics preferred for new listening material         # None = LISTENFLOW_GEMINI_MODEL or the default in lessons.py
 }
 
 
@@ -126,6 +137,10 @@ def connect() -> sqlite3.Connection:
             _conn.execute("PRAGMA journal_mode=WAL")
             _conn.execute("PRAGMA busy_timeout=5000")
             _conn.executescript(SCHEMA)
+            # additive migrations for databases created by earlier versions
+            cols = {r[1] for r in _conn.execute("PRAGMA table_info(user_vocab)")}
+            if "lapsed" not in cols:
+                _conn.execute("ALTER TABLE user_vocab ADD COLUMN lapsed INTEGER NOT NULL DEFAULT 0")
             if not _conn.execute("SELECT 1 FROM profile WHERE id=1").fetchone():
                 _conn.execute("INSERT INTO profile (id, settings, created_at) VALUES (1, ?, ?)",
                               (json.dumps(DEFAULT_SETTINGS), now_iso()))
