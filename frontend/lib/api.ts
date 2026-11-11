@@ -270,7 +270,15 @@ export type VocabOverview = {
   phases: Record<Phase, PhaseScore>;
   phase_labels: Record<Phase, string>;
   active_lesson: VocabLesson | null;
-  placement: { id: string; status: string; completed_at: string | null } | null;
+  placement: {
+    id: string;
+    status: string;
+    completed_at: string | null;
+    tested_words?: number;
+    estimated_known?: number | null;
+    estimated_tier?: number;
+  } | null;
+  held_audio: number;
   datasets: { file: string; name: string; license: string; words: number }[];
   minutes: number[];
 };

@@ -37,6 +37,10 @@ def test_every_word_yields_single_answer_questions_in_all_modalities():
     for w in lib.words.values():
         for mod in vocab.MODALITIES:
             p = vocab.build_item(w, mod, rng)
+            kind = {"audio": "word", "context": "example"}.get(mod)
+            if kind and lib.held(w, kind):
+                assert p is None, (w.id, mod)       # audio on hold (content/vocab/audio_review.json) is not asked
+                continue
             assert p, (w.id, mod)
             opts = [lib.words[i] for i in p["secret"]["options"]]
             assert len({o.meaning for o in opts}) == 4

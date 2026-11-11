@@ -201,13 +201,20 @@ def build_vocab_audio(words, force: bool = False, workers: int = 3, log=print) -
     """Word, study example and (if present) transfer sentence, synthesized once and cached by content hash:
     playing a word never calls a speech service. A word whose audio fails the check is left out of the
     manifest, so its questions fall back to the written form."""
-    from .vocab_data import load_audio_manifest, manifest_path
+    from .vocab_data import load_audio_manifest, load_audio_review, manifest_path
 
     config.ensure_dirs()
     manifest = load_audio_manifest()
+    review = load_audio_review()
     voices = {w.id: VOCAB_EXAMPLE_VOICES[i % len(VOCAB_EXAMPLE_VOICES)] for i, w in enumerate(words)}
     # the unseen sentence is read by a different voice than the study example
     tvoices = {w.id: VOCAB_EXAMPLE_VOICES[(i + 1) % len(VOCAB_EXAMPLE_VOICES)] for i, w in enumerate(words)}
+    # a sentence that was hard to understand can be re-read by another voice (content/vocab/audio_review.json)
+    for w in words:
+        for kind, table in (("example", voices), ("transfer", tvoices)):
+            v = (review.get(f"{w.id}:{kind}") or {}).get("voice")
+            if v:
+                table[w.id] = v
 
     def stale(w) -> bool:
         m = manifest.get(w.id) or {}

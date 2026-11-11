@@ -84,6 +84,22 @@ export default function VocabHomePage() {
         </Link>
       )}
 
+      {placed && ov.placement?.tested_words != null && (
+        <section className="rounded-2xl border bg-card p-4 text-sm">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div>
+              <div className="text-xs text-muted-foreground">診断で確認した単語</div>
+              <div className="font-medium tabular">{ov.placement.tested_words}語</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">レベルからの推定（文字で分かる語）</div>
+              <div className="font-medium tabular">{ov.placement.estimated_known != null ? `約${ov.placement.estimated_known}語` : "—"}</div>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">推定は目安です。1語ずつの状態には使わず、学習と復習で確かめた単語だけを「学習済み」にします。</p>
+        </section>
+      )}
+
       <section className="rounded-2xl border bg-card p-4 md:p-5">
         <h2 className="text-sm font-medium">単語の学習</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">覚え直す → 単語を音で確認 → 例文を音で確認 → 初めて聞く文で確認。復習が溜まっていれば最初に出します。</p>

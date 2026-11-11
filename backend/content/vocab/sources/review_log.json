@@ -1,5 +1,5 @@
 {
- "note": "Independent review of the written entries (2026-11-12). Each line: what was wrong and whether it was fixed or the word removed.",
+ "note": "Independent reviews of the written entries (2026-11-12): meaning/sense review, then a naturalness review of the English. Each line: what was wrong and whether it was fixed or the word removed.",
  "entries": [
   {
    "lemma": "distractor",
@@ -345,6 +345,361 @@
    "lemma": "troop",
    "action": "skip",
    "issue": "軍事で複数形troops中心、単数transferも不自然、TOEIC価値低"
+  },
+  {
+   "lemma": "vacation",
+   "action": "fix",
+   "issue": "[自然さ・study] stilted 'urgent mail to Ken'"
+  },
+  {
+   "lemma": "goods",
+   "action": "fix",
+   "issue": "[自然さ・study] 'All goods on this shelf' unnatural for retail"
+  },
+  {
+   "lemma": "notify",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'if anything looks strange on the account' vague"
+  },
+  {
+   "lemma": "occupation",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'His occupation is teaching' stilted"
+  },
+  {
+   "lemma": "admission",
+   "action": "fix",
+   "issue": "[自然さ・transfer] awkward ticket/price phrasing"
+  },
+  {
+   "lemma": "airplane",
+   "action": "fix",
+   "issue": "[自然さ・study] 'The airplane leaves' - say flight/plane; not announcement-like"
+  },
+  {
+   "lemma": "drawer",
+   "action": "fix",
+   "issue": "[自然さ・transfer] odd: taking a knife from drawer"
+  },
+  {
+   "lemma": "proficiency",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'proficiency in computers' unnatural"
+  },
+  {
+   "lemma": "plumber",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'sink will be ready to use' odd for plumber"
+  },
+  {
+   "lemma": "apology",
+   "action": "fix",
+   "issue": "[自然さ・transfer] apology to party guests implausible"
+  },
+  {
+   "lemma": "overhead",
+   "action": "fix",
+   "issue": "[自然さ・study] 'compartment overhead' unnatural (normally 'overhead compartment')"
+  },
+  {
+   "lemma": "deduct",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'take money from the machine' vague"
+  },
+  {
+   "lemma": "shoot",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'shoot the photos' - normally take photos"
+  },
+  {
+   "lemma": "peace",
+   "action": "fix",
+   "issue": "[自然さ・study] 'agreement for peace' - say peace agreement"
+  },
+  {
+   "lemma": "chief",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'chief cook' unnatural (head chef)"
+  },
+  {
+   "lemma": "reform",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'company's reform' vague/unidiomatic"
+  },
+  {
+   "lemma": "marriage",
+   "action": "fix",
+   "issue": "[自然さ・study] 'Their marriage was in June' - would say wedding"
+  },
+  {
+   "lemma": "marriage",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'celebrate her sister's marriage' - would say wedding"
+  },
+  {
+   "lemma": "sun",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'Put on some cream' - say sunscreen"
+  },
+  {
+   "lemma": "commitment",
+   "action": "fix",
+   "issue": "[自然さ・study] 'long commitment' unidiomatic collocation"
+  },
+  {
+   "lemma": "photocopy",
+   "action": "fix",
+   "issue": "[自然さ・transfer] odd: photocopying a ticket to mail"
+  },
+  {
+   "lemma": "ladder",
+   "action": "fix",
+   "issue": "[自然さ・study] 'change the light' unnatural"
+  },
+  {
+   "lemma": "cabin",
+   "action": "fix",
+   "issue": "[自然さ・study] awkward 'under the seat in front in the cabin'"
+  },
+  {
+   "lemma": "jet",
+   "action": "fix",
+   "issue": "[自然さ・study] airlines say flight, not jet; implausible"
+  },
+  {
+   "lemma": "brake",
+   "action": "fix",
+   "issue": "[自然さ・study] 'press slowly' collocation"
+  },
+  {
+   "lemma": "informal",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'informal clothes' odd"
+  },
+  {
+   "lemma": "absolutely",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'absolutely quiet' unnatural"
+  },
+  {
+   "lemma": "alternative",
+   "action": "fix",
+   "issue": "[自然さ・study] 'is there an alternative?' bare/odd"
+  },
+  {
+   "lemma": "mass",
+   "action": "fix",
+   "issue": "[自然さ・study] 'gave me a mass of papers' unnatural"
+  },
+  {
+   "lemma": "duty",
+   "action": "fix",
+   "issue": "[自然さ・study] singular 'my duty' unnatural"
+  },
+  {
+   "lemma": "spirit",
+   "action": "fix",
+   "issue": "[自然さ・study] 'kept their spirit high' should be spirits"
+  },
+  {
+   "lemma": "arrangement",
+   "action": "fix",
+   "issue": "[自然さ・transfer] number agreement; should be plural"
+  },
+  {
+   "lemma": "introduction",
+   "action": "fix",
+   "issue": "[自然さ・study] 'make an introduction' collocation"
+  },
+  {
+   "lemma": "downtown",
+   "action": "fix",
+   "issue": "[自然さ・transfer] odd 'ten minutes by bus if you go downtown' for a hotel"
+  },
+  {
+   "lemma": "caller",
+   "action": "fix",
+   "issue": "[自然さ・transfer] caller doesn't hear the tone instruction naturally"
+  },
+  {
+   "lemma": "clue",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'gave him a clue to find his lost bag' unnatural"
+  },
+  {
+   "lemma": "exit",
+   "action": "fix",
+   "issue": "[自然さ・study] 'on your left side' stilted"
+  },
+  {
+   "lemma": "overnight",
+   "action": "fix",
+   "issue": "[自然さ・study] 'package will arrive overnight' unidiomatic"
+  },
+  {
+   "lemma": "captain",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'has sailed for thirty years' unnatural"
+  },
+  {
+   "lemma": "exemption",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'tax exemption when you buy it abroad' unnatural"
+  },
+  {
+   "lemma": "connection",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'has a poor connection' unidiomatic"
+  },
+  {
+   "lemma": "crime",
+   "action": "fix",
+   "issue": "[自然さ・transfer] missing article / 'the crime' with no antecedent"
+  },
+  {
+   "lemma": "category",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'a store has a category' unnatural"
+  },
+  {
+   "lemma": "meal",
+   "action": "fix",
+   "issue": "[自然さ・study] tautological 'dinner includes a meal'"
+  },
+  {
+   "lemma": "desire",
+   "action": "fix",
+   "issue": "[自然さ・transfer] stilted 'no desire among staff'"
+  },
+  {
+   "lemma": "blow",
+   "action": "fix",
+   "issue": "[自然さ・transfer] awkward 'cold air blows through the window when it is open'"
+  },
+  {
+   "lemma": "bind",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'a promise can bind you for years' unnatural"
+  },
+  {
+   "lemma": "waste",
+   "action": "fix",
+   "issue": "[自然さ・study] 'Meeting for two hours' ungrammatical-ish"
+  },
+  {
+   "lemma": "accustom",
+   "action": "fix",
+   "issue": "[自然さ・study] stilted 'accustom yourself'"
+  },
+  {
+   "lemma": "accustom",
+   "action": "fix",
+   "issue": "[自然さ・transfer] stilted instruction"
+  },
+  {
+   "lemma": "strictly",
+   "action": "fix",
+   "issue": "[自然さ・transfer] stilted passive"
+  },
+  {
+   "lemma": "celebrity",
+   "action": "fix",
+   "issue": "[自然さ・study] redundant 'famous celebrity'"
+  },
+  {
+   "lemma": "difficulty",
+   "action": "fix",
+   "issue": "[自然さ・transfer] vague 'great difficulty'"
+  },
+  {
+   "lemma": "pair",
+   "action": "fix",
+   "issue": "[自然さ・transfer] odd 'work with a pair of scissors'"
+  },
+  {
+   "lemma": "wave",
+   "action": "fix",
+   "issue": "[自然さ・transfer] odd 'near the big wave'"
+  },
+  {
+   "lemma": "conflict",
+   "action": "fix",
+   "issue": "[自然さ・transfer] implausible generic claim"
+  },
+  {
+   "lemma": "corner",
+   "action": "fix",
+   "issue": "[自然さ・study] incomplete address"
+  },
+  {
+   "lemma": "earth",
+   "action": "fix",
+   "issue": "[自然さ・study] 'for future children' unnatural"
+  },
+  {
+   "lemma": "suggestion",
+   "action": "fix",
+   "issue": "[自然さ・transfer] comma splice"
+  },
+  {
+   "lemma": "host",
+   "action": "fix",
+   "issue": "[自然さ・study] 'be the host of' stiff"
+  },
+  {
+   "lemma": "manner",
+   "action": "fix",
+   "issue": "[自然さ・transfer] stilted 'quick and careful manner'"
+  },
+  {
+   "lemma": "familiar",
+   "action": "fix",
+   "issue": "[自然さ・transfer] stilted 'let us'"
+  },
+  {
+   "lemma": "civil",
+   "action": "fix",
+   "issue": "[自然さ・transfer] 'civil groups' unnatural"
+  },
+  {
+   "lemma": "environmental",
+   "action": "fix",
+   "issue": "[自然さ・transfer] unnatural 'took a class'"
+  },
+  {
+   "lemma": "inspect",
+   "action": "fix",
+   "issue": "[自然さ・study] vague 'An officer'"
+  },
+  {
+   "lemma": "packet",
+   "action": "fix",
+   "issue": "[自然さ・study] 'small packet arrived' odd"
+  },
+  {
+   "lemma": "occupancy",
+   "action": "fix",
+   "issue": "[自然さ・study] missing 'rate'"
+  },
+  {
+   "lemma": "patron",
+   "action": "fix",
+   "issue": "[自然さ・study] 'thanks patron with dessert' odd"
+  },
+  {
+   "lemma": "download",
+   "action": "fix",
+   "issue": "[自然さ・study] 'application from home page'"
+  },
+  {
+   "lemma": "worldwide",
+   "action": "fix",
+   "issue": "[自然さ・transfer] odd 'famous worldwide, even in small towns'"
+  },
+  {
+   "lemma": "gift",
+   "action": "fix",
+   "issue": "[音声・transfer] 'wrapping for gifts' が 'rapping forgets' と聞き取られやすいため、聞き間違えにくい文に変更"
   }
  ]
 }

@@ -18,6 +18,9 @@ DATASET_PATH = VOCAB_DIR / "toeic_core.json"
 # toeic_core: original CC0 set · ngsl_tsl: headwords from NGSL 1.2 / TSL 1.2 (CC BY-SA 4.0), see content/vocab/sources
 DATASET_PATHS = (DATASET_PATH, VOCAB_DIR / "ngsl_tsl.json")
 POS = {"n", "v", "adj", "adv", "prep", "conj", "pron"}
+# audio a person has to listen to before it is used (e.g. speech recognition heard "clock" for "clerk")
+AUDIO_REVIEW_PATH = VOCAB_DIR / "audio_review.json"
+AUDIO_KINDS = ("word", "example", "transfer")
 TIERS = (1, 2, 3, 4)
 _JA = re.compile(r"[぀-ヿ一-鿿]")
 
@@ -220,22 +223,47 @@ class VocabLibrary:
                      "license": " / ".join(f"{d['file']}: {d['license']}" for d in self.datasets),
                      "source": self.datasets[0]["source"]}
         self.manifest = load_audio_manifest()
+        self.review = load_audio_review()
+
+    def held(self, word: Word, kind: str) -> bool:
+        """On hold until someone has listened to it. An entry for an older wording no longer applies."""
+        r = self.review.get(f"{word.id}:{kind}")
+        return bool(r) and r.get("status") != "ok" and r.get("text") == spoken_text(word, kind)
+
+    def held_items(self) -> list[str]:
+        return [k for k in self.review if (w := self.words.get(k.split(":")[0])) and self.held(w, k.split(":")[1])]
 
     def by_tier(self, tier: int) -> list[Word]:
         return [w for w in self.words.values() if w.tier == tier]
 
     def audio(self, word: Word) -> dict:
         """{'word': rel path, 'example': rel path} for words whose audio exists."""
+        return {k: v for k, v in self.files(word).items() if not self.held(word, k)}
+
+    def files(self, word: Word) -> dict:
+        """All generated files, including held ones (for checking them)."""
         m = self.manifest.get(word.id) or {}
         out = {}
-        for k in ("word", "example", "transfer"):
+        for k in AUDIO_KINDS:
             rel = m.get(k)
             if rel and (config.AUDIO_DIR / rel).exists():
                 out[k] = rel
         return out
 
     def missing_audio(self) -> list[str]:
-        return [w.id for w in self.words.values() if len(self.audio(w)) < (3 if w.transfer else 2)]
+        """Words whose audio files were not generated (held audio exists; it is only not served)."""
+        return [w.id for w in self.words.values() if len(self.files(w)) < (3 if w.transfer else 2)]
+
+
+def load_audio_review() -> dict:
+    """{"<word_id>:<kind>": {"text", "status": "hold" | "ok", "reason", "voice"?}}"""
+    if not AUDIO_REVIEW_PATH.exists():
+        return {}
+    return json.loads(AUDIO_REVIEW_PATH.read_text()).get("items", {})
+
+
+def spoken_text(word: Word, kind: str) -> str | None:
+    return {"word": word.lemma, "example": word.example, "transfer": word.transfer}[kind]
 
 
 def manifest_path() -> Path:

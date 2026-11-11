@@ -75,12 +75,15 @@ def test_transfer_questions_have_one_right_answer_and_their_own_audio():
     rng = random.Random(5)
     words = [w for w in lib.words.values() if w.transfer]
     assert len(words) >= 900
-    for w in rng.sample(words, 150):
+    held = [w for w in words if lib.held(w, "transfer")]
+    for w in held:
+        assert vocab.build_item(w, "context", rng, sentence="transfer") is None, w.id
+    for w in rng.sample([w for w in words if not lib.held(w, "transfer")], 150):
         p = vocab.build_item(w, "context", rng, sentence="transfer", phase="transfer")
         assert p, w.id
         opts = [lib.words[i] for i in p["secret"]["options"]]
         assert [o.id for o in opts if o.appears_in(w.transfer)] == [w.id], w.id
-        a = lib.audio(w)
+        a = lib.files(w)
         assert p["public"]["audio"] == a["transfer"] != a["example"]
         assert w.lemma not in p["public"]["audio"].rsplit("/", 1)[-1]
         assert p["public"]["transfer"] is True
@@ -345,3 +348,41 @@ def test_relearned_word_heard_correctly_is_no_longer_unknown(client):
         p = vocab.build_item(w, "audio", phase="first")
         fb = vocab.grade(conn, p, {"choice": p["secret"]["answer"], "ms": 1500}, origin="learn")
     assert fb["mastery"]["text"] >= 0.5 and fb["status"] != "unknown"
+
+
+def test_placement_estimate_is_never_written_to_words(client):
+    """30 questions cannot settle 1,147 words: only asked words get a state; nothing is acquired from it."""
+    r, seen = run_placement(client, lambda sec: True)
+    res = r["diagnostic"]["result"]
+    asked = {s["word_id"] for s in seen}
+    rows = {x["word_id"] for x in db.q("SELECT word_id FROM user_vocab")}
+    assert rows == asked
+    assert res["known_estimate"] > len(asked)                # the estimate covers far more words than were asked
+    ov = client.get("/v1/vocabulary/overview").json()
+    assert ov["acquired"] == 0, "a perfect placement still acquires nothing (one day, and 4-choice can be luck)"
+    assert ov["placement"]["tested_words"] == len(asked)
+    assert ov["placement"]["estimated_known"] == res["known_estimate"]
+    assert ov["untested"] == ov["total"] - len(asked)
+
+
+def test_held_audio_is_not_used_until_released(client, tmp_path, monkeypatch):
+    from app import vocab_data
+    lib = vocab_library()
+    w = lib.words["clerk"]
+    review = tmp_path / "audio_review.json"
+    review.write_text(json.dumps({"items": {"clerk:example": {"text": w.example, "status": "hold", "reason": "asr"}}}))
+    monkeypatch.setattr(vocab_data, "AUDIO_REVIEW_PATH", review)
+    lib = vocab_data.reload_vocab_library()
+    try:
+        assert "example" not in lib.audio(w) and lib.held_items() == ["clerk:example"]
+        assert vocab.build_item(w, "context") is None                 # the sentence is not asked
+        assert vocab.build_item(w, "context", sentence="transfer")   # the other recording still is
+        assert "clerk" not in lib.missing_audio()                     # held is not missing
+        review.write_text(json.dumps({"items": {"clerk:example": {"text": w.example, "status": "ok"}}}))
+        assert "example" in vocab_data.reload_vocab_library().audio(w)
+        # an entry for an older wording does not hold the new sentence
+        review.write_text(json.dumps({"items": {"clerk:example": {"text": "old wording", "status": "hold"}}}))
+        assert "example" in vocab_data.reload_vocab_library().audio(w)
+    finally:
+        monkeypatch.undo()
+        vocab_data.reload_vocab_library()

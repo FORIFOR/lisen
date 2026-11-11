@@ -1,0 +1,141 @@
+{
+ "note": "人が聞いて確認するまで出題に使わない音声。status: hold=使わない / ok=確認済み。voice=作り直しに使う声。scripts.audio_review で再生・確認できます。",
+ "items": {
+  "disburse:example": {
+   "text": "The funds will be disbursed to each branch next week.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Samanthaの声）: 'the funds will be dispersed to each branch next week'",
+   "first_voice": "Samantha",
+   "voice": "Daniel",
+   "asr_after_revoice": "pass"
+  },
+  "surcharge:example": {
+   "text": "There is a fuel surcharge on all international flights.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'there is a fuel search on all international flights'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "clerk:example": {
+   "text": "The clerk at the front desk gave me a map of the city.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Danielの声）: 'the clock at the front desk gave me a map of the city'",
+   "first_voice": "Daniel",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "skim:example": {
+   "text": "I only had time to skim the report before the meeting.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Samanthaの声）: 'i only had time to scheme the report before the meeting'",
+   "first_voice": "Samantha",
+   "voice": "Daniel",
+   "asr_after_revoice": "pass"
+  },
+  "questionnaire:transfer": {
+   "text": "We sent a questionnaire to all students last week.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'we send a question there to all students last week'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "inspector:transfer": {
+   "text": "The building inspector found a problem with the stairs.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'the building inspect to found a problem with the stairs'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "seller:transfer": {
+   "text": "Check the seller's reviews before you buy online.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'check the cellas reviews before you buy online'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "showroom:transfer": {
+   "text": "The car showroom is crowded every weekend.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Samanthaの声）: 'the car shower room is crowded every weekend'",
+   "first_voice": "Samantha",
+   "voice": "Daniel",
+   "asr_after_revoice": "pass"
+  },
+  "hourly:example": {
+   "text": "Hourly buses run between the hotel and the airport.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Danielの声）: 'ali buses run between the hotel and the airport'",
+   "first_voice": "Daniel",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "realtor:example": {
+   "text": "Our realtor showed us three apartments near the station.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'how are we all to show us three apartments near the station'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "airfare:example": {
+   "text": "Airfare is higher during the holiday season.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'if air is higher during the holiday season'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "newsstand:transfer": {
+   "text": "The newsstand also sells snacks and train tickets.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Samanthaの声）: 'the new stand also sells snacks and train tickets'",
+   "first_voice": "Samantha",
+   "voice": "Daniel",
+   "asr_after_revoice": "fail"
+  },
+  "exchange:transfer": {
+   "text": "The two teams exchanged gifts after the game.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Samanthaの声）: 'the two teams exchange gifts after the game'",
+   "first_voice": "Samantha",
+   "voice": "Daniel",
+   "asr_after_revoice": "pass"
+  },
+  "mass:transfer": {
+   "text": "A mass of dark clouds moved over the city.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Danielの声）: 'a mess of dark clouds moved over the city'",
+   "first_voice": "Daniel",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "quiet:example": {
+   "text": "Could I have a quiet room away from the street?",
+   "status": "hold",
+   "reason": "音声認識で不一致（Danielの声）: 'could i have acquired room away from the street'",
+   "first_voice": "Daniel",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "visitor:transfer": {
+   "text": "We have a visitor waiting in the lobby.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'we have a visit awaiting in the lobby'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  },
+  "sight:example": {
+   "text": "The sunrise over the sea was a wonderful sight.",
+   "status": "hold",
+   "reason": "音声認識で不一致（Karenの声）: 'the sunrise over the sea was a wonderful side'",
+   "first_voice": "Karen",
+   "voice": "Samantha",
+   "asr_after_revoice": "pass"
+  }
+ }
+}

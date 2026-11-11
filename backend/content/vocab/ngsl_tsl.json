@@ -84,9 +84,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "I'm taking a week of vacation in August, so please send urgent mail to Ken.",
+     "en": "I'll be on vacation until the 20th, so please send urgent matters to my colleague.",
      "form": "vacation",
-     "ja": "8月に1週間の休暇を取るので、急ぎのメールはケンに送ってください。"
+     "ja": "20日まで休暇を取っているので、急ぎの件は同僚に送ってください。"
     },
     {
      "role": "transfer",
@@ -324,9 +324,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "All goods on this shelf are thirty percent off until Sunday.",
+     "en": "Customers can return unused goods within thirty days with a receipt.",
      "form": "goods",
-     "ja": "この棚の商品はすべて日曜まで30%引きです。"
+     "ja": "お客様は未使用の商品なら、レシートがあれば30日以内に返品できます。"
     },
     {
      "role": "transfer",
@@ -390,9 +390,9 @@
     },
     {
      "role": "transfer",
-     "en": "The new hotel is only ten minutes by bus if you go downtown.",
+     "en": "Take the number five bus downtown and get off at the library.",
      "form": "downtown",
-     "ja": "繁華街に行けば、新しいホテルまでバスで10分です。"
+     "ja": "5番のバスで繁華街に行き、図書館の前で降りてください。"
     }
    ]
   },
@@ -750,9 +750,9 @@
     },
     {
      "role": "transfer",
-     "en": "Please ask the caller to leave a message after the tone.",
+     "en": "The caller hung up before I could take his name.",
      "form": "caller",
-     "ja": "電話の相手に、発信音のあとにメッセージを残すよう伝えてください。"
+     "ja": "電話の相手は、私が名前を聞く前に電話を切ってしまいました。"
     }
    ]
   },
@@ -1050,9 +1050,9 @@
     },
     {
      "role": "transfer",
-     "en": "The bank will notify customers by text message if anything looks strange on the account.",
+     "en": "The bank will notify you by text message if it detects unusual activity on your card.",
      "form": "notify",
-     "ja": "口座に不審な点があれば、銀行がお客様へメッセージで通知します。"
+     "ja": "銀行はカードに不審な動きを検知した場合、テキストメッセージで通知します。"
     }
    ]
   },
@@ -1230,9 +1230,9 @@
     },
     {
      "role": "transfer",
-     "en": "The old photo gave him a clue to find his lost bag.",
+     "en": "The torn label was the only clue to where the package came from.",
      "form": "clue",
-     "ja": "その古い写真が、なくしたかばんを見つける手がかりになりました。"
+     "ja": "破れたラベルが、荷物の出どころを知る唯一の手がかりでした。"
     }
    ]
   },
@@ -1410,9 +1410,9 @@
     },
     {
      "role": "transfer",
-     "en": "His occupation is teaching, but he also writes books on weekends.",
+     "en": "People in this occupation often work long hours on weekends.",
      "form": "occupation",
-     "ja": "彼の職業は教師ですが、週末には本も書いています。"
+     "ja": "この職業の人は、週末も長時間働くことがよくあります。"
     }
    ]
   },
@@ -2250,9 +2250,9 @@
     },
     {
      "role": "transfer",
-     "en": "Tickets at the gate cost ten dollars, and that price includes admission to the garden.",
+     "en": "A ten-dollar ticket includes admission to the garden and the greenhouse.",
      "form": "admission",
-     "ja": "入口のチケットは10ドルで、その料金に庭園の入場が含まれます。"
+     "ja": "10ドルのチケットには、庭園と温室への入場が含まれています。"
     }
    ]
   },
@@ -2364,9 +2364,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The airplane leaves at nine, so we must hurry.",
+     "en": "Passengers are now boarding the airplane at gate twelve.",
      "form": "airplane",
-     "ja": "飛行機は9時に出発するので、急がなければなりません。"
+     "ja": "乗客の皆様は、12番ゲートで飛行機にご搭乗ください。"
     },
     {
      "role": "transfer",
@@ -2424,9 +2424,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Please use the exit on your left side.",
+     "en": "Please use the exit on your left.",
      "form": "exit",
-     "ja": "左側の出口をご利用ください。"
+     "ja": "左手の出口をご利用ください。"
     },
     {
      "role": "transfer",
@@ -2880,9 +2880,9 @@
     },
     {
      "role": "transfer",
-     "en": "I need to photocopy my ticket before I mail it.",
+     "en": "I need to photocopy my ID before I mail the application.",
      "form": "photocopy",
-     "ja": "郵送する前にチケットをコピーしなければなりません。"
+     "ja": "郵送する前に、身分証明書をコピーしなければならない。"
     }
    ]
   },
@@ -3294,9 +3294,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "An officer will inspect the building next Monday.",
+     "en": "A fire department team will inspect the building next Monday.",
      "form": "inspect",
-     "ja": "来週の月曜日に担当者が建物を検査します。"
+     "ja": "消防署のチームが来週の月曜日にその建物を検査します。"
     },
     {
      "role": "transfer",
@@ -3690,9 +3690,9 @@
     },
     {
      "role": "transfer",
-     "en": "She opened the kitchen drawer and took out a small knife.",
+     "en": "She opened the kitchen drawer and took out a wooden spoon.",
      "form": "drawer",
-     "ja": "彼女は台所の引き出しを開けて、小さなナイフを取り出しました。"
+     "ja": "彼女は台所の引き出しを開けて、木のスプーンを取り出しました。"
     }
    ]
   },
@@ -4224,9 +4224,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "If you order now, the package will arrive overnight.",
+     "en": "If you order before five, we'll deliver it overnight.",
      "form": "overnight",
-     "ja": "今注文すれば、荷物は一晩で届きます。"
+     "ja": "5時前にご注文いただければ、一晩で配達します。"
     },
     {
      "role": "transfer",
@@ -4614,9 +4614,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "You can download the application from our home page.",
+     "en": "You can download the app from our website.",
      "form": "download",
-     "ja": "アプリケーションは当社のホームページからダウンロードできます。"
+     "ja": "当社のウェブサイトからアプリをダウンロードできます。"
     },
     {
      "role": "transfer",
@@ -5670,9 +5670,9 @@
     },
     {
      "role": "transfer",
-     "en": "Our ship's captain has sailed for thirty years.",
+     "en": "The captain of our ferry has worked the same route for thirty years.",
      "form": "captain",
-     "ja": "うちの船の船長は30年間航海してきました。"
+     "ja": "私たちのフェリーの船長は、30年間同じ航路で働いています。"
     }
    ]
   },
@@ -6420,9 +6420,9 @@
     },
     {
      "role": "transfer",
-     "en": "The singer is famous worldwide, even in small towns.",
+     "en": "The new model will be released worldwide next month.",
      "form": "worldwide",
-     "ja": "その歌手は小さな町でも世界中で有名です。"
+     "ja": "新モデルは来月、世界中で発売されます。"
     }
    ]
   },
@@ -6894,9 +6894,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The restaurant thanks every patron with a free dessert.",
+     "en": "Every patron receives a free dessert on their birthday.",
      "form": "patron",
-     "ja": "そのレストランは常連客みなさんに無料のデザートを出して感謝しています。"
+     "ja": "常連客には誕生日に無料のデザートを差し上げます。"
     },
     {
      "role": "transfer",
@@ -7314,9 +7314,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Hold the ladder while I change the light.",
+     "en": "Could you hold the ladder while I change the light bulb?",
      "form": "ladder",
-     "ja": "私が電球を替える間、はしごを押さえていてください。"
+     "ja": "電球を替えるあいだ、はしごを押さえていてもらえますか。"
     },
     {
      "role": "transfer",
@@ -7494,9 +7494,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The hotel's occupancy was very high this summer.",
+     "en": "The hotel's occupancy rate was very high this summer.",
      "form": "occupancy",
-     "ja": "そのホテルの稼働率はこの夏とても高かったです。"
+     "ja": "この夏はホテルの稼働率がとても高かったです。"
     },
     {
      "role": "transfer",
@@ -7530,9 +7530,9 @@
     },
     {
      "role": "transfer",
-     "en": "Her proficiency in computers helped her get the job.",
+     "en": "Her proficiency in French helped her get the job in Paris.",
      "form": "proficiency",
-     "ja": "彼女はパソコンの熟達ぶりのおかげでその仕事に就けました。"
+     "ja": "フランス語の能力のおかげで、彼女はパリでの仕事を得られました。"
     }
    ]
   },
@@ -7794,9 +7794,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Please keep your bags under the seat in front in the cabin.",
+     "en": "Please store small bags under the seat in front of you in the cabin.",
      "form": "cabin",
-     "ja": "客室では手荷物を前の座席の下に置いてください。"
+     "ja": "客室内では、小さな荷物は前の座席の下に置いてください。"
     },
     {
      "role": "transfer",
@@ -9294,9 +9294,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "A small packet arrived for you this morning.",
+     "en": "Each guest receives a packet of information at check-in.",
      "form": "packet",
-     "ja": "今朝、あなた宛ての小包が届きました。"
+     "ja": "宿泊客には、チェックイン時に資料の小包が渡されます。"
     },
     {
      "role": "transfer",
@@ -9330,9 +9330,9 @@
     },
     {
      "role": "transfer",
-     "en": "The plumber said the sink will be ready to use by noon.",
+     "en": "The plumber said he can come by noon tomorrow.",
      "form": "plumber",
-     "ja": "配管工は、流しは正午までに使えるようになると言いました。"
+     "ja": "配管工は、明日の正午までに来られると言いました。"
     }
    ]
   },
@@ -9954,9 +9954,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The jet will leave the gate at six forty.",
+     "en": "The company jet will take our executives to Osaka this afternoon.",
      "form": "jet",
-     "ja": "ジェット機は6時40分に搭乗口を出発します。"
+     "ja": "社用のジェット機が、今日の午後に役員たちを大阪へ運びます。"
     },
     {
      "role": "transfer",
@@ -10494,15 +10494,15 @@
    "examples": [
     {
      "role": "study",
-     "en": "It takes a few weeks to accustom yourself to a new schedule.",
+     "en": "The orientation will accustom new staff to our safety rules.",
      "form": "accustom",
-     "ja": "新しいスケジュールに自分を慣れさせるには、数週間かかります。"
+     "ja": "新入社員が安全規則に慣れさせるためのオリエンテーションを行います。"
     },
     {
      "role": "transfer",
-     "en": "Please accustom the children to going to bed early.",
+     "en": "Short daily walks will accustom the puppy to the noise of traffic.",
      "form": "accustom",
-     "ja": "子どもたちを早く寝ることに慣れさせてください。"
+     "ja": "毎日の短い散歩で、子犬を車の騒音に慣れさせることができます。"
     }
    ]
   },
@@ -10950,9 +10950,9 @@
     },
     {
      "role": "transfer",
-     "en": "This item qualifies for a tax exemption when you buy it abroad.",
+     "en": "Some medical supplies qualify for a tax exemption.",
      "form": "exemption",
-     "ja": "この品物は海外で買うと、税の免除の対象になります。"
+     "ja": "一部の医療用品は、税の免除の対象になります。"
     }
    ]
   },
@@ -11370,9 +11370,9 @@
     },
     {
      "role": "transfer",
-     "en": "He sent a short apology to everyone who came to the party.",
+     "en": "He sent a written apology to every customer affected by the error.",
      "form": "apology",
-     "ja": "彼はパーティーに来た全員に短い謝罪を送りました。"
+     "ja": "彼はそのミスの影響を受けたすべてのお客様に、謝罪の文書を送りました。"
     }
    ]
   },
@@ -11820,9 +11820,9 @@
     },
     {
      "role": "transfer",
-     "en": "The rules are strictly followed by everyone here.",
+     "en": "Safety rules are strictly enforced on this construction site.",
      "form": "strictly",
-     "ja": "ここではみんながルールを厳密に守っています。"
+     "ja": "この工事現場では安全規則が厳密に守られています。"
     }
    ]
   },
@@ -11994,9 +11994,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Press the brake slowly when the road is wet.",
+     "en": "Press the brake gently when the road is wet.",
      "form": "brake",
-     "ja": "道が濡れているときはブレーキをゆっくり踏んでください。"
+     "ja": "路面が濡れているときは、ブレーキをそっと踏んでください。"
     },
     {
      "role": "transfer",
@@ -13200,9 +13200,9 @@
     },
     {
      "role": "transfer",
-     "en": "You can wear informal clothes on Fridays at my company.",
+     "en": "The dress code at our office is informal, so jeans are fine.",
      "form": "informal",
-     "ja": "私の会社では金曜日はくだけた服装でかまいません。"
+     "ja": "うちの会社の服装規定はくだけた感じなので、ジーンズで大丈夫です。"
     }
    ]
   },
@@ -13404,9 +13404,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Please put your bag in the compartment overhead.",
+     "en": "Dark clouds gathered overhead, so we canceled the outdoor lunch.",
      "form": "overhead",
-     "ja": "かばんは頭上の棚に入れてください。"
+     "ja": "頭上に黒い雲が広がったので、屋外のランチは中止しました。"
     },
     {
      "role": "transfer",
@@ -13734,9 +13734,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "A famous celebrity appeared in our new advertisement.",
+     "en": "We hired a celebrity to appear in our new advertisement.",
      "form": "celebrity",
-     "ja": "有名人が当社の新しい広告に出演しました。"
+     "ja": "新しい広告に出演してもらうため、有名人を起用しました。"
     },
     {
      "role": "transfer",
@@ -13770,9 +13770,9 @@
     },
     {
      "role": "transfer",
-     "en": "They deduct a small fee each time you take money from the machine.",
+     "en": "The bank will deduct a small fee each time you withdraw cash from another bank's machine.",
      "form": "deduct",
-     "ja": "機械からお金を引き出すたびに、少額の手数料が差し引かれます。"
+     "ja": "他行のATMで現金を引き出すたびに、銀行は少額の手数料を差し引きます。"
     }
    ]
   },
@@ -13860,9 +13860,9 @@
     },
     {
      "role": "transfer",
-     "en": "The team faced great difficulty when the supplier closed.",
+     "en": "The team had difficulty meeting the deadline after our supplier closed.",
      "form": "difficulty",
-     "ja": "仕入先が閉業して、チームは大きな困難に直面しました。"
+     "ja": "仕入先が閉鎖したあと、チームは納期に間に合わせるのに苦労しました。"
     }
    ]
   },
@@ -13890,9 +13890,9 @@
     },
     {
      "role": "transfer",
-     "en": "We need good weather to shoot the photos outside.",
+     "en": "The crew needs clear weather to shoot the scenes outside.",
      "form": "shoot",
-     "ja": "外で写真を撮影するには、よい天気が必要です。"
+     "ja": "撮影班は屋外の場面を撮影するため、晴れた天気が必要です。"
     }
    ]
   },
@@ -15630,9 +15630,9 @@
     },
     {
      "role": "transfer",
-     "en": "The phone has a poor connection in this tunnel.",
+     "en": "My phone connection keeps dropping in this tunnel.",
      "form": "connection",
-     "ja": "このトンネルでは電話の接続が悪いです。"
+     "ja": "このトンネルの中では、電話の接続が何度も切れます。"
     }
    ]
   },
@@ -15960,9 +15960,9 @@
     },
     {
      "role": "transfer",
-     "en": "It was absolutely quiet in the library tonight.",
+     "en": "The room was absolutely silent after the announcement.",
      "form": "absolutely",
-     "ja": "今夜の図書館は全く静かでした。"
+     "ja": "発表のあと、部屋は全く物音ひとつしなかった。"
     }
    ]
   },
@@ -16314,9 +16314,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "If the room is full, is there an alternative?",
+     "en": "If that room is booked, do you have an alternative?",
      "form": "alternative",
-     "ja": "部屋がいっぱいなら、代わりはありますか。"
+     "ja": "その部屋が予約済みなら、代わりはありますか。"
     },
     {
      "role": "transfer",
@@ -16380,9 +16380,9 @@
     },
     {
      "role": "transfer",
-     "en": "Each student will work with a pair of scissors.",
+     "en": "Each student should bring a pair of scissors to the craft class.",
      "form": "pair",
-     "ja": "生徒はそれぞれ一組のはさみを使って作業します。"
+     "ja": "工作の授業では、各自はさみを一組持ってきてください。"
     }
    ]
   },
@@ -17364,9 +17364,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The two countries signed an agreement for peace.",
+     "en": "The two countries signed a peace agreement last week.",
      "form": "peace",
-     "ja": "両国は平和のための協定に署名しました。"
+     "ja": "両国は先週、平和協定に調印しました。"
     },
     {
      "role": "transfer",
@@ -17430,7 +17430,7 @@
     },
     {
      "role": "transfer",
-     "en": "The police are looking into the crime near the station.",
+     "en": "The police are investigating a crime near the station.",
      "form": "crime",
      "ja": "警察は駅の近くで起きた犯罪を調べています。"
     }
@@ -18210,9 +18210,9 @@
     },
     {
      "role": "transfer",
-     "en": "The chief cook at the hotel plans all the menus.",
+     "en": "The chief nurse on the ward trains all new staff.",
      "form": "chief",
-     "ja": "そのホテルの主任の料理人が、すべてのメニューを考えます。"
+     "ja": "病棟の主任看護師が、新しいスタッフ全員を指導します。"
     }
    ]
   },
@@ -18300,9 +18300,9 @@
     },
     {
      "role": "transfer",
-     "en": "Children were playing near the big wave at the beach.",
+     "en": "A huge wave hit the pier during last night's storm.",
      "form": "wave",
-     "ja": "子どもたちは浜辺の大きな波の近くで遊んでいました。"
+     "ja": "昨夜の嵐で、大きな波が桟橋を襲いました。"
     }
    ]
   },
@@ -19020,9 +19020,9 @@
     },
     {
      "role": "transfer",
-     "en": "Such a conflict over money is common in families.",
+     "en": "The two countries are trying to avoid a conflict over fishing rights.",
      "form": "conflict",
-     "ja": "お金をめぐるそのような対立は家族でもよくあります。"
+     "ja": "両国は漁業権をめぐる対立を避けようとしています。"
     }
    ]
   },
@@ -19134,9 +19134,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The bank is on the corner of Main Street.",
+     "en": "The bank is on the corner of Main Street and Third Avenue.",
      "form": "corner",
-     "ja": "銀行はメインストリートの角にあります。"
+     "ja": "その銀行はメイン通りと3番街の角にあります。"
     },
     {
      "role": "transfer",
@@ -19230,9 +19230,9 @@
     },
     {
      "role": "transfer",
-     "en": "Our store has a category for children's books.",
+     "en": "Our website has a separate category for children's books.",
      "form": "category",
-     "ja": "当店には子ども向けの本の部門があります。"
+     "ja": "当社のサイトには、児童書専用の部門があります。"
     }
    ]
   },
@@ -19554,9 +19554,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Let me make a short introduction before the talk begins.",
+     "en": "Let me give a short introduction before the talk begins.",
      "form": "introduction",
-     "ja": "話が始まる前に、簡単な紹介をさせてください。"
+     "ja": "講演が始まる前に、簡単に紹介をさせてください。"
     },
     {
      "role": "transfer",
@@ -19890,9 +19890,9 @@
     },
     {
      "role": "transfer",
-     "en": "The company's reform made the work rules much clearer.",
+     "en": "Staff welcomed the reform of the company's pay system.",
      "form": "reform",
-     "ja": "会社の改革で、勤務規則がずっと分かりやすくなりました。"
+     "ja": "社員は会社の給与制度の改革を歓迎しました。"
     }
    ]
   },
@@ -20514,9 +20514,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The clerk gave me a mass of papers to sign.",
+     "en": "We found a mass of old files in the storage room.",
      "form": "mass",
-     "ja": "店員は署名すべき大量の書類を私にくれました。"
+     "ja": "倉庫で大量の古いファイルが見つかった。"
     },
     {
      "role": "transfer",
@@ -20784,9 +20784,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Meeting for two hours is a waste of time.",
+     "en": "A two-hour meeting is a waste of time.",
      "form": "waste",
-     "ja": "2時間も会議をするのは時間の無駄です。"
+     "ja": "2時間の会議は時間の無駄です。"
     },
     {
      "role": "transfer",
@@ -20844,15 +20844,15 @@
    "examples": [
     {
      "role": "study",
-     "en": "Their marriage was in June, and we were invited.",
+     "en": "Their marriage lasted over fifty years, and they never stopped laughing.",
      "form": "marriage",
-     "ja": "二人の結婚は6月で、私たちは招待されました。"
+     "ja": "二人の結婚生活は50年以上続き、笑いが絶えませんでした。"
     },
     {
      "role": "transfer",
-     "en": "She took a day off to celebrate her sister's marriage.",
+     "en": "The laws on marriage are different in each country.",
      "form": "marriage",
-     "ja": "彼女は妹の結婚を祝うために1日休みを取りました。"
+     "ja": "結婚に関する法律は国ごとに違います。"
     }
    ]
   },
@@ -20904,9 +20904,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Dinner includes a meal and a drink.",
+     "en": "Your ticket includes one meal and a drink on the flight.",
      "form": "meal",
-     "ja": "夕食には食事と飲み物が含まれています。"
+     "ja": "チケットには、機内での食事と飲み物が1回ずつ含まれています。"
     },
     {
      "role": "transfer",
@@ -21234,9 +21234,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Answering the phone is part of my duty.",
-     "form": "duty",
-     "ja": "電話に出るのは私の職務の一部です。"
+     "en": "Answering the phone is one of my duties at the front desk.",
+     "form": "duties",
+     "ja": "電話に出ることは、受付での私の職務の一つです。"
     },
     {
      "role": "transfer",
@@ -21900,9 +21900,9 @@
     },
     {
      "role": "transfer",
-     "en": "Thanks for your suggestion, we'll try it.",
+     "en": "Thanks for your suggestion. We'll try it this week.",
      "form": "suggestion",
-     "ja": "ご提案ありがとうございます、試してみます。"
+     "ja": "ご提案ありがとうございます。今週試してみます。"
     }
    ]
   },
@@ -22014,9 +22014,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "We should protect the earth for future children.",
+     "en": "We should protect the earth for future generations.",
      "form": "earth",
-     "ja": "私たちは将来の子どもたちのために地球を守るべきです。"
+     "ja": "私たちは将来の世代のために地球を守るべきです。"
     },
     {
      "role": "transfer",
@@ -22110,9 +22110,9 @@
     },
     {
      "role": "transfer",
-     "en": "There is no desire among staff to change the rules.",
+     "en": "The mayor expressed a desire to build more parks.",
      "form": "desire",
-     "ja": "スタッフの間にはルールを変えたいという願望はありません。"
+     "ja": "市長は、公園をもっと増やしたいという願望を示しました。"
     }
    ]
   },
@@ -23094,9 +23094,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "Our company will be the host of this year's conference.",
+     "en": "Our company will serve as the host of this year's conference.",
      "form": "host",
-     "ja": "当社が今年の会議の主催者になります。"
+     "ja": "当社が今年の会議の主催者を務めます。"
     },
     {
      "role": "transfer",
@@ -23274,9 +23274,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "The players kept their spirit high even after losing the game.",
-     "form": "spirit",
-     "ja": "選手たちは試合に負けても気持ち（精神）を高く保ちました。"
+     "en": "The players kept their spirits high even after losing the game.",
+     "form": "spirits",
+     "ja": "選手たちは試合に負けても気持ちを高く保っていた。"
     },
     {
      "role": "transfer",
@@ -24060,9 +24060,9 @@
     },
     {
      "role": "transfer",
-     "en": "We took an environmental class at university.",
+     "en": "I took an environmental science course at university.",
      "form": "environmental",
-     "ja": "私たちは大学で環境の授業を受けました。"
+     "ja": "大学で環境の講義を受けました。"
     }
    ]
   },
@@ -24090,9 +24090,9 @@
     },
     {
      "role": "transfer",
-     "en": "Put on some cream, because the sun is strong today.",
+     "en": "Put on sunscreen, because the sun is strong today.",
      "form": "sun",
-     "ja": "今日は太陽が強いので、クリームを塗ってください。"
+     "ja": "今日は太陽が強いので、日焼け止めを塗ってください。"
     }
    ]
   },
@@ -24150,9 +24150,9 @@
     },
     {
      "role": "transfer",
-     "en": "Cold air blows through the window when it is open.",
+     "en": "The heater blows warm air onto your feet under the desk.",
      "form": "blows",
-     "ja": "窓が開いていると、冷たい空気が吹くように入ってきます。"
+     "ja": "ヒーターは机の下のあなたの足に暖かい空気を吹きつけます。"
     }
    ]
   },
@@ -25470,9 +25470,9 @@
     },
     {
      "role": "transfer",
-     "en": "A promise like that can bind you for years.",
+     "en": "A signed agreement will bind you to pay the fee even if you cancel.",
      "form": "bind",
-     "ja": "そのような約束は何年もあなたを拘束することがあります。"
+     "ja": "署名した契約書は、解約しても料金を支払うようあなたを拘束します。"
     }
    ]
   },
@@ -25950,9 +25950,9 @@
     },
     {
      "role": "transfer",
-     "en": "Do you offer free wrapping for gifts?",
-     "form": "gifts",
-     "ja": "贈り物の包装は無料でしてもらえますか。"
+     "en": "Thank you so much for the lovely gift you sent me.",
+     "form": "gift",
+     "ja": "素敵な贈り物を送ってくれて、本当にありがとう。"
     }
    ]
   },
@@ -26340,9 +26340,9 @@
     },
     {
      "role": "transfer",
-     "en": "The work was finished in a quick and careful manner.",
+     "en": "The manager handled the complaint in a calm manner.",
      "form": "manner",
-     "ja": "その仕事は迅速で丁寧なやり方で終わりました。"
+     "ja": "店長は落ち着いた態度でその苦情に対応しました。"
     }
    ]
   },
@@ -26460,9 +26460,9 @@
     },
     {
      "role": "transfer",
-     "en": "I am not familiar with this part of the city, so let us use a map.",
+     "en": "Is anyone familiar with this part of town? Let's check the map.",
      "form": "familiar",
-     "ja": "この辺りの町をよく知っていないので、地図を使いましょう。"
+     "ja": "この辺りをよく知っている人はいますか。地図を見ましょう。"
     }
    ]
   },
@@ -26580,9 +26580,9 @@
     },
     {
      "role": "transfer",
-     "en": "Many civil groups joined the clean-up day.",
+     "en": "Several local civil groups joined the river clean-up day.",
      "form": "civil",
-     "ja": "多くの市民団体が清掃の日に参加しました。"
+     "ja": "いくつかの地元の市民の団体が川の清掃日に参加しました。"
     }
    ]
   },
@@ -26880,9 +26880,9 @@
     },
     {
      "role": "transfer",
-     "en": "The travel arrangement for the group is almost done.",
-     "form": "arrangement",
-     "ja": "団体の旅行の手配はほぼ終わっています。"
+     "en": "The travel arrangements for the group are almost done.",
+     "form": "arrangements",
+     "ja": "グループの旅行の手配はほぼ終わっています。"
     }
    ]
   },
@@ -28164,9 +28164,9 @@
    "examples": [
     {
      "role": "study",
-     "en": "We thank her for her long commitment to the school.",
+     "en": "We thank her for many years of commitment to the school.",
      "form": "commitment",
-     "ja": "彼女の学校への長年の献身に感謝します。"
+     "ja": "長年の学校への献身に感謝します。"
     },
     {
      "role": "transfer",

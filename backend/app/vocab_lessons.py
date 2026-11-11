@@ -298,7 +298,13 @@ def overview() -> dict:
     placement = None
     for row in db.q("SELECT * FROM vocab_diagnostics ORDER BY created_at DESC"):
         if json.loads(row["state"]).get("style") == "placement":
+            res = json.loads(row["result"]) if row["result"] else None
             placement = {"id": row["id"], "status": row["status"], "completed_at": row["completed_at"]}
+            if res:
+                # kept apart: words the test actually asked (recorded per word) and a level-based estimate,
+                # which is only a number and is never written to any word's state
+                placement.update({"tested_words": res["words"], "estimated_known": res.get("known_estimate"),
+                                  "estimated_tier": res["estimated_tier"]})
             break
     return {
         "total": len(lib.words),
@@ -307,6 +313,7 @@ def overview() -> dict:
         "phases": phases, "phase_labels": V.PHASES,
         "active_lesson": public({**dict(active), "state": json.loads(active["state"]), "result": None}) if active else None,
         "placement": placement,
+        "held_audio": len(lib.held_items()),
         "datasets": [{"file": x["file"], "name": x["name"], "license": x["license"], "words": x["words"]}
                      for x in lib.datasets],
         "minutes": list(MINUTES),
