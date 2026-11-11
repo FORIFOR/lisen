@@ -232,6 +232,8 @@ def test_word_forgotten_after_being_acquired(client):
     from app import vocab
     with db.tx() as conn:
         for m in ("text", "audio", "context"):
+            if m == "context":      # right on two different days (acquired needs a second day)
+                conn.execute("UPDATE user_vocab SET last_correct_date='2000-01-01' WHERE word_id='allocate'")
             vocab.update_mastery(conn, "allocate", m, 1.0)
         row = conn.execute("SELECT * FROM user_vocab WHERE word_id='allocate'").fetchone()
         assert vocab.status_of(row) == "acquired"

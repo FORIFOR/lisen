@@ -28,6 +28,17 @@ ACQUIRED = 0.8
 LEARN_RATE = 0.5
 DIAG_MAX_ITEMS = 40
 FOLLOW_UP_GAP = 3        # ask the follow-up for a word only after a few other questions
+# placement (the word book's entrance): written words first, across difficulty; a share of the words
+# answered correctly are re-checked by ear, and some of those inside a sentence
+PLACEMENT_ITEMS = 30
+PLACEMENT_EXTRA = 10     # added once when the level is still unsettled
+ROUTES = {
+    "basic": "文字でも意味が分からない → 意味から覚える",
+    "sound": "文字なら分かるが音声で不正解 → 音声付きで覚え直す",
+    "context": "単語は聞けるが例文で不正解 → 例文で聞き取る練習",
+    "solid": "初見の例文まで理解できた → 復習を減らして次の単語へ",
+    "text_only": "文字では分かる（音声は未確認）",
+}
 
 STATUS_LABEL = {
     "untested": "未診断",
@@ -36,12 +47,18 @@ STATUS_LABEL = {
     "context_gap": "単語単体では聞けるが、文の中で聞き取れない",
     "learning": "学習中",
     "forgotten": "一度覚えたが忘れた（復習間隔を短くして再学習）",
-    "acquired": "習得済み（文字・音声・文脈）",
+    "confirm": "3つの形式で正解（別の日にもう一度確認すれば習得）",
+    "acquired": "習得済み（文字・音声・文脈、別の日にも確認）",
 }
+CONFIRM_DAYS = 2          # one good day is not "acquired": the word has to come back right on another day
+# how a result was obtained; the groups are reported separately and never averaged together
+PHASES = {"placement": "語彙診断", "first": "学習直後の確認", "review": "復習（FSRS）",
+          "transfer": "初見の例文（応用）", "practice": "練習"}
 PROMPT = {
     "text": "この単語の意味は？",
     "audio": "聞こえた単語の意味は？",
     "context": "文の中で使われていた単語の意味は？（選択肢のうち1つだけが文中に出てきます）",
+    "transfer": "初めて聞く文です。文の中で使われていた単語の意味は？",
 }
 
 
@@ -89,7 +106,8 @@ def status_of(row) -> str:
     if t is not None and t < 0.5:
         return "unknown"
     if None not in (t, a, c) and min(t, a, c) >= ACQUIRED:
-        return "acquired"
+        days = row["correct_days"] if "correct_days" in row.keys() else CONFIRM_DAYS
+        return "acquired" if days >= CONFIRM_DAYS else "confirm"
     if t is not None and t >= ACQUIRED and a is not None and a < 0.6:
         return "sound_gap"
     if a is not None and a >= ACQUIRED and c is not None and c < 0.6:
@@ -111,8 +129,12 @@ def update_mastery(conn, word_id: str, modality: str, score: float) -> None:
         others = [row[f"{m}_mastery"] for m in MODALITIES if m != modality and row[f"{m}_mastery"] is not None]
         if new >= ACQUIRED and all(v >= ACQUIRED for v in others):
             lapsed = 0
-    conn.execute(f"UPDATE user_vocab SET {modality}_mastery=?, {modality}_n={modality}_n+1, last_tested_at=?, lapsed=? "
-                 "WHERE word_id=?", (round(new, 3), now, lapsed, word_id))
+    today = db.local_date()
+    new_day = score >= ACQUIRED and row["last_correct_date"] != today
+    conn.execute(f"UPDATE user_vocab SET {modality}_mastery=?, {modality}_n={modality}_n+1, last_tested_at=?, lapsed=?, "
+                 "correct_days=correct_days+?, last_correct_date=? WHERE word_id=?",
+                 (round(new, 3), now, lapsed, int(new_day), today if score >= ACQUIRED else row["last_correct_date"],
+                  word_id))
 
 
 def _refresh_next_review(conn, word_id: str) -> None:
@@ -162,27 +184,33 @@ def _distractors(word: Word, n: int, rng: random.Random, avoid_text: str | None 
 
 
 def build_item(word: Word, modality: str, rng: random.Random | None = None, card: str | None = None,
-               reason: str | None = None, probe: bool = False) -> dict | None:
+               reason: str | None = None, probe: bool = False, sentence: str = "example",
+               phase: str | None = None) -> dict | None:
+    """A 4-choice meaning question. `sentence="transfer"` plays the word's second, never-shown sentence
+    (a different scene and speaker) instead of the study example."""
     rng = rng or random.Random()
     audio = vocab_library().audio(word)
     if modality == "audio" and "word" not in audio:
         return None
-    if modality == "context" and "example" not in audio:
+    if modality == "context" and sentence not in audio:
         return None
-    ds = _distractors(word, 3, rng, avoid_text=word.example if modality == "context" else None)
+    text = (word.transfer if sentence == "transfer" else word.example) if modality == "context" else None
+    ds = _distractors(word, 3, rng, avoid_text=text)
     if len(ds) < 3:
         return None
     options = [word, *ds]
     rng.shuffle(options)
     public = {"type": "word", "modality": modality, "modality_label": MODALITY_LABEL[modality],
-              "prompt": PROMPT[modality], "tier": word.tier, "level": min(5, word.tier + 1),
+              "prompt": PROMPT["transfer" if sentence == "transfer" and modality == "context" else modality],
+              "tier": word.tier, "level": min(5, word.tier + 1), "transfer": sentence == "transfer",
               "choices": [o.meaning for o in options], "review": bool(card), "reason": reason}
     if modality == "text":
         public.update({"lemma": word.lemma, "pos": word.pos})
     else:
-        public["audio"] = audio["word"] if modality == "audio" else audio["example"]
+        public["audio"] = audio["word"] if modality == "audio" else audio[sentence]
     secret = {"word_id": word.id, "modality": modality, "answer": options.index(word),
-              "options": [o.id for o in options], "card": card, "probe": probe}
+              "options": [o.id for o in options], "card": card, "probe": probe, "sentence": sentence,
+              "phase": phase or ("review" if card else None)}
     return {"type": "word", "public": public, "secret": secret}
 
 
@@ -202,29 +230,39 @@ def grade(conn, payload: dict, body: dict, *, origin: str, session_id: str | Non
     ms = max(0, min(int(body.get("ms") or 0), 600_000))
     correct = choice is not None and choice == sec["answer"]
     score = score_answer(correct, confidence, ms, modality)
+    phase = sec.get("phase") or {"diag": "placement"}.get(origin, "practice")
 
     update_mastery(conn, word.id, modality, score)
     inferred = None
     row = conn.execute("SELECT * FROM user_vocab WHERE word_id=?", (word.id,)).fetchone()
-    if modality == "audio" and score >= 0.8 and not row["text_n"]:
-        # recognising the meaning by ear implies knowing the meaning in writing
+    if modality == "audio" and score >= 0.8 and (not row["text_n"] or (row["text_mastery"] or 0) < ACQUIRED):
+        # recognising the meaning by ear implies knowing the meaning in writing (also after relearning a word
+        # that was missed in writing: word lessons check it by ear, not on paper)
         update_mastery(conn, word.id, "text", score)
         inferred = "text"
     r = None
     if learn:
-        r = srs.review(conn, CARD_KIND[modality], word.id, rating_for(score), create=score < 1.0)
+        # a word just studied in a lesson is enrolled in FSRS even when the first check is right
+        r = srs.review(conn, CARD_KIND[modality], word.id, rating_for(score), create=score < 1.0 or bool(sec.get("enroll")))
     _refresh_next_review(conn, word.id)
     conn.execute("INSERT INTO attempts (session_id, created_at, date, kind, block, item_id, level, score, detail)"
                  " VALUES (?,?,?,?,?,?,?,?,?)",
                  (session_id, db.now_iso(), db.local_date(), "word", block or origin, word.id, word.tier, score,
                   json.dumps({"modality": modality, "confidence": confidence, "ms": ms, "choice": choice,
-                              "correct": correct, "origin": origin, "inferred": inferred})))
+                              "correct": correct, "origin": origin, "inferred": inferred, "phase": phase,
+                              "sentence": sec.get("sentence", "example")})))
     row = conn.execute("SELECT * FROM user_vocab WHERE word_id=?", (word.id,)).fetchone()
     audio = lib.audio(word)
     st = status_of(row)
-    return {"type": "word", "correct": correct, "answer": sec["answer"], "choice": choice, "score": score,
+    return {"type": "word", "correct": correct, "answer": sec["answer"], "choice": choice, "score": score, "ms": ms,
             "confidence": confidence, "modality": modality, "lemma": word.lemma, "meaning": word.meaning,
-            "pos": word.pos, "example": word.example, "form": word.form,
+            "pos": word.pos, "example": word.example, "form": word.form, "example_ja": word.example_ja,
+            "scene": word.scene, "phase": phase, "phase_label": PHASES.get(phase, phase),
+            "sentence": sec.get("sentence", "example"),
+            "transfer": word.transfer if sec.get("sentence") == "transfer" else None,
+            "transfer_ja": word.transfer_ja if sec.get("sentence") == "transfer" else None,
+            "transfer_form": word.transfer_form if sec.get("sentence") == "transfer" else None,
+            "transfer_audio": audio.get("transfer") if sec.get("sentence") == "transfer" else None,
             "word_audio": audio.get("word"), "example_audio": audio.get("example"),
             "mastery": _masteries(row), "status": st, "status_label": STATUS_LABEL[st], "srs": r}
 
@@ -327,9 +365,13 @@ def answer_item_conn(conn, item_id: str, body: dict, session_id: str | None = No
     row = conn.execute("SELECT * FROM vocab_items WHERE id=?", (item_id,)).fetchone()
     if not row:
         raise VocabError(404, "問題が見つかりません")
-    sent = {"choice": body.get("choice"), "confidence": body.get("confidence") or "sure"}
-    if sent["choice"] is None:
-        sent["confidence"] = "unknown"
+    payload = json.loads(row["payload"])
+    if payload["type"] == "word_study":
+        sent = {"recall": body.get("recall") or "no"}
+    else:
+        sent = {"choice": body.get("choice"), "confidence": body.get("confidence") or "sure"}
+        if sent["choice"] is None:
+            sent["confidence"] = "unknown"
     if row["answered"] == 1:
         prev = json.loads(row["answer"])
         if prev == sent:
@@ -337,11 +379,17 @@ def answer_item_conn(conn, item_id: str, body: dict, session_id: str | None = No
         raise VocabError(409, "この問題は回答済みです（別の端末で回答された可能性があります）")
     if row["answered"] == 2:
         raise VocabError(409, "この問題は無効になりました（診断がやり直されました）")
-    payload = json.loads(row["payload"])
     is_diag = row["origin"] == "diag"
-    fb = grade(conn, payload, body, origin=row["origin"], session_id=session_id, block=block)
+    if payload["type"] == "word_study":
+        from . import vocab_lessons
+        fb = vocab_lessons.grade_study(conn, payload, body, row["origin_id"])
+    else:
+        fb = grade(conn, payload, body, origin=row["origin"], session_id=session_id, block=block)
     if is_diag:
         fb = _diag_after(conn, row["origin_id"], payload, fb)
+    elif row["origin"] == "learn":
+        from . import vocab_lessons
+        fb = vocab_lessons.after_answer(conn, row["origin_id"], payload, fb, body)
     conn.execute("UPDATE vocab_items SET answered=1, answer=?, feedback=? WHERE id=?",
                  (json.dumps(sent), json.dumps(fb, ensure_ascii=False), item_id))
     return fb
@@ -392,13 +440,22 @@ def diag_public(d: dict) -> dict:
             "tier": st["tier"], "created_at": d["created_at"], "result": d["result"]}
 
 
-def start_diagnostic(replace: bool = False, max_items: int = DIAG_MAX_ITEMS) -> dict:
+def start_diagnostic(replace: bool = False, max_items: int | None = None, style: str = "listening") -> dict:
     with db.tx() as conn:
-        return start_diagnostic_conn(conn, replace, max_items)
+        return start_diagnostic_conn(conn, replace, max_items, style)
 
 
-def start_diagnostic_conn(conn, replace: bool = False, max_items: int = DIAG_MAX_ITEMS) -> dict:
-    active = conn.execute("SELECT id FROM vocab_diagnostics WHERE status='active' ORDER BY created_at DESC").fetchall()
+def _style(row) -> str:
+    return json.loads(row["state"]).get("style", "listening")
+
+
+def start_diagnostic_conn(conn, replace: bool = False, max_items: int | None = None, style: str = "listening") -> dict:
+    """style "listening": the listening profile's word part (by ear first, a missed word is asked in writing later).
+    style "placement": the word book's entrance (in writing first, words known in writing re-checked by ear)."""
+    if max_items is None:
+        max_items = PLACEMENT_ITEMS if style == "placement" else DIAG_MAX_ITEMS
+    active = [r for r in conn.execute("SELECT id, state FROM vocab_diagnostics WHERE status='active'"
+                                      " ORDER BY created_at DESC").fetchall() if _style(r) == style]
     if active and not replace:
         return {**diag_public(_diag_load(conn, active[0]["id"])), "resumed": True}
     for r in active:
@@ -408,7 +465,7 @@ def start_diagnostic_conn(conn, replace: bool = False, max_items: int = DIAG_MAX
     start = {1: 1, 2: 2, 3: 2, 4: 3, 5: 3}.get(prof["level"], 2)
     did = uuid.uuid4().hex[:12]
     state = {"tier": start, "streak": 0, "asked": [], "queue": [], "history": [], "probes": 0,
-             "answered": 0, "max": max_items}
+             "answered": 0, "max": max_items, "style": style, "extended": False}
     conn.execute("INSERT INTO vocab_diagnostics (id, status, created_at, updated_at, state) VALUES (?,?,?,?,?)",
                  (did, "active", db.now_iso(), db.now_iso(), json.dumps(state)))
     return {**diag_public(_diag_load(conn, did)), "resumed": False}
@@ -436,7 +493,7 @@ def diag_next_conn(conn, did: str) -> dict:
         if ready:
             q = ready[0]
             st["queue"].remove(q)
-            payload = build_item(lib.words[q["word"]], q["modality"], rng)
+            payload = build_item(lib.words[q["word"]], q["modality"], rng, phase="placement")
             continue
         asked = set(st["asked"])
         fresh = [w for w in lib.by_tier(st["tier"]) if w.id not in asked]
@@ -445,8 +502,11 @@ def diag_next_conn(conn, did: str) -> dict:
         if not fresh:
             break
         w = rng.choice(fresh)
-        mod = "context" if st["probes"] % 4 == 3 else "audio"
-        payload = build_item(w, mod, rng, probe=True) or build_item(w, "text", rng, probe=True)
+        if st.get("style") == "placement":
+            payload = build_item(w, "text", rng, probe=True, phase="placement")
+        else:
+            mod = "context" if st["probes"] % 4 == 3 else "audio"
+            payload = build_item(w, mod, rng, probe=True) or build_item(w, "text", rng, probe=True)
         st["asked"].append(w.id)
         st["probes"] += 1
     if payload is None:
@@ -467,7 +527,7 @@ def _diag_after(conn, did: str, payload: dict, fb: dict) -> dict:
     score = fb["score"]
     st["answered"] += 1
     st["history"].append({"word": word.id, "tier": word.tier, "modality": sec["modality"], "score": score,
-                          "probe": bool(sec.get("probe")), "confidence": fb["confidence"]})
+                          "probe": bool(sec.get("probe")), "confidence": fb["confidence"], "ms": fb.get("ms")})
     if sec.get("probe"):
         # 2-up / 1-down staircase: converges near 70% correct
         if score >= 0.8:
@@ -478,12 +538,26 @@ def _diag_after(conn, did: str, payload: dict, fb: dict) -> dict:
         else:
             st["streak"] = 0
             st["tier"] = max(1, st["tier"] - 1)
-    if score < 0.8:
+    already = {(h["word"], h["modality"]) for h in st["history"]} | {(q["word"], q["modality"]) for q in st["queue"]}
+    if st.get("style") == "placement":
+        # known in writing -> can it be heard? heard alone -> can it be followed in a sentence?
+        # (capped so most of the test still samples new words across levels)
+        follow = {"text": "audio", "audio": "context"}.get(sec["modality"]) if score >= 0.8 else None
+        cap = {"audio": st["max"] // 3, "context": st["max"] // 6}
+        n = sum(1 for h in st["history"] if h["modality"] == follow) + sum(1 for q in st["queue"] if q["modality"] == follow)
+        if follow and n < cap[follow] and (word.id, follow) not in already:
+            st["queue"].append({"word": word.id, "modality": follow, "after": st["answered"] + FOLLOW_UP_GAP - 1})
+    elif score < 0.8:
         # separate "can't hear it" from "doesn't know it": ask the easier form later
         follow = {"context": "audio", "audio": "text"}.get(sec["modality"])
-        already = {(h["word"], h["modality"]) for h in st["history"]} | {(q["word"], q["modality"]) for q in st["queue"]}
         if follow and (word.id, follow) not in already and st["answered"] + len(st["queue"]) < st["max"]:
             st["queue"].append({"word": word.id, "modality": follow, "after": st["answered"] + FOLLOW_UP_GAP})
+    if st["answered"] >= st["max"] and st.get("style") == "placement" and not st.get("extended"):
+        # unsettled level: fewer than 4 written probes at the level the staircase ended on -> a few more
+        at_tier = sum(1 for h in st["history"] if h["probe"] and h["tier"] == st["tier"])
+        if at_tier < 4:
+            st["max"] += PLACEMENT_EXTRA
+            st["extended"] = True
     if st["answered"] >= st["max"]:
         _diag_complete(conn, d)
     _diag_save(conn, d)
@@ -512,6 +586,37 @@ def _diag_complete(conn, d: dict) -> None:
     sound_gap = [w for w, m in per_word.items() if m.get("text", 0) >= 0.8 and m.get("audio", 1) < 0.8]
     weak = [w for w, m in per_word.items() if min(m.values()) < 0.8]
     weak.sort(key=lambda w: (min(per_word[w].values()), lib.words[w].tier))
+    routes: dict[str, list[str]] = {k: [] for k in ROUTES}
+    for w, m in per_word.items():
+        t, a, c = m.get("text"), m.get("audio"), m.get("context")
+        if (t is not None and t < 0.8) or (t is None and a is not None and a < 0.8 and "text" not in m):
+            key = "basic" if t is not None else ("sound" if a is not None else "basic")
+        elif a is not None and a < 0.8:
+            key = "sound"
+        elif c is not None and c < 0.8:
+            key = "context"
+        elif c is not None:
+            key = "solid"
+        elif a is not None:
+            key = "context"            # heard alone; the sentence check is still to come
+        else:
+            key = "text_only"
+        routes[key].append(w)
+    # a rough size of what is known in writing: accuracy of the written probes per level x words in the level
+    text_tier: dict[int, list[float]] = {}
+    for h in hist:
+        if h["probe"] and h["modality"] == "text":
+            text_tier.setdefault(h["tier"], []).append(1.0 if h["score"] >= 0.8 else 0.0)
+    known_est = None
+    if text_tier:
+        tested = sorted(text_tier)
+        acc = {}
+        for t in (1, 2, 3, 4):
+            near = min(tested, key=lambda x: (abs(x - t), -x))
+            v = text_tier[near]
+            a_ = sum(v) / len(v)
+            acc[t] = 1.0 if t < tested[0] and a_ >= 0.7 else (0.0 if t > tested[-1] and a_ < 0.3 else a_)
+        known_est = int(round(sum(acc[t] * len(lib.by_tier(t)) for t in acc), -1))
     d["status"] = "completed"
     d["completed_at"] = db.now_iso()
     d["result"] = {
@@ -524,7 +629,19 @@ def _diag_complete(conn, d: dict) -> None:
         "sound_gap": [_word_brief(lib.words[w]) for w in sound_gap],
         "weak": [{**_word_brief(lib.words[w]), "failed": [m for m, s in per_word[w].items() if s < 0.8]} for w in weak],
         "guesses": sum(1 for h in hist if h["confidence"] == "guess"),
+        "unknown": sum(1 for h in hist if h["confidence"] == "unknown"),
+        "style": d["state"].get("style", "listening"),
+        "routes": {k: [_word_brief(lib.words[w]) for w in v] for k, v in routes.items()},
+        "route_labels": ROUTES,
+        "known_estimate": known_est,
+        "total_words": len(lib.words),
+        "median_ms": _median([h.get("ms") for h in hist if h.get("ms")]),
     }
+
+
+def _median(xs: list) -> int | None:
+    xs = sorted(x for x in xs if x)
+    return int(xs[len(xs) // 2]) if xs else None
 
 
 def _word_brief(w: Word) -> dict:
@@ -576,6 +693,7 @@ def stats() -> dict:
             return None
         st = json.loads(row["state"])
         return {"id": row["id"], "answered": st["answered"], "max": st["max"], "completed_at": row["completed_at"],
+                "style": st.get("style", "listening"),
                 "result": json.loads(row["result"]) if row["result"] else None}
 
     return {

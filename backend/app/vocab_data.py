@@ -13,8 +13,11 @@ from pathlib import Path
 
 from . import config
 
-DATASET_PATH = Path(__file__).resolve().parent.parent / "content" / "vocab" / "toeic_core.json"
-POS = {"n", "v", "adj", "adv"}
+VOCAB_DIR = Path(__file__).resolve().parent.parent / "content" / "vocab"
+DATASET_PATH = VOCAB_DIR / "toeic_core.json"
+# toeic_core: original CC0 set · ngsl_tsl: headwords from NGSL 1.2 / TSL 1.2 (CC BY-SA 4.0), see content/vocab/sources
+DATASET_PATHS = (DATASET_PATH, VOCAB_DIR / "ngsl_tsl.json")
+POS = {"n", "v", "adj", "adv", "prep", "conj", "pron"}
 TIERS = (1, 2, 3, 4)
 _JA = re.compile(r"[぀-ヿ一-鿿]")
 
@@ -33,6 +36,14 @@ class Word:
     cefr_level: str | None = None
     toeic_relevance: str | None = None
     pronunciation: str | None = None
+    scene: str | None = None          # where the word is typically used (Japanese)
+    example_ja: str | None = None     # translation of the study example
+    transfer: str | None = None       # a second, unseen sentence: same sense, different scene and speaker
+    transfer_form: str | None = None
+    transfer_ja: str | None = None
+    source: str | None = None         # "tsl" / "ngsl" headword lists, None for the original set
+    rank: int | None = None
+    dataset: str = "toeic_core"
 
     @property
     def audio_key(self) -> str:
@@ -62,6 +73,26 @@ def _meaning_parts(meaning: str) -> set[str]:
     """2-character chunks of a Japanese gloss; overlapping chunks mean the glosses may be synonyms."""
     s = re.sub(r"[、。・（）()\s]", "", meaning)
     return {s[i:i + 2] for i in range(len(s) - 1)}
+
+
+def _tokens(s: str) -> set[str]:
+    return {t.lower() for t in re.findall(r"[A-Za-z']+", s)}
+
+
+def sense_matches(meaning: str, ja: str) -> bool:
+    """Does a Japanese translation carry the gloss? (shares a 2-character chunk, or contains one gloss)"""
+    if _meaning_parts(meaning) & _meaning_parts(ja):
+        return True
+    for g in (g.strip() for g in re.split(r"[、,]", meaning)):
+        if not g:
+            continue
+        if g in ja:
+            return True
+        # inflected verbs / adjectives: 乗る -> 乗って, 結ぶ -> 結び (the kanji stem without its okurigana)
+        stem = re.sub(r"[ぁ-ん]+$", "", g)
+        if stem and stem != g and re.fullmatch(r"[一-鿿々]+", stem) and stem in ja:
+            return True
+    return False
 
 
 def overlaps(a: Word, b: Word) -> bool:
@@ -106,8 +137,18 @@ def validate_dataset(data: dict) -> list[str]:
             problems.append(f"{where}: meaning must be Japanese")
         if w.get("cefr_level") is not None and w["cefr_level"] not in {"A1", "A2", "B1", "B2", "C1", "C2"}:
             problems.append(f"{where}: invalid cefr_level")
+        roles = [ex.get("role") for ex in w["examples"]]
+        if any(roles) and roles[:2] != ["study", "transfer"]:
+            problems.append(f"{where}: examples must be [study, transfer]")
+        if w.get("source") is not None and w["source"] not in ("tsl", "ngsl"):
+            problems.append(f"{where}: unknown source {w['source']}")
         for ex in w["examples"]:
             en, form = ex.get("en", ""), ex.get("form", "")
+            if ex.get("role") and not ex.get("ja"):
+                problems.append(f"{where}: {ex['role']} example needs a Japanese translation")
+            if ex.get("ja") and not sense_matches(w["meaning"], ex["ja"]):
+                # the translation must carry the gloss: otherwise the sentence uses another sense of the word
+                problems.append(f"{where}: example translation does not use the meaning {w['meaning']!r} (sense mismatch)")
             if not en or not form:
                 problems.append(f"{where}: example needs en and form")
                 continue
@@ -122,26 +163,62 @@ def validate_dataset(data: dict) -> list[str]:
             if en in seen_examples:
                 problems.append(f"{where}: duplicate example")
             seen_examples.add(en)
+        if len(w["examples"]) >= 2 and w["examples"][1].get("role") == "transfer":
+            a, b = (_tokens(x["en"]) for x in w["examples"][:2])
+            if len(a & b) / max(1, len(a | b)) > 0.4:
+                problems.append(f"{where}: transfer sentence is too close to the study sentence")
     if len(seen_ids) < 40:
         problems.append("dataset: too few words for a diagnostic")
     return problems
 
 
+def audit(words: list[Word]) -> list[str]:
+    """Cross-dataset warnings a human should look at (not load errors): identical glosses on unrelated
+    words, which would make one 4-choice question have two right answers if both were offered."""
+    out = []
+    by_meaning: dict[str, list[Word]] = {}
+    for w in words:
+        by_meaning.setdefault(w.meaning, []).append(w)
+    for m, ws in by_meaning.items():
+        if len(ws) > 1 and len({w.group for w in ws if w.group}) != 1:
+            out.append(f"same meaning {m!r}: {', '.join(w.lemma for w in ws)}")
+    return out
+
+
 class VocabLibrary:
-    def __init__(self, path: Path = DATASET_PATH) -> None:
-        self.raw = json.loads(path.read_text())
-        problems = validate_dataset(self.raw)
-        if problems:
-            raise ValueError("vocabulary dataset is invalid:\n" + "\n".join(problems[:20]))
-        self.meta = self.raw["dataset"]
+    def __init__(self, paths=None) -> None:
+        if isinstance(paths, Path):
+            paths = (paths,)
+        paths = [p for p in (paths or DATASET_PATHS) if p.exists()]
+        self.datasets: list[dict] = []
         self.words: dict[str, Word] = {}
-        for w in self.raw["words"]:
-            ex = w["examples"][0]
-            self.words[w["id"]] = Word(
-                id=w["id"], lemma=w["lemma"], pos=w["pos"], meaning=w["meaning"], tier=w["tier"],
-                topic=w["topic"], group=w.get("group"), example=ex["en"], form=ex["form"],
-                cefr_level=w.get("cefr_level"), toeic_relevance=w.get("toeic_relevance"),
-                pronunciation=w.get("pronunciation"))
+        lemmas: dict[str, str] = {}
+        for path in paths:
+            raw = json.loads(path.read_text())
+            problems = validate_dataset(raw)
+            name = path.stem
+            for w in raw.get("words") or []:
+                other = lemmas.get(w.get("lemma", "").lower())
+                if other and other != name:
+                    problems.append(f"{w['lemma']!r}: also in {other}.json (duplicate across datasets)")
+                lemmas.setdefault(w.get("lemma", "").lower(), name)
+            if problems:
+                raise ValueError(f"vocabulary dataset {path.name} is invalid:\n" + "\n".join(problems[:20]))
+            self.datasets.append({**raw["dataset"], "file": path.name, "words": len(raw["words"])})
+            for w in raw["words"]:
+                ex = w["examples"][0]
+                tr = w["examples"][1] if len(w["examples"]) > 1 and w["examples"][1].get("role") == "transfer" else {}
+                self.words[w["id"]] = Word(
+                    id=w["id"], lemma=w["lemma"], pos=w["pos"], meaning=w["meaning"], tier=w["tier"],
+                    topic=w["topic"], group=w.get("group"), example=ex["en"], form=ex["form"],
+                    cefr_level=w.get("cefr_level"), toeic_relevance=w.get("toeic_relevance"),
+                    pronunciation=w.get("pronunciation"), scene=w.get("scene"), example_ja=ex.get("ja"),
+                    transfer=tr.get("en"), transfer_form=tr.get("form"), transfer_ja=tr.get("ja"),
+                    source=w.get("source"), rank=w.get("rank"), dataset=name)
+        self.raw = {"dataset": self.datasets[0], "words": [w for p in paths for w in json.loads(p.read_text())["words"]]}
+        self.meta = {"name": " + ".join(d["name"] for d in self.datasets),
+                     "license": " / ".join(f"{d['file']}: {d['license']}" for d in self.datasets),
+                     "source": self.datasets[0]["source"]}
         self.manifest = load_audio_manifest()
 
     def by_tier(self, tier: int) -> list[Word]:
@@ -151,14 +228,14 @@ class VocabLibrary:
         """{'word': rel path, 'example': rel path} for words whose audio exists."""
         m = self.manifest.get(word.id) or {}
         out = {}
-        for k in ("word", "example"):
+        for k in ("word", "example", "transfer"):
             rel = m.get(k)
             if rel and (config.AUDIO_DIR / rel).exists():
                 out[k] = rel
         return out
 
     def missing_audio(self) -> list[str]:
-        return [w.id for w in self.words.values() if len(self.audio(w)) < 2]
+        return [w.id for w in self.words.values() if len(self.audio(w)) < (3 if w.transfer else 2)]
 
 
 def manifest_path() -> Path:

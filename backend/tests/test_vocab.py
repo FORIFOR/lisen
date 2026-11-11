@@ -47,7 +47,7 @@ def test_every_word_yields_single_answer_questions_in_all_modalities():
                 # exactly one option's word is actually in the sentence that is played
                 assert [o.id for o in opts if o.appears_in(w.example)] == [w.id]
             if mod != "text":
-                assert w.lemma not in p["public"]["audio"]  # the URL must not give the word away
+                assert w.lemma not in p["public"]["audio"].rsplit("/", 1)[-1]  # the file name must not give the word away
                 assert "lemma" not in p["public"]
 
 
@@ -180,6 +180,12 @@ def test_acquired_requires_all_three_modalities(client):
     assert vocab.status_of(row) != "acquired"
     with db.tx() as conn:
         p = vocab.build_item(w, "context")
+        fb = vocab.grade(conn, p, {"choice": p["secret"]["answer"], "ms": 1000}, origin="test")
+    # all three right, but on one day only: confirmed on another day before it counts as acquired
+    assert fb["status"] == "confirm"
+    with db.tx() as conn:
+        conn.execute("UPDATE user_vocab SET last_correct_date='2000-01-01' WHERE word_id='allocate'")
+        p = vocab.build_item(w, "text")
         fb = vocab.grade(conn, p, {"choice": p["secret"]["answer"], "ms": 1000}, origin="test")
     assert fb["status"] == "acquired"
     # a lucky guess is not the same as knowing: half credit and a review card

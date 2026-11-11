@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { BarChart3, BookOpen, Home, Moon, RotateCcw, Settings, Sun, Waves } from "lucide-react";
+import { BarChart3, BookOpen, Home, Languages, Moon, RotateCcw, Settings, Sun, Waves } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/", label: "ホーム", icon: Home },
   { href: "/review", label: "復習", icon: RotateCcw },
+  { href: "/vocab", label: "単語", icon: Languages },
   { href: "/analytics", label: "分析", icon: BarChart3 },
   { href: "/library", label: "教材", icon: BookOpen },
   { href: "/settings", label: "設定", icon: Settings },
@@ -99,7 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-5 md:px-8 md:pb-12 md:pt-8">{children}</main>
 
       {/* mobile tab bar: fewer controls, study comes first */}
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t bg-background/95 pt-1.5 backdrop-blur md:hidden">
+      <nav className="pb-safe fixed inset-x-0 bottom-0 z-20 grid border-t bg-background/95 pt-1.5 backdrop-blur md:hidden" style={{ gridTemplateColumns: `repeat(${NAV.length - 1}, minmax(0, 1fr))` }}>
         {NAV.filter((n) => n.href !== "/settings").map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (

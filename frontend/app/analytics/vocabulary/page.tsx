@@ -132,7 +132,7 @@ export default function VocabularyAnalyticsPage() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="診断済み単語" value={s.tested_words} sub={`全 ${s.dataset.words} 語中`} />
         <Stat label="要復習" value={s.due} sub="今日 FSRS で復習" />
-        <Stat label="習得済み" value={s.acquired} sub="文字・音声・文脈すべて80%以上" />
+        <Stat label="習得済み" value={s.acquired} sub="文字・音声・文脈すべて80%以上、別の日にも確認" />
         <Stat label="推定の語彙レベル" value={`${s.estimated_tier} / 4`} sub={diagnosed ? "語彙診断より" : "リスニングのレベルから仮置き"} />
       </div>
 

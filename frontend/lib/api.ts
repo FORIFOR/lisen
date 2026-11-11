@@ -207,6 +207,72 @@ export type WordItem = {
   progress?: { answered: number; max: number };
   /** part of the listening-profile diagnostic: the answer is not revealed */
   diagnostic?: boolean;
+  /** an unseen sentence (word lessons): played once at normal speed before answering */
+  transfer?: boolean;
+  lesson?: { spent_s: number; budget_s: number };
+};
+/** word lessons: the word first; meaning, scene and example after the learner tries to recall it */
+export type WordStudyItem = {
+  type: "word_study";
+  item_id: string;
+  lemma: string;
+  pos: string;
+  audio?: string | null;
+  tier: number;
+  reason?: string | null;
+  prompt: string;
+  lesson?: { spent_s: number; budget_s: number };
+};
+export type WordStudyFeedback = {
+  type: "word_study";
+  duplicate?: boolean;
+  lemma: string;
+  pos: string;
+  meaning: string;
+  scene: string | null;
+  example: string;
+  form: string;
+  example_ja: string | null;
+  word_audio: string | null;
+  example_audio: string | null;
+  recall: "yes" | "no";
+  lesson?: VocabLesson;
+};
+export type Phase = "placement" | "first" | "review" | "transfer" | "practice";
+export type PhaseScore = { accuracy: number; n: number } | null;
+export type VocabLessonResult = {
+  studied: { id: string; lemma: string; meaning: string; status: string; status_label: string; next_review_at: string | null }[];
+  phases: Record<"first" | "transfer" | "review", PhaseScore>;
+  phase_labels: Record<"first" | "transfer" | "review", string>;
+  reviews: number;
+  spent_s: number;
+  leftover: number;
+  due_now: number;
+};
+export type VocabLesson = {
+  id: string;
+  status: string;
+  minutes: number;
+  spent_s: number;
+  budget_s: number;
+  studied: number;
+  answered: number;
+  created_at: string;
+  result: VocabLessonResult | null;
+  resumed?: boolean;
+};
+export type VocabOverview = {
+  total: number;
+  acquired: number;
+  learning: number;
+  untested: number;
+  due: number;
+  phases: Record<Phase, PhaseScore>;
+  phase_labels: Record<Phase, string>;
+  active_lesson: VocabLesson | null;
+  placement: { id: string; status: string; completed_at: string | null } | null;
+  datasets: { file: string; name: string; license: string; words: number }[];
+  minutes: number[];
 };
 export type Mastery = Record<Modality, number | null>;
 export type WordFeedback = {
@@ -235,6 +301,16 @@ export type WordFeedback = {
   status?: string;
   status_label?: string;
   srs?: { due: string; rating: string } | null;
+  example_ja?: string | null;
+  scene?: string | null;
+  phase?: Phase;
+  phase_label?: string;
+  sentence?: "example" | "transfer";
+  transfer?: string | null;
+  transfer_ja?: string | null;
+  transfer_form?: string | null;
+  transfer_audio?: string | null;
+  lesson?: VocabLesson;
 };
 export type WordBrief = { id: string; lemma: string; meaning: string; tier: number; audio?: string | null };
 export type DiagnosticResult = {
@@ -246,7 +322,15 @@ export type DiagnosticResult = {
   sound_gap: WordBrief[];
   weak: (WordBrief & { failed: Modality[] })[];
   guesses: number;
+  unknown?: number;
+  style?: "listening" | "placement";
+  routes?: Record<PlacementRoute, WordBrief[]>;
+  route_labels?: Record<PlacementRoute, string>;
+  known_estimate?: number | null;
+  total_words?: number;
+  median_ms?: number | null;
 };
+export type PlacementRoute = "basic" | "sound" | "context" | "solid" | "text_only";
 export type Diagnostic = { id: string; status: string; answered: number; max: number; tier: number; result: DiagnosticResult | null; resumed?: boolean };
 export type LessonCheck = { check: string; ok: boolean; detail: string; skipped?: boolean };
 export type ImportJob = {
@@ -304,7 +388,7 @@ export type VocabStats = {
   estimated_tier: number;
   focus: (WordBrief & { weakest: Modality; weakest_label: string; status: string; status_label: string; mastery: Mastery; next_review_at: string | null })[];
   diagnostic: {
-    active: { id: string; answered: number; max: number } | null;
+    active: { id: string; answered: number; max: number; style?: "listening" | "placement" } | null;
     last: { id: string; completed_at: string; result: DiagnosticResult } | null;
   };
   lessons: Lesson[];
