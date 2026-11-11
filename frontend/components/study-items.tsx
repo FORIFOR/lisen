@@ -133,7 +133,7 @@ export function StudyView({ item, rate, submit, next }: Props<StudyItem>) {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 space-y-3">
           {item.report === "not_heard" && (
             <div className="rounded-2xl border border-warning/40 bg-warning-soft p-3 text-sm">
-              <p className="font-medium">音を聞き取れなかった文です。英文を見ながら聞いて、音と文字を照らし合わせましょう</p>
+              <p className="font-medium">音を聞き取れなかった文です。英文を見ながらゆっくり聞いて音と文字を照らし合わせ、最後に普通の速さでもう一度聞いて分かるか確かめましょう</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <Button variant="outline" className="h-11" onClick={() => ctl.play(0, true)}>
                   <Ear className="size-4" /> ゆっくり聞く

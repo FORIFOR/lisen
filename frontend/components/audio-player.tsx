@@ -188,6 +188,16 @@ export function AudioPlayer({ ctl, className, compact, label }: { ctl: AudioCtl;
           <span className="hidden sm:inline">0.75x</span>
         </button>
       </div>
+      {ctl.blocked && !ctl.playing && (
+        // autoplay was refused (iOS needs a tap, e.g. after the screen was locked): a large, plain way to go on
+        <button
+          type="button"
+          onClick={() => ctl.play(0)}
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
+        >
+          <Play className="size-5" /> タップして再生
+        </button>
+      )}
     </div>
   );
 }
