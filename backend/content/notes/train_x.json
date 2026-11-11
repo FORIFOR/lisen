@@ -1,0 +1,1085 @@
+{
+ "x2-ai-assistant": {
+  "scene": "友人同士がメールにAIアシスタントを使うことについて話している。",
+  "lines": [
+   {
+    "ja": "メールにAIアシスタントを使ってみたことある？",
+    "key": {
+     "expr": "Have you tried",
+     "ja": "～してみたことある？"
+    },
+    "grammar": {
+     "pattern": "Have you tried",
+     "ja": "～したことがありますか（経験の現在完了）"
+    },
+    "transfer": {
+     "text": "Have you tried the new noodle shop near the station? It opened last week.",
+     "form": "Have you tried",
+     "ja": "駅の近くの新しい麺の店に行ってみた？先週オープンしたんだ。",
+     "q": "話し手が聞いていることは？",
+     "choices": [
+      "駅の近くに新しい店を開く予定か",
+      "駅の近くの新しい麺の店に行ったことがあるか",
+      "先週麺の店が閉店したのを知っているか",
+      "明日一緒に麺の店に行きたいか"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "うん、毎朝使ってるよ。最初の下書きを書いてくれて、それから私が直すんだ。",
+    "key": {
+     "expr": "first draft",
+     "ja": "最初の下書き"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Please send me the first draft of the report by Friday.",
+     "form": "first draft",
+     "ja": "金曜日までに報告書の最初の下書きを送ってください。",
+     "q": "話し手が金曜日までに求めているものは？",
+     "choices": [
+      "報告書の完成版",
+      "報告書への感想",
+      "報告書の最初の下書き",
+      "会議の予定表"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "それでずいぶん時間の節約になる？",
+    "key": {
+     "expr": "save",
+     "ja": "（時間などを）節約する"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "If you take the express train, you can save thirty minutes.",
+     "form": "save",
+     "ja": "急行電車に乗れば、30分節約できるよ。",
+     "q": "急行電車に乗るとどうなる？",
+     "choices": [
+      "30分遅れて着く",
+      "30分待たなければならない",
+      "料金が30ドル安くなる",
+      "30分早く着ける"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "一日20分くらいかな。でも名前と日付はいつも自分で確認してるよ。",
+    "key": {
+     "expr": "myself",
+     "ja": "自分で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "I don't trust the machine, so I count the money myself.",
+     "form": "myself",
+     "ja": "機械を信用していないので、お金は自分で数えています。",
+     "q": "話し手はお金をどうしている？",
+     "choices": [
+      "機械を信用せず自分で数える",
+      "機械に数えさせている",
+      "同僚に数えてもらう",
+      "数えずに銀行に預ける"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "どうして？間違えることがあるの？",
+    "key": {
+     "expr": "make mistakes",
+     "ja": "間違える"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "New drivers often make mistakes when they park in small spaces.",
+     "form": "make mistakes",
+     "ja": "新人ドライバーは、狭い場所に駐車するときによく失敗する。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "新人ドライバーは駐車がとても上手だ",
+      "新人ドライバーは狭い場所に駐車するときによく失敗する",
+      "狭い場所への駐車は禁止されている",
+      "ベテランは狭い場所に駐車しない"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "たまにね。一度、会議の招待を間違った週で送っちゃったことがあるんだ。",
+    "key": {
+     "expr": "meeting invite",
+     "ja": "会議の招待"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "I got a meeting invite for Monday, but I'm on holiday that day.",
+     "form": "meeting invite",
+     "ja": "月曜日の会議の招待が届いたけど、その日は休暇なんだ。",
+     "q": "話し手の困っていることは？",
+     "choices": [
+      "月曜の会議の招待がまだ来ていない",
+      "月曜の会議を自分で設定し忘れた",
+      "月曜の会議の招待が来たが、その日は休みだ",
+      "休み明けの火曜に会議が入っている"
+     ],
+     "answer": 2
+    }
+   }
+  ]
+ },
+ "x3-ai-podcast": {
+  "scene": "ポッドキャストの司会者がAIによる学び方の変化について話している。",
+  "lines": [
+   {
+    "ja": "番組へようこそ。今日は、AIが人々の新しいスキルの学び方をどう変えているかについてお話ししたいと思います。",
+    "key": {
+     "expr": "the way",
+     "ja": "やり方、方法"
+    },
+    "grammar": {
+     "pattern": "how AI is changing",
+     "ja": "AIがどのように～を変えているか（間接疑問）"
+    },
+    "transfer": {
+     "text": "The new app has changed the way I plan my weekly meals.",
+     "form": "the way",
+     "ja": "その新しいアプリで、毎週の食事の計画の立て方が変わった。",
+     "q": "新しいアプリについて合うのは？",
+     "choices": [
+      "料理を代わりに作ってくれる",
+      "週末の予定を立ててくれる",
+      "食費を半分にしてくれた",
+      "毎週の食事の計画の立て方を変えた"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "数年前なら、プログラミングを学びたければ、長い動画を見て、それが自分の問題にぴったり当てはまる内容を扱っていることを願うしかありませんでした。",
+    "key": {
+     "expr": "covered",
+     "ja": "（内容として）扱った"
+    },
+    "grammar": {
+     "pattern": "you'd watch",
+     "ja": "（当時は）～したものだ（過去の習慣を表す would）"
+    },
+    "transfer": {
+     "text": "The workshop covered basic first aid, but it didn't cover what to do in a fire.",
+     "form": "covered",
+     "ja": "その講習会では基本的な応急処置は扱ったが、火事のときにどうするかは扱わなかった。",
+     "q": "講習会で扱われたことは？",
+     "choices": [
+      "基本的な応急処置",
+      "火事のときの対応",
+      "応急処置と火事の対応の両方",
+      "どちらも扱われなかった"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "今では、エラーメッセージをチャットボットに貼り付ければ、数秒で説明が得られます。",
+    "key": {
+     "expr": "in seconds",
+     "ja": "数秒で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "With this machine, you can get fresh orange juice in seconds.",
+     "form": "in seconds",
+     "ja": "この機械を使えば、数秒で搾りたてのオレンジジュースが飲めます。",
+     "q": "この機械について合うのは？",
+     "choices": [
+      "ジュースを作るのに数分かかる",
+      "数秒で搾りたてのオレンジジュースができる",
+      "オレンジを数秒で切れる",
+      "ジュースを数時間冷たく保てる"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "行き詰まりを抜けるにはとても便利ですが、落とし穴があります。苦労しなければ、次にその解決方法を覚えていないかもしれません。",
+    "key": {
+     "expr": "there's a catch",
+     "ja": "落とし穴がある"
+    },
+    "grammar": {
+     "pattern": "If you never struggle, you might not",
+     "ja": "もし全く苦労しなければ、～しないかもしれない（条件＋might）"
+    },
+    "transfer": {
+     "text": "The hotel room is very cheap, but there's a catch: it has no windows.",
+     "form": "there's a catch",
+     "ja": "そのホテルの部屋はとても安いが、落とし穴がある。窓がないのだ。",
+     "q": "ホテルの部屋について合うのは？",
+     "choices": [
+      "高いが眺めがとてもいい",
+      "安くて大きな窓もある",
+      "とても安いが窓がない",
+      "窓はあるがとても狭い"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "だから私のアドバイスはシンプルです。AIに聞く前に、10分間は自分で頑張ってみてください。",
+    "key": {
+     "expr": "on your own",
+     "ja": "自分で、一人で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "If you can't fix the printer on your own, call the IT desk on extension 20.",
+     "form": "on your own",
+     "ja": "自分でプリンターを直せなければ、内線20番のITデスクに電話してください。",
+     "q": "プリンターについて話し手が言っていることは？",
+     "choices": [
+      "まずITデスクに電話してから自分で直してみる",
+      "自分では触らず、すぐITデスクに電話する",
+      "直せなければ新しいプリンターを注文する",
+      "自分で直せなければITデスクに電話する"
+     ],
+     "answer": 3
+    }
+   }
+  ]
+ },
+ "x4-ai-launch-meeting": {
+  "scene": "チームが要約機能を来週火曜日にリリースできるかどうか話し合っている。",
+  "lines": [
+   {
+    "ja": "では問題は、要約機能を来週の火曜日にリリースできる状態かどうかです。",
+    "key": {
+     "expr": "ready to ship",
+     "ja": "リリースできる状態の"
+    },
+    "grammar": {
+     "pattern": "the question is whether",
+     "ja": "問題は～かどうかだ"
+    },
+    "transfer": {
+     "text": "The new version of the app isn't ready to ship because the login still fails sometimes.",
+     "form": "ready to ship",
+     "ja": "ログインがまだ時々失敗するので、アプリの新しいバージョンはまだリリースできる状態ではない。",
+     "q": "アプリの新バージョンについて合うのは？",
+     "choices": [
+      "ログインの不具合があるのでまだリリースできない",
+      "ログインの不具合が直ったのでリリースできる",
+      "すでにリリースされたがログインできない",
+      "ログイン機能だけ先にリリースする"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "技術的には、はい。テストセットでの精度は約92パーセントです。",
+    "key": {
+     "expr": "Technically",
+     "ja": "技術的には、厳密に言えば"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Technically, the store closes at nine, but the staff usually let customers finish shopping.",
+     "form": "Technically",
+     "ja": "厳密には店は9時に閉まるが、店員はたいていお客さんに買い物を済ませさせてくれる。",
+     "q": "店について合うのは？",
+     "choices": [
+      "9時になるとすぐ客は店を出なければならない",
+      "閉店は9時だが、たいてい客は買い物を終えるまでいられる",
+      "閉店時間は曜日によって違う",
+      "実際には9時より早く閉まることが多い"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "私が心配なのは残りの8パーセントです。間違っているときも、正しいときと全く同じくらい自信がありそうに聞こえるんです。",
+    "key": {
+     "expr": "concern",
+     "ja": "懸念、心配"
+    },
+    "grammar": {
+     "pattern": "just as confident as when",
+     "ja": "～のときと全く同じくらい自信がある（as ～ as の同等比較）"
+    },
+    "transfer": {
+     "text": "My main concern is the cost of shipping, not the price of the product itself.",
+     "form": "concern",
+     "ja": "私が一番心配しているのは、商品そのものの価格ではなく送料だ。",
+     "q": "話し手が一番心配していることは？",
+     "choices": [
+      "商品そのものの価格",
+      "配送にかかる日数",
+      "送料",
+      "商品の品質"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "元の文書がとても長いときに警告を表示することはできますか？エラーの大半はそこで起きるので。",
+    "key": {
+     "expr": "show a warning",
+     "ja": "警告を表示する"
+    },
+    "grammar": {
+     "pattern": "That's where",
+     "ja": "そこが～する所だ（関係副詞 where）"
+    },
+    "transfer": {
+     "text": "The app will show a warning if you try to delete a file that is still open.",
+     "form": "show a warning",
+     "ja": "まだ開いているファイルを削除しようとすると、アプリは警告を表示する。",
+     "q": "アプリが警告を表示するのはいつ？",
+     "choices": [
+      "ファイルを開こうとしたとき",
+      "ファイルを保存し忘れたとき",
+      "閉じているファイルを削除したとき",
+      "開いたままのファイルを削除しようとしたとき"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "それなら火曜日までに対応できます。ただ、きちんとした信頼度スコアとなると、さらに1か月かかりますね。",
+    "key": {
+     "expr": "doable",
+     "ja": "実行可能な、対応できる"
+    },
+    "grammar": {
+     "pattern": "would take another month",
+     "ja": "さらに1か月かかるだろう（would による推量）"
+    },
+    "transfer": {
+     "text": "Finishing the report by Friday is doable if Tom helps with the charts.",
+     "form": "doable",
+     "ja": "トムがグラフを手伝ってくれれば、金曜日までに報告書を仕上げるのは可能だ。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "トムがグラフを手伝えば金曜までに報告書を終えられる",
+      "トムが手伝っても金曜までには終わらない",
+      "トムが報告書を一人で書く",
+      "報告書の締め切りが金曜から延びた"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "わかりました、警告付きでリリースして、信頼度スコアはロードマップに入れましょう。",
+    "key": {
+     "expr": "on the roadmap",
+     "ja": "今後の計画に（入って）"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "A dark mode for the website is on the roadmap for early next year.",
+     "form": "on the roadmap",
+     "ja": "ウェブサイトのダークモードは来年初めの計画に入っている。",
+     "q": "ダークモードについて合うのは？",
+     "choices": [
+      "すでにサイトで使える",
+      "来年初めの計画に入っている",
+      "計画から外された",
+      "今年中に公開される"
+     ],
+     "answer": 1
+    }
+   }
+  ]
+ },
+ "x5-ai-regulation": {
+  "scene": "講師が急速に変化するAIを規制することの難しさについて講義している。",
+  "lines": [
+   {
+    "ja": "数か月ごとに変化する技術を規制することは、立法者にとって本当の板挟みとなります。",
+    "key": {
+     "expr": "poses",
+     "ja": "（問題・危険を）もたらす、引き起こす"
+    },
+    "grammar": {
+     "pattern": "Regulating a technology that changes",
+     "ja": "変化する技術を規制すること（動名詞の主語＋関係代名詞 that）"
+    },
+    "transfer": {
+     "text": "Heavy snow poses a serious risk to drivers on mountain roads, so several routes are closed tonight.",
+     "form": "poses",
+     "ja": "大雪は山道の運転手に深刻な危険をもたらすため、今夜はいくつかの道路が閉鎖されている。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "大雪だが山道は今夜すべて通行できる",
+      "大雪で運転手が山道に取り残されている",
+      "大雪で危険なため、今夜いくつかの山道が閉鎖されている",
+      "大雪の危険は小さいが、念のため速度制限がある"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "早すぎる時期に作られた規則は見当違いのリスクを狙いがちで、一方、遅すぎる時期に作られた規則は、有害な慣行がすでに当たり前になった後に登場することになります。",
+    "key": {
+     "expr": "while",
+     "ja": "一方で（対比）"
+    },
+    "grammar": {
+     "pattern": "Rules written too early",
+     "ja": "早すぎる時期に書かれた規則（過去分詞の後置修飾）"
+    },
+    "transfer": {
+     "text": "Tom loves spicy food, while his wife can't eat anything hotter than mild curry.",
+     "form": "while",
+     "ja": "トムは辛い食べ物が大好きだが、一方で妻は甘口のカレーより辛いものは何も食べられない。",
+     "q": "二人について合うのは？",
+     "choices": [
+      "妻は辛い物が好きだが、トムは苦手だ",
+      "トムは辛い物が好きだが、妻は辛い物が苦手だ",
+      "二人とも辛い物が大好きだ",
+      "二人とも辛い物はまったく食べられない"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "提案されている妥協案の一つは、手法ではなく結果を規制することです。特定の技術を禁止する代わりに、根底にあるモデルが何であれ、測定可能な損害について企業に責任を負わせるのです。",
+    "key": {
+     "expr": "instead of",
+     "ja": "～の代わりに"
+    },
+    "grammar": {
+     "pattern": "whatever the underlying model happens to be",
+     "ja": "根底にあるモデルがたまたま何であろうと（whatever の譲歩）"
+    },
+    "transfer": {
+     "text": "Instead of printing the slides for everyone, we will share a link after the meeting.",
+     "form": "Instead of",
+     "ja": "全員分のスライドを印刷する代わりに、会議の後でリンクを共有します。",
+     "q": "スライドについて合うのは？",
+     "choices": [
+      "会議の前に全員分を印刷して配る",
+      "会議中に画面で見せるだけで共有はしない",
+      "印刷したものとリンクの両方を配る",
+      "印刷はせず、会議の後にリンクを共有する"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "しかし批評家たちは、信頼が徐々に損なわれることなど、一部の損害は測定が極めて難しいことで知られていると指摘しています。",
+    "key": {
+     "expr": "point out",
+     "ja": "指摘する"
+    },
+    "grammar": {
+     "pattern": "notoriously hard to measure",
+     "ja": "測定が難しいことで悪名高い（形容詞＋to 不定詞）"
+    },
+    "transfer": {
+     "text": "Several reviewers point out that the camera's battery runs out after only two hours of filming.",
+     "form": "point out",
+     "ja": "複数のレビュアーが、そのカメラのバッテリーはわずか2時間の撮影で切れると指摘している。",
+     "q": "レビューで指摘されていることは？",
+     "choices": [
+      "撮影2時間でバッテリーが切れる",
+      "バッテリーが2日間もつ",
+      "充電に2時間かかる",
+      "2時間以上の撮影も問題なくこなせる"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "x3-client-call": {
+  "scene": "取引先に契約書の支払条件について電話で問い合わせている。",
+  "lines": [
+   {
+    "ja": "もしもし、サラさん、ブライトラインのケンです。契約書を送っていただきありがとうございます。",
+    "key": {
+     "expr": "Thanks for",
+     "ja": "～をありがとう"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Thanks for lending me your umbrella yesterday; I'll bring it back tomorrow.",
+     "form": "Thanks for",
+     "ja": "昨日は傘を貸してくれてありがとう。明日返すね。",
+     "q": "話し手は何に感謝している？",
+     "choices": [
+      "傘を返してくれたこと",
+      "明日傘を持ってきてくれること",
+      "昨日傘を貸してくれたこと",
+      "新しい傘を買ってくれたこと"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "どういたしまして。何かご質問はありましたか？",
+    "key": {
+     "expr": "any questions",
+     "ja": "何か質問"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Does anyone have any questions before we start the test?",
+     "form": "any questions",
+     "ja": "テストを始める前に、何か質問がある人はいますか？",
+     "q": "話し手が聞いていることは？",
+     "choices": [
+      "テストを始める前に質問があるか",
+      "テストが終わったか",
+      "テストに何問あるか",
+      "テストを受けたい人がいるか"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "一つだけです。第4条に支払期限は30日とありますが、当社の経理部は通常60日で対応しています。",
+    "key": {
+     "expr": "due",
+     "ja": "（支払い・提出の）期限で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The library books are due next Monday, so please return them before then.",
+     "form": "due",
+     "ja": "図書館の本は来週の月曜日が返却期限なので、それまでに返してください。",
+     "q": "図書館の本について合うのは？",
+     "choices": [
+      "来週の月曜日から借りられる",
+      "来週の月曜日までに返さなければならない",
+      "来週の月曜日に新しい本が入る",
+      "返却期限は今週の月曜日だった"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "わかりました。私の一存では変更できませんが、上司に聞いて、木曜日までに折り返しご連絡します。",
+    "key": {
+     "expr": "get back to",
+     "ja": "（人に）折り返し連絡する"
+    },
+    "grammar": {
+     "pattern": "I can't change that myself, but I'll",
+     "ja": "自分では変えられませんが、～します（その場で決めた意志の will）"
+    },
+    "transfer": {
+     "text": "I don't know the price yet, but I'll get back to you after lunch.",
+     "form": "get back to",
+     "ja": "まだ値段はわかりませんが、昼食の後に折り返しご連絡します。",
+     "q": "話し手が約束していることは？",
+     "choices": [
+      "今すぐ価格を教える",
+      "昼食前に連絡する",
+      "価格はわからないので連絡できない",
+      "昼食の後に連絡する"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "そうしていただけると助かります。それ以外はすべて問題ないと思います。",
+    "key": {
+     "expr": "looks fine",
+     "ja": "問題なさそうだ"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Your passport looks fine, but your visa expires next week.",
+     "form": "looks fine",
+     "ja": "パスポートは問題なさそうですが、ビザが来週で切れます。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "パスポートは問題ないが、ビザが来週切れる",
+      "ビザは問題ないが、パスポートが来週切れる",
+      "パスポートもビザも問題ない",
+      "パスポートもビザも期限切れだ"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "x4-budget-review": {
+  "scene": "上司と担当者がマーケティング施策の予算超過の原因を確認している。",
+  "lines": [
+   {
+    "ja": "マーケティングキャンペーンで予算を約15パーセント超過しています。大半はどこに使われたのですか？",
+    "key": {
+     "expr": "over budget",
+     "ja": "予算超過で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The new office building is two months late and already over budget.",
+     "form": "over budget",
+     "ja": "新しいオフィスビルは2か月遅れていて、すでに予算も超過している。",
+     "q": "新しいオフィスビルについて合うのは？",
+     "choices": [
+      "予定より2か月早く、予算内で完成した",
+      "2か月遅れているが、予算内に収まっている",
+      "2か月遅れていて、すでに予算も超えている",
+      "予算を超えたが、予定通り完成した"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "主に動画制作です。代理店が2回目の修正に追加料金を請求したんです。",
+    "key": {
+     "expr": "charged extra",
+     "ja": "追加料金を請求した"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The hotel charged extra because we checked out three hours late.",
+     "form": "charged extra",
+     "ja": "私たちが3時間遅れてチェックアウトしたので、ホテルは追加料金を請求した。",
+     "q": "ホテルについて合うのは？",
+     "choices": [
+      "早めにチェックアウトしたので割引してくれた",
+      "チェックアウトが3時間遅れたので追加料金を取った",
+      "遅いチェックアウトを無料にしてくれた",
+      "3時間早くチェックインさせてくれた"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "2回目の修正は本当に必要だったのですか？",
+    "key": {
+     "expr": "really necessary",
+     "ja": "本当に必要な"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Is it really necessary to print every email? It wastes so much paper.",
+     "form": "really necessary",
+     "ja": "メールを全部印刷する必要が本当にあるの？紙をすごく無駄にしているよ。",
+     "q": "話し手の考えに近いのは？",
+     "choices": [
+      "メールはすべて印刷して保管するべきだ",
+      "紙が足りないので注文する必要がある",
+      "大事なメールだけは必ず印刷するべきだ",
+      "メールを全部印刷するのは紙の無駄だ"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "正直に言うと、一部はこちらの責任でした。撮影がすでに始まった後で、メインのメッセージを変更してしまったんです。",
+    "key": {
+     "expr": "our fault",
+     "ja": "私たちの責任"
+    },
+    "grammar": {
+     "pattern": "had already started",
+     "ja": "（その時点で）すでに始まっていた（過去完了）"
+    },
+    "transfer": {
+     "text": "The delay wasn't our fault; the supplier sent the wrong parts.",
+     "form": "our fault",
+     "ja": "遅れは私たちの責任ではありません。納入業者が間違った部品を送ってきたんです。",
+     "q": "遅れの原因は？",
+     "choices": [
+      "納入業者が間違った部品を送ったこと",
+      "自分たちが部品を注文し忘れたこと",
+      "自分たちが間違った部品を注文したこと",
+      "納入業者が部品を送るのを忘れたこと"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "それなら次回は、代理店に説明する前にメッセージについて合意しておき、契約で修正回数に上限を設けましょう。",
+    "key": {
+     "expr": "cap",
+     "ja": "上限を設ける"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The city plans to cap taxi fares from the airport at fifty dollars.",
+     "form": "cap",
+     "ja": "市は空港からのタクシー料金の上限を50ドルにする計画だ。",
+     "q": "市の計画は？",
+     "choices": [
+      "空港からのタクシー料金を50ドル値上げする",
+      "空港からのタクシー料金を最低50ドルにする",
+      "空港からのタクシー料金の上限を50ドルにする",
+      "空港のタクシーを50台増やす"
+     ],
+     "answer": 2
+    }
+   }
+  ]
+ },
+ "x5-earnings-call": {
+  "scene": "企業の経営陣が決算説明会で四半期の業績を説明している。",
+  "lines": [
+   {
+    "ja": "当四半期の売上高は業績見通しをわずかに下回りました。主な要因は、大口の法人顧客2社からの注文が遅れたことです。",
+    "key": {
+     "expr": "primarily due to",
+     "ja": "主に～が原因で"
+    },
+    "grammar": {
+     "pattern": "came in slightly below",
+     "ja": "（数字が）～をわずかに下回った（come in）"
+    },
+    "transfer": {
+     "text": "The flight was cancelled primarily due to a shortage of crew, not the bad weather.",
+     "form": "primarily due to",
+     "ja": "その便は、悪天候ではなく主に乗務員の不足が原因で欠航になった。",
+     "q": "欠航の主な理由は？",
+     "choices": [
+      "悪天候",
+      "機体の故障",
+      "予約客の少なさ",
+      "乗務員の不足"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "どちらの注文もキャンセルされていないことを強調したいと思います。両方ともその後契約が締結されており、来四半期に計上される予定です。",
+    "key": {
+     "expr": "neither",
+     "ja": "どちらも～ない"
+    },
+    "grammar": {
+     "pattern": "have since been signed",
+     "ja": "その後（すでに）締結された（現在完了の受動態）"
+    },
+    "transfer": {
+     "text": "Neither of the two candidates had experience in sales, so we reopened the job ad.",
+     "form": "Neither",
+     "ja": "2人の候補者のどちらにも営業の経験がなかったので、求人広告を再び出した。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "2人のうち1人だけ営業経験があった",
+      "どちらの候補者も営業経験がなかった",
+      "2人とも営業経験が豊富だった",
+      "営業経験のある候補者を採用した"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "これらの案件を除けば、当社のサブスクリプション事業の成長は実際には加速しており、私たちはそれをより重要な長期的指標と捉えています。",
+    "key": {
+     "expr": "Excluding",
+     "ja": "～を除けば"
+    },
+    "grammar": {
+     "pattern": "which we view as",
+     "ja": "それを～とみなしている（非制限用法の which、view A as B）"
+    },
+    "transfer": {
+     "text": "Excluding weekends, the repair work should take about ten days to complete.",
+     "form": "Excluding",
+     "ja": "週末を除いて、修理作業は完了までに約10日かかる見込みだ。",
+     "q": "修理について合うのは？",
+     "choices": [
+      "週末を除いて約10日かかる",
+      "週末も含めて約10日かかる",
+      "週末だけで終わる",
+      "10日後に始まる"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "x2-weekend-plans": {
+  "scene": "友人同士が週末にハイキングに行く計画を立てている。",
+  "lines": [
+   {
+    "ja": "それで、えーと、今週末は何か予定ある？",
+    "key": {
+     "expr": "doing anything",
+     "ja": "何か予定がある"
+    },
+    "grammar": {
+     "pattern": "are you doing",
+     "ja": "～する予定ですか（予定を表す現在進行形）"
+    },
+    "transfer": {
+     "text": "Are you doing anything after work on Friday? A few of us are going bowling.",
+     "form": "doing anything",
+     "ja": "金曜日の仕事の後、何か予定ある？何人かでボウリングに行くんだ。",
+     "q": "話し手が聞いていることは？",
+     "choices": [
+      "金曜日に仕事があるか",
+      "ボウリングが得意か",
+      "金曜の仕事の後に予定があるか",
+      "金曜は何時に仕事が終わるか"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "特にないよ。あ、でも実は、天気がよければハイキングに行こうかなと思ってたんだ。",
+    "key": {
+     "expr": "thinking of",
+     "ja": "～しようかと考える"
+    },
+    "grammar": {
+     "pattern": "I was thinking of going",
+     "ja": "～に行こうかと思っていた（過去進行形）"
+    },
+    "transfer": {
+     "text": "I'm thinking of buying a new bike, but they're very expensive right now.",
+     "form": "thinking of",
+     "ja": "新しい自転車を買おうかと考えているけど、今はとても高いんだ。",
+     "q": "話し手について合うのは？",
+     "choices": [
+      "新しい自転車をもう買った",
+      "自転車を売ろうとしている",
+      "安い自転車を見つけた",
+      "新しい自転車を買おうか考えている"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "へえ、いいね。どこに？湖の近くの丘？",
+    "key": {
+     "expr": "near",
+     "ja": "～の近くの"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "There's a good bakery near the station, next to the post office.",
+     "form": "near",
+     "ja": "駅の近く、郵便局の隣においしいパン屋があるよ。",
+     "q": "パン屋はどこにある？",
+     "choices": [
+      "駅の近く、郵便局の隣",
+      "駅の中",
+      "駅の近く、郵便局の向かい",
+      "駅から遠い所"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "うん、そうそう。えっと、一緒に来る？8時ごろに出発できるけど。",
+    "key": {
+     "expr": "want to come",
+     "ja": "来たい"
+    },
+    "grammar": {
+     "pattern": "We could leave",
+     "ja": "～してもいいね（could で提案）"
+    },
+    "transfer": {
+     "text": "Do you want to come to my birthday party on Sunday afternoon?",
+     "form": "want to come",
+     "ja": "日曜日の午後の私の誕生日パーティーに来ない？",
+     "q": "話し手がしていることは？",
+     "choices": [
+      "日曜のパーティーに行けないと伝えている",
+      "日曜の午後の誕生日パーティーに誘っている",
+      "日曜の朝のパーティーに誘っている",
+      "誕生日プレゼントについて聞いている"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "8時は私にはちょっと早いな。9時はどう？",
+    "key": {
+     "expr": "How about",
+     "ja": "～はどう？"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The restaurant is full tonight. How about tomorrow at seven?",
+     "form": "How about",
+     "ja": "今夜はレストランが満席なんだ。明日の7時はどう？",
+     "q": "話し手が提案していることは？",
+     "choices": [
+      "今夜7時に行く",
+      "今夜は別の店に行く",
+      "明日の7時に行く",
+      "明日の11時に行く"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "いいよ、9時で大丈夫。土曜日の夜にメッセージするね。",
+    "key": {
+     "expr": "works",
+     "ja": "都合がいい"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Tuesday doesn't work for me, but Wednesday morning works.",
+     "form": "works",
+     "ja": "火曜日は都合が悪いけど、水曜日の朝なら大丈夫。",
+     "q": "話し手の都合がいいのは？",
+     "choices": [
+      "火曜日の朝",
+      "火曜日の夜",
+      "水曜日の夜",
+      "水曜日の朝"
+     ],
+     "answer": 3
+    }
+   }
+  ]
+ },
+ "x3-catching-up": {
+  "scene": "久しぶりに会った友人同士が新しい仕事について話している。",
+  "lines": [
+   {
+    "ja": "やあ！ずいぶん久しぶりだね。新しい仕事はどう？",
+    "key": {
+     "expr": "in ages",
+     "ja": "長い間"
+    },
+    "grammar": {
+     "pattern": "haven't seen",
+     "ja": "（ずっと）会っていない（継続の現在完了）"
+    },
+    "transfer": {
+     "text": "I haven't been to the cinema in ages, so let's go this weekend.",
+     "form": "in ages",
+     "ja": "長いこと映画館に行っていないから、今週末行こうよ。",
+     "q": "話し手について合うのは？",
+     "choices": [
+      "長い間映画館に行っていない",
+      "先週映画館に行った",
+      "週末はいつも映画館に行く",
+      "映画館が好きではない"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "うん、順調だよ。というか、最初はちょっと大変だったけどね、ほら、知らない人がたくさんいて。",
+    "key": {
+     "expr": "at first",
+     "ja": "最初は"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "At first the job seemed easy, but now I have too much to do.",
+     "form": "At first",
+     "ja": "最初はその仕事は簡単そうに思えたけど、今はやることが多すぎる。",
+     "q": "話し手の仕事について合うのは？",
+     "choices": [
+      "最初は大変だったが今は楽になった",
+      "最初は簡単そうだったが、今はやることが多すぎる",
+      "始めからずっと楽だ",
+      "始めからずっと忙しすぎる"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "だろうね。今も電車で通勤してるの？",
+    "key": {
+     "expr": "commuting",
+     "ja": "通勤している"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Ms. Lee is commuting by bus this month because her car is being repaired.",
+     "form": "commuting",
+     "ja": "車が修理中なので、リーさんは今月バスで通勤している。",
+     "q": "リーさんについて合うのは？",
+     "choices": [
+      "バスが運休中なので車で通勤している",
+      "車を買ったのでバス通勤をやめた",
+      "車が修理中なので、今月はバスで通勤している",
+      "今月は家で仕事をしている"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "いや、実は今は週3日在宅勤務させてもらえるから、出社するのは月曜と木曜だけなんだ。",
+    "key": {
+     "expr": "work from home",
+     "ja": "在宅勤務する"
+    },
+    "grammar": {
+     "pattern": "they let me work",
+     "ja": "私に～させてくれる（使役の let + 目的語 + 動詞の原形）"
+    },
+    "transfer": {
+     "text": "Our team can work from home on Fridays, but everyone comes in on Mondays.",
+     "form": "work from home",
+     "ja": "私たちのチームは金曜日は在宅勤務ができるが、月曜日は全員出社する。",
+     "q": "このチームについて合うのは？",
+     "choices": [
+      "月曜は在宅勤務ができ、金曜は全員出社する",
+      "毎日在宅で仕事ができる",
+      "金曜も月曜も全員出社する",
+      "金曜は在宅勤務ができ、月曜は全員出社する"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "それは最高だね。きっとすごく時間を節約できてるでしょ。",
+    "key": {
+     "expr": "a ton of",
+     "ja": "たくさんの"
+    },
+    "grammar": {
+     "pattern": "You must save",
+     "ja": "きっと～しているに違いない（推量の must）"
+    },
+    "transfer": {
+     "text": "We got a ton of emails after the website went down this morning.",
+     "form": "a ton of",
+     "ja": "今朝ウェブサイトが止まった後、大量のメールが届いた。",
+     "q": "今朝何があった？",
+     "choices": [
+      "サイトが止まってメールが一通も送れなかった",
+      "サイトが止まった後、大量のメールが届いた",
+      "サイトは止まったがメールはほとんど来なかった",
+      "メールを送るためにサイトを止めた"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "うん、そうなんだ。でも正直、会社で人とおしゃべりするのがちょっと恋しいんだよね。",
+    "key": {
+     "expr": "miss",
+     "ja": "～がなくて寂しい、恋しく思う"
+    },
+    "grammar": {
+     "pattern": "miss chatting",
+     "ja": "おしゃべりすることが恋しい（miss + 動名詞）"
+    },
+    "transfer": {
+     "text": "Since moving to the city, I really miss the quiet nights in my hometown.",
+     "form": "miss",
+     "ja": "都会に引っ越してから、故郷の静かな夜が本当に恋しい。",
+     "q": "話し手について合うのは？",
+     "choices": [
+      "都会のにぎやかな夜が気に入っている",
+      "もうすぐ故郷に戻る予定だ",
+      "故郷の静かな夜が恋しい",
+      "故郷の夜はうるさかった"
+     ],
+     "answer": 2
+    }
+   }
+  ]
+ }
+}

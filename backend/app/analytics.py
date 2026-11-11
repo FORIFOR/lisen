@@ -76,6 +76,8 @@ def kpis() -> dict:
         "first_play": {"label": "初回再生での理解率", "note": "1回だけ再生して答えた初見音声",
                        **pair(unseen + " AND json_extract(detail,'$.plays')=1")},
         "sound": {"label": "音声識別正答率", "note": "似た音・弱形・連結の聞き分け", **pair("kind='discrimination'")},
+        "transfer": {"label": "応用文の理解率", "note": "練習した表現を、初めて聞く別の文で理解できた割合",
+                     **pair("kind='transfer'")},
         "audio_vocab": {"label": "音声語彙認識率", "note": "TOEIC 語彙を音・文脈で認識",
                         **pair("kind='word' AND json_extract(detail,'$.modality') IN ('audio','context')")},
         "retention": {"label": "継続率", "note": "直近7日・30日のうち学習した日の割合", "d7": rate(7), "d30": rate(30)},

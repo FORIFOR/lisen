@@ -20,14 +20,14 @@ import type {
 import { audioUrl, LEVEL_LABEL } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-type Props<T> = {
+export type Props<T> = {
   item: T;
   rate: number;
   submit: (body: Record<string, unknown>) => Promise<Feedback | null>;
   next: () => void;
 };
 
-const ERROR_TIPS: Record<string, string> = {
+export const ERROR_TIPS: Record<string, string> = {
   weak_forms: "a / the / to / can などの機能語は、弱く短く「ə」に近い音になります。文の意味の骨組みから、入るはずの語を予測しながら聞きましょう。",
   contractions: "I'll / don't / we'd などの短縮形は1音節に縮みます。'll（未来）と 'd（過去・仮定）の違いは文脈で確かめましょう。",
   linking: "子音で終わる語の次に母音で始まる語が来ると、2語がつながって1語のように聞こえます（例: get it →「ゲリッ」）。",
@@ -36,7 +36,7 @@ const ERROR_TIPS: Record<string, string> = {
   vocabulary: "聞き慣れない内容語です。意味だけでなく、音（強勢の位置）と一緒に覚えると次から聞き取れます。",
 };
 
-function useEnter(enabled: boolean, fn: () => void) {
+export function useEnter(enabled: boolean, fn: () => void) {
   const ref = useRef(fn);
   useEffect(() => {
     ref.current = fn;
@@ -54,7 +54,7 @@ function useEnter(enabled: boolean, fn: () => void) {
   }, [enabled]);
 }
 
-function NextButton({ onClick, label = "次へ" }: { onClick: () => void; label?: string }) {
+export function NextButton({ onClick, label = "次へ" }: { onClick: () => void; label?: string }) {
   return (
     <Button size="lg" className="h-12 w-full text-base sm:w-auto sm:px-8" onClick={onClick} autoFocus>
       {label} <ArrowRight className="size-4" /> <Kbd>Enter</Kbd>
@@ -62,7 +62,7 @@ function NextButton({ onClick, label = "次へ" }: { onClick: () => void; label?
   );
 }
 
-function Header({ kind, title, level, reason }: { kind: string; title?: string; level: number; reason?: string }) {
+export function Header({ kind, title, level, reason }: { kind: string; title?: string; level: number; reason?: string }) {
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <span className="rounded-full bg-brand-soft px-2.5 py-1 font-medium text-primary">{kind}</span>
@@ -73,7 +73,7 @@ function Header({ kind, title, level, reason }: { kind: string; title?: string; 
   );
 }
 
-function Verdict({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+export function Verdict({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -363,6 +363,7 @@ export function DictationView({ item, rate, submit, next }: Props<DictationItem>
             </div>
           )}
           {fb.moving_on && <p className="text-sm text-success">この音声は十分に聞き取れています。新しい音声へ進みます。</p>}
+          {fb.study_next && <p className="text-sm text-muted-foreground">次は、この1文を英文・日本語訳・構文で確かめます。</p>}
           <div className="flex justify-end">
             <NextButton onClick={next} />
           </div>

@@ -1,0 +1,954 @@
+{
+ "l1-cafe": {
+  "scene": "カフェで客が飲み物と食べ物を注文している。",
+  "lines": [
+   {
+    "ja": "こんにちは、小さいサイズのコーヒーをもらえますか？",
+    "key": {
+     "expr": "can I get",
+     "ja": "～をもらえますか（注文するときの表現）"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Can I get a window seat on the morning flight to Osaka?",
+     "form": "Can I get",
+     "ja": "大阪行きの朝の便で、窓側の席をもらえますか？",
+     "q": "話し手が頼んでいるのは？",
+     "choices": [
+      "大阪行きの朝の便の窓側の席",
+      "大阪行きの夜の便の窓側の席",
+      "大阪行きの朝の便の通路側の席",
+      "大阪行きの朝の便のキャンセル"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "かしこまりました。ミルクはお入れしますか？",
+    "key": {
+     "expr": "Would you like",
+     "ja": "～はいかがですか、～しますか"
+    },
+    "grammar": {
+     "pattern": "Would you like ~?",
+     "ja": "～はいかがですか（丁寧な申し出・すすめ）"
+    },
+    "transfer": {
+     "text": "Would you like a copy of the meeting notes before Friday?",
+     "form": "Would you like",
+     "ja": "金曜日の前に、会議メモのコピーはいかがですか？",
+     "q": "話し手は何をしている？",
+     "choices": [
+      "会議メモのコピーを渡そうと申し出ている",
+      "会議を金曜日に延期しようとしている",
+      "会議メモのコピーを欲しいと頼んでいる",
+      "会議メモを書くよう頼んでいる"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "少しだけお願いします。それと、ブルーベリーマフィンもください。",
+    "key": {
+     "expr": "I'll have",
+     "ja": "～をください、～にします（注文）"
+    },
+    "grammar": {
+     "pattern": "I'll have ~",
+     "ja": "～にします（その場で決めたことを表す will）"
+    },
+    "transfer": {
+     "text": "For dinner, I'll have the fish, and my son wants the chicken.",
+     "form": "I'll have",
+     "ja": "夕食は、私は魚にします。息子はチキンがいいそうです。",
+     "q": "話し手自身が注文するものは？",
+     "choices": [
+      "魚とチキンの両方",
+      "チキン",
+      "魚",
+      "サラダ"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "6ドル50セントになります。",
+    "key": {
+     "expr": "dollars and 50 cents",
+     "ja": "～ドル50セント"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The ticket costs 12 dollars and 50 cents for adults.",
+     "form": "dollars and 50 cents",
+     "ja": "チケットは大人12ドル50セントです。",
+     "q": "チケットの値段は？",
+     "choices": [
+      "子ども12ドル50セント",
+      "大人20ドル50セント",
+      "大人12ドル15セント",
+      "大人12ドル50セント"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "カードで払えますか？",
+    "key": {
+     "expr": "pay by card",
+     "ja": "カードで支払う"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "You can't pay by card here, so please bring some cash.",
+     "form": "pay by card",
+     "ja": "ここではカードで支払えないので、現金を持ってきてください。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "カードは使えないので現金が必要",
+      "カードでも現金でも払える",
+      "カードで払うと割引がある",
+      "現金は使えないのでカードが必要"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "もちろんです。こちらがレシートです。",
+    "key": {
+     "expr": "receipt",
+     "ja": "レシート、領収書"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Please keep your receipt if you want to return the shirt later.",
+     "form": "receipt",
+     "ja": "後でシャツを返品したい場合は、レシートを保管しておいてください。",
+     "q": "話し手は何をすすめている？",
+     "choices": [
+      "レシートをメールで受け取ること",
+      "シャツを今日中に返品すること",
+      "返品に備えてレシートを取っておくこと",
+      "レシートをすぐに捨てること"
+     ],
+     "answer": 2
+    }
+   }
+  ]
+ },
+ "l1-weekend": {
+  "scene": "話し手が自分の週末の過ごし方を話している。",
+  "lines": [
+   {
+    "ja": "土曜日の朝は、たいてい公園へ散歩に行きます。",
+    "key": {
+     "expr": "go for a walk",
+     "ja": "散歩に行く"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "After dinner, my grandfather likes to go for a walk with his dog.",
+     "form": "go for a walk",
+     "ja": "夕食の後、祖父は犬と一緒に散歩に行くのが好きです。",
+     "q": "祖父が夕食後に好んですることは？",
+     "choices": [
+      "一人でジョギングする",
+      "犬にえさをあげる",
+      "犬と家で遊ぶ",
+      "犬と散歩に行く"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "それから、姉（妹）と会って昼食をとります。",
+    "key": {
+     "expr": "for lunch",
+     "ja": "昼食に、昼食をとりに"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Let's meet at the station at noon and go somewhere for lunch.",
+     "form": "for lunch",
+     "ja": "正午に駅で会って、どこかへ昼食を食べに行きましょう。",
+     "q": "話し手の提案は？",
+     "choices": [
+      "正午に駅で会って夕食に行く",
+      "朝に駅で会って昼食に行く",
+      "正午に店で会って昼食に行く",
+      "正午に駅で会って昼食に行く"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "私たちはよく、駅の近くにある小さなイタリア料理店で食べます。",
+    "key": {
+     "expr": "place",
+     "ja": "店（飲食店）"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "There's a new Chinese place on Main Street that opens at eleven.",
+     "form": "place",
+     "ja": "メイン通りに、11時に開店する新しい中華料理店があります。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "新しい中華料理店が7時に開く",
+      "新しい中華料理店が11時に開く",
+      "古い中華料理店が11時に閉まる",
+      "新しいイタリア料理店が11時に開く"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "午後は部屋を掃除して、洗濯をします。",
+    "key": {
+     "expr": "do the laundry",
+     "ja": "洗濯をする"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "My husband usually does the laundry, and I cook dinner.",
+     "form": "does the laundry",
+     "ja": "普段は夫が洗濯をして、私が夕食を作ります。",
+     "q": "夫が普段することは？",
+     "choices": [
+      "洗濯",
+      "掃除",
+      "買い物",
+      "夕食作り"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "日曜日は、ただ家でのんびりして本を読みます。",
+    "key": {
+     "expr": "relax at home",
+     "ja": "家でくつろぐ"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "I was too tired to go out, so I stayed in and relaxed at home.",
+     "form": "relaxed at home",
+     "ja": "疲れすぎて出かけられなかったので、家にいてくつろぎました。",
+     "q": "話し手は何をした？",
+     "choices": [
+      "出かけずに家でくつろいだ",
+      "疲れていたが出かけた",
+      "家で掃除をした",
+      "友人の家でくつろいだ"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "l1-directions": {
+  "scene": "通行人が近くの銀行への行き方をたずねている。",
+  "lines": [
+   {
+    "ja": "すみません。この近くに銀行はありますか？",
+    "key": {
+     "expr": "near here",
+     "ja": "この近くに"
+    },
+    "grammar": {
+     "pattern": "Is there ~?",
+     "ja": "～はありますか（存在をたずねる）"
+    },
+    "transfer": {
+     "text": "Is there a drugstore near here that stays open late?",
+     "form": "near here",
+     "ja": "この近くに、遅くまで開いているドラッグストアはありますか？",
+     "q": "話し手が探しているのは？",
+     "choices": [
+      "近くで朝早く開いているドラッグストア",
+      "近くで遅くまで開いているドラッグストア",
+      "近くで遅くまで開いているスーパー",
+      "遠くても遅くまで開いているドラッグストア"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "はい、グリーン通りに1軒あります。",
+    "key": {
+     "expr": "there's one",
+     "ja": "1つ（1軒）ある"
+    },
+    "grammar": {
+     "pattern": "there's one",
+     "ja": "one は前に出た名詞（a bank）の代わり"
+    },
+    "transfer": {
+     "text": "You forgot your umbrella? Don't worry, there's one in my car you can use.",
+     "form": "there's one",
+     "ja": "傘を忘れたの？大丈夫、車にあなたが使える傘が1本あるよ。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "傘を新しく買う必要がある",
+      "車に使える傘がある",
+      "傘は家にある",
+      "車の中で傘をなくした"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "そこへはどうやって行けばいいですか？",
+    "key": {
+     "expr": "get there",
+     "ja": "そこへ行く（たどり着く）"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "It takes about twenty minutes to get there by bus.",
+     "form": "get there",
+     "ja": "そこへはバスで約20分かかります。",
+     "q": "そこまでの行き方と所要時間は？",
+     "choices": [
+      "電車で約20分",
+      "バスで約20分",
+      "バスで約2分",
+      "歩いて約20分"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "まっすぐ行って、2つ目の角を左に曲がってください。",
+    "key": {
+     "expr": "turn left",
+     "ja": "左に曲がる"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Turn left after the bridge, and the hotel is on your right.",
+     "form": "Turn left",
+     "ja": "橋を過ぎたら左に曲がってください。ホテルは右側にあります。",
+     "q": "ホテルへの行き方は？",
+     "choices": [
+      "橋の手前で左に曲がると右側にある",
+      "橋を過ぎて左に曲がると左側にある",
+      "橋を過ぎて左に曲がると右側にある",
+      "橋を過ぎて右に曲がると左側にある"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "郵便局の隣にあります。",
+    "key": {
+     "expr": "next to",
+     "ja": "～の隣に"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The meeting room is next to the elevator on the third floor.",
+     "form": "next to",
+     "ja": "会議室は3階のエレベーターの隣にあります。",
+     "q": "会議室はどこ？",
+     "choices": [
+      "2階のエレベーターの隣",
+      "3階のエレベーターの隣",
+      "3階のエレベーターの向かい",
+      "3階の階段の隣"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "どうもありがとうございます。",
+    "key": null,
+    "grammar": null,
+    "transfer": null
+   }
+  ]
+ },
+ "l1-phone-reschedule": {
+  "scene": "客が電話で予約の日時を変更してもらっている。",
+  "lines": [
+   {
+    "ja": "もしもし、エマです。今日の3時に予約しています。",
+    "key": {
+     "expr": "appointment",
+     "ja": "（面会・診察などの）予約"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "I have a dentist appointment on Thursday, so I'll leave work early.",
+     "form": "appointment",
+     "ja": "木曜日に歯医者の予約があるので、仕事を早めに出ます。",
+     "q": "木曜日に話し手がすることは？",
+     "choices": [
+      "歯医者の予約を取り消す",
+      "歯医者の予約を取る",
+      "歯医者の予約のため早退する",
+      "仕事で遅くまで残る"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "こんにちは、エマさん。どのようなご用件でしょうか？",
+    "key": {
+     "expr": "How can I help you",
+     "ja": "どのようなご用件ですか"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Thank you for calling City Bank. How can I help you today?",
+     "form": "How can I help you",
+     "ja": "シティ銀行にお電話いただきありがとうございます。本日はどのようなご用件でしょうか？",
+     "q": "話し手は誰？",
+     "choices": [
+      "銀行を紹介している別の会社の人",
+      "銀行に電話をかけた客",
+      "電話を受けた銀行の担当者",
+      "銀行の窓口に来た客"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "申し訳ないのですが、今日は行けません。明日に変更できますか？",
+    "key": {
+     "expr": "change it to",
+     "ja": "それを～に変更する"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The party is on Friday, but we may change it to Saturday.",
+     "form": "change it to",
+     "ja": "パーティーは金曜日ですが、土曜日に変更するかもしれません。",
+     "q": "パーティーについて正しいのは？",
+     "choices": [
+      "今は土曜日だが金曜日に変わるかもしれない",
+      "金曜日のパーティーは中止になった",
+      "金曜日から土曜日への変更が決まった",
+      "今は金曜日だが土曜日に変わるかもしれない"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "確認します。午前10時に空きがあります。",
+    "key": {
+     "expr": "opening",
+     "ja": "（予約の）空き"
+    },
+    "grammar": {
+     "pattern": "Let me check",
+     "ja": "確認させてください（let me＋動詞＝私に～させて）"
+    },
+    "transfer": {
+     "text": "Sorry, we have no openings this week, but next Monday is free.",
+     "form": "openings",
+     "ja": "すみません、今週は空きがありませんが、来週の月曜日は空いています。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "今週は空きがあるが、来週月曜日は空いていない",
+      "今週の月曜日なら空いている",
+      "今週は空きがなく、来週月曜日は空いている",
+      "今週も来週も空きがない"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "それでちょうどいいです。ありがとうございます。",
+    "key": null,
+    "grammar": null,
+    "transfer": null
+   }
+  ]
+ },
+ "l1-shoes": {
+  "scene": "客が靴屋で色やサイズを確かめながら靴を試している。",
+  "lines": [
+   {
+    "ja": "この靴のサイズ8はありますか？",
+    "key": {
+     "expr": "in a size 8",
+     "ja": "サイズ8で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "I ordered the boots in a size 8, but they sent me a 7.",
+     "form": "in a size 8",
+     "ja": "そのブーツをサイズ8で注文したのに、7が送られてきました。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "7を注文したのに8が届いた",
+      "8を注文して8が届いた",
+      "7を注文したがまだ届いていない",
+      "8を注文したのに7が届いた"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "ええと。黒と茶色がございます。",
+    "key": {
+     "expr": "in black and brown",
+     "ja": "黒と茶色（の色）で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "This sofa also comes in black and brown, but not in white.",
+     "form": "in black and brown",
+     "ja": "このソファは黒と茶色もありますが、白はありません。",
+     "q": "ソファの色について正しいのは？",
+     "choices": [
+      "黒と茶色はあるが白はない",
+      "黒と茶色と白がある",
+      "白と黒はあるが茶色はない",
+      "白だけがある"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "茶色のを試してみてもいいですか？",
+    "key": {
+     "expr": "try",
+     "ja": "試す（試着する）"
+    },
+    "grammar": {
+     "pattern": "the brown ones",
+     "ja": "ones は前に出た複数名詞（shoes）の代わり"
+    },
+    "transfer": {
+     "text": "You can try the cake before you buy a whole one.",
+     "form": "try",
+     "ja": "1個まるごと買う前に、そのケーキを試食できます。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "試食したら必ず買わなければならない",
+      "ケーキの試食は終わった",
+      "ケーキはまるごと買わないといけない",
+      "買う前にケーキを試食できる"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "はい、どうぞ。履き心地はいかがですか？",
+    "key": {
+     "expr": "How do they feel",
+     "ja": "（身に着けた）感じはどうですか"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "These new glasses look nice, but how do they feel on your nose?",
+     "form": "how do they feel",
+     "ja": "この新しい眼鏡はすてきに見えますが、鼻にかけた感じはどうですか？",
+     "q": "話し手がたずねているのは？",
+     "choices": [
+      "眼鏡の値段",
+      "眼鏡のかけ心地",
+      "眼鏡を買った店",
+      "眼鏡の見た目"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "少しきついです。もっと大きいサイズはありますか？",
+    "key": {
+     "expr": "tight",
+     "ja": "きつい"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "My old jeans are too tight now, so I need new ones.",
+     "form": "tight",
+     "ja": "古いジーンズが今はきつすぎるので、新しいのが必要です。",
+     "q": "新しいジーンズが必要な理由は？",
+     "choices": [
+      "古いジーンズをなくしたから",
+      "古いジーンズが大きすぎるから",
+      "古いジーンズが破れたから",
+      "古いジーンズがきつすぎるから"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "わかりました、サイズ9をお持ちします。",
+    "key": {
+     "expr": "I'll get you",
+     "ja": "（あなたに）～を持ってきます"
+    },
+    "grammar": {
+     "pattern": "I'll get you ~",
+     "ja": "～を持ってきます（その場で決めた申し出の will）"
+    },
+    "transfer": {
+     "text": "Wait here, and I'll get you a glass of water.",
+     "form": "I'll get you",
+     "ja": "ここで待っていてください。お水を1杯持ってきます。",
+     "q": "話し手はこれから何をする？",
+     "choices": [
+      "一緒に水を飲みに行く",
+      "水を持ってくる",
+      "水を買いに行ってもらう",
+      "相手に水を持ってきてもらう"
+     ],
+     "answer": 1
+    }
+   }
+  ]
+ },
+ "l1-family": {
+  "scene": "話し手が自分の家族を紹介している。",
+  "lines": [
+   {
+    "ja": "私の家族は4人です。",
+    "key": {
+     "expr": "There are",
+     "ja": "～がいる、～がある"
+    },
+    "grammar": {
+     "pattern": "There are ~",
+     "ja": "～がいる／ある（複数のものの存在）"
+    },
+    "transfer": {
+     "text": "There are 12 people on our team, but only 5 are here today.",
+     "form": "There are",
+     "ja": "私たちのチームには12人いますが、今日ここにいるのは5人だけです。",
+     "q": "今日ここにいるのは何人？",
+     "choices": [
+      "7人",
+      "5人",
+      "12人",
+      "17人"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "父は病院で働いていて、母は英語を教えています。",
+    "key": {
+     "expr": "works at",
+     "ja": "～で働いている"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "My cousin works at a bank, but he wants to be a chef.",
+     "form": "works at",
+     "ja": "いとこは銀行で働いていますが、シェフになりたいと思っています。",
+     "q": "いとこが今働いている場所は？",
+     "choices": [
+      "銀行",
+      "レストラン",
+      "病院",
+      "学校"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "弟が1人います。15歳で、サッカーが大好きです。",
+    "key": {
+     "expr": "younger brother",
+     "ja": "弟"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "My younger brother lives in Kyoto and visits us every summer.",
+     "form": "younger brother",
+     "ja": "弟は京都に住んでいて、毎年夏に私たちのところへ来ます。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "弟が京都から毎年夏に来る",
+      "兄が毎年夏に京都へ行く",
+      "弟が毎年冬に京都から来る",
+      "兄が京都から毎年夏に来る"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "マックスという名前の犬も飼っています。",
+    "key": {
+     "expr": "named",
+     "ja": "～という名前の"
+    },
+    "grammar": {
+     "pattern": "a dog named Max",
+     "ja": "過去分詞 named が後ろから名詞を説明（マックスと名づけられた犬）"
+    },
+    "transfer": {
+     "text": "Last week I stayed at a small hotel named The Blue Door.",
+     "form": "named",
+     "ja": "先週、「ザ・ブルー・ドア」という名前の小さなホテルに泊まりました。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "先週ブルー・ドアという店で食事をした",
+      "ブルー・ドアというホテルで働いている",
+      "先週ブルー・ドアというホテルに泊まった",
+      "来週ブルー・ドアというホテルに泊まる"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "金曜日の夜は、みんなで一緒に夕食を食べます。",
+    "key": {
+     "expr": "together",
+     "ja": "一緒に"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "My friends and I study together at the library after class.",
+     "form": "together",
+     "ja": "友人と私は、授業の後に図書館で一緒に勉強します。",
+     "q": "授業の後にすることは？",
+     "choices": [
+      "一人で図書館で勉強する",
+      "友人と図書館の前で会う",
+      "友人とカフェで一緒に勉強する",
+      "友人と図書館で一緒に勉強する"
+     ],
+     "answer": 3
+    }
+   }
+  ]
+ },
+ "l1-weather": {
+  "scene": "朝の天気予報で、今日と明日の天気を伝えている。",
+  "lines": [
+   {
+    "ja": "おはようございます。今日の天気をお伝えします。",
+    "key": {
+     "expr": "Here's",
+     "ja": "こちらが～です（紹介・提示）"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Here's the plan for tomorrow: we leave at seven and return by noon.",
+     "form": "Here's",
+     "ja": "明日の予定はこうです。7時に出発して、正午までに戻ります。",
+     "q": "明日の予定は？",
+     "choices": [
+      "正午に出発し7時に戻る",
+      "11時に出発し正午までに戻る",
+      "7時に出発し正午までに戻る",
+      "7時に出発し夜に戻る"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "午前中はくもりでしょう。",
+    "key": {
+     "expr": "cloudy",
+     "ja": "くもりの"
+    },
+    "grammar": {
+     "pattern": "be going to",
+     "ja": "～になりそうだ（予測）"
+    },
+    "transfer": {
+     "text": "It was cloudy all day, so we didn't see the sunset.",
+     "form": "cloudy",
+     "ja": "一日中くもっていたので、夕日は見えませんでした。",
+     "q": "夕日が見えなかった理由は？",
+     "choices": [
+      "一日中くもっていたから",
+      "風が強かったから",
+      "雨が降っていたから",
+      "出かけるのが遅かったから"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "午後は雨の可能性が高いので、傘を持っていきましょう。",
+    "key": {
+     "expr": "a good chance of",
+     "ja": "～の可能性が高い"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "There's a good chance of delays on the highway this evening.",
+     "form": "a good chance of",
+     "ja": "今晩は高速道路で遅れが出る可能性が高いです。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "今朝高速道路で遅れが出た",
+      "今晩は高速道路が閉鎖される",
+      "今晩は高速道路が空いていそう",
+      "今晩は高速道路で遅れが出そう"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "今日の最高気温は18度です。",
+    "key": {
+     "expr": "The high",
+     "ja": "最高気温"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The high on Sunday will be only 5 degrees, so wear a warm coat.",
+     "form": "The high",
+     "ja": "日曜日の最高気温はわずか5度なので、暖かいコートを着てください。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "土曜日の最高気温が5度",
+      "日曜日の最低気温が5度",
+      "日曜日は15度まで上がる",
+      "日曜日は最高でも5度"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "明日は晴れて暖かくなるでしょう。",
+    "key": {
+     "expr": "sunny and warm",
+     "ja": "晴れて暖かい"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "It will be sunny and warm this weekend, perfect for a picnic.",
+     "form": "sunny and warm",
+     "ja": "今週末は晴れて暖かく、ピクニックにぴったりでしょう。",
+     "q": "今週末の天気は？",
+     "choices": [
+      "晴れて暖かい",
+      "雨で寒い",
+      "くもりで暖かい",
+      "晴れて寒い"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "l1-hotel": {
+  "scene": "ホテルのフロントで客がチェックインしている。",
+  "lines": [
+   {
+    "ja": "こんにちは、ブラウンという名前で予約しています。",
+    "key": {
+     "expr": "under the name",
+     "ja": "～の名前で"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The table is booked under the name Garcia for seven o'clock.",
+     "form": "under the name",
+     "ja": "テーブルはガルシアという名前で7時に予約されています。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "ガルシアが7時の予約を取り消した",
+      "ガルシアの名前で7時に予約がある",
+      "予約した人の名前が分からない",
+      "ガルシアの名前で11時に予約がある"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "ようこそ、ブラウン様。2泊のご滞在ですね？",
+    "key": {
+     "expr": "staying for",
+     "ja": "～の間滞在する"
+    },
+    "grammar": {
+     "pattern": "You're staying ~, right?",
+     "ja": "現在進行形で決まっている予定を表し、right? で確認する"
+    },
+    "transfer": {
+     "text": "My parents are staying for a week, so I took some days off.",
+     "form": "staying for",
+     "ja": "両親が1週間滞在するので、何日か休みを取りました。",
+     "q": "休みを取った理由は？",
+     "choices": [
+      "両親が1日だけ来るから",
+      "両親の家に1週間行くから",
+      "両親が1週間滞在するから",
+      "1週間出張するから"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "はい、そうです。",
+    "key": null,
+    "grammar": null,
+    "transfer": null
+   },
+   {
+    "ja": "お部屋は5階です。朝食は7時から10時までです。",
+    "key": {
+     "expr": "fifth floor",
+     "ja": "5階"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The shoe store is now on the fifth floor, next to the cafe.",
+     "form": "fifth floor",
+     "ja": "靴屋は今は5階の、カフェの隣にあります。",
+     "q": "靴屋はどこ？",
+     "choices": [
+      "4階のカフェの隣",
+      "5階のカフェの向かい",
+      "5階のカフェの隣",
+      "1階のカフェの隣"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "部屋に無料のWi-Fiはありますか？",
+    "key": {
+     "expr": "free",
+     "ja": "無料の"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "Every guest gets a free drink at the hotel bar on the first night.",
+     "form": "free",
+     "ja": "宿泊客は全員、初日の夜にホテルのバーで無料の飲み物を1杯もらえます。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "毎晩バーで無料の飲み物がもらえる",
+      "初日の夜にバーで無料の飲み物がもらえる",
+      "初日の夜にバーの飲み物が半額になる",
+      "最後の夜にバーで無料の飲み物がもらえる"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "はい。パスワードはカードキーに書いてあります。",
+    "key": {
+     "expr": "key card",
+     "ja": "カードキー"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "If you lose your key card, the front desk can make a new one.",
+     "form": "key card",
+     "ja": "カードキーをなくしたら、フロントで新しいものを作ってもらえます。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "なくしてもフロントで新しく作ってもらえる",
+      "なくしたら部屋に入れない",
+      "なくしたら料金を払わなければならない",
+      "カードキーはフロントに預けなければならない"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ }
+}

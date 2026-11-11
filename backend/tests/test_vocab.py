@@ -195,8 +195,9 @@ def test_acquired_requires_all_three_modalities(client):
 def test_words_block_in_sessions(client):
     from tests.test_flow import run
     client.post("/onboarding/skip", json={"level": 2})
-    for minutes in (30, 60, 90, 120):
+    for minutes in (60, 90, 120):
         assert "words" in [b["kind"] for b in client.post("/plan/preview", json={"minutes": minutes}).json()["blocks"]]
+    # 30 minutes: no separate block; the review block turns to TOEIC words when nothing is due (checked below)
     s = client.post("/sessions", json={"minutes": 30}).json()
     types, done = run(client, s["id"], elapsed=30, good=lambda i: i % 3 != 0)
     assert done["session"]["status"] == "completed"
@@ -619,3 +620,71 @@ def test_gemini_tts_failure_falls_back_to_mac_voices_in_auto(client, tmp_path, m
     client.put("/settings", json={"lesson_engine": "gemini"})
     r = client.post("/v1/audio-lessons/generate", json=words)
     assert r.status_code == 422 and any("Gemini TTS" in c["check"] for c in r.json()["checks"])
+
+
+GOOD_JA = ["今年は研修プログラムにもっと予算を割り当てる必要があります。", "賛成ですが、役員会から新しい支出は6月まで延期するよう言われました。",
+           "それなら、せめて先月分の経費精算の申請は処理しましょう。", "いいですね。今日の午後、経理に書類を送ります。",
+           "ありがとう。金曜日にまた集まって数字を確認できますか？", "もちろん。10時に小会議室を予約します。"]
+GOOD_TRANSFERS = [
+    {"word": "allocate", "text": "The city will allocate new funds to repair the old bridge.", "ja": "市は古い橋の修理に新たな資金を割り当てる。",
+     "q": "この文の内容に合うのは？", "choices": ["橋の修理にお金を回す", "橋を閉鎖する", "新しい橋を売る", "修理を中止する"], "answer": 0},
+    {"word": "postpone", "text": "Because of the storm, they postponed the outdoor concert.", "ja": "嵐のため、野外コンサートは延期された。",
+     "q": "コンサートはどうなった？", "choices": ["予定どおり開かれた", "屋内に移った", "延期された", "無料になった"], "answer": 2},
+    {"word": "reimbursement", "text": "Keep your taxi receipts if you want a reimbursement.", "ja": "払い戻しを受けたいならタクシーの領収書を保管して。",
+     "q": "領収書を保管する理由は？", "choices": ["税金を払うため", "お金を返してもらうため", "記念に残すため", "タクシーを予約するため"], "answer": 1},
+]
+
+
+def _notes_fake(calls, verdict):
+    def fake(req, timeout=0):
+        body = json.loads(req.data.decode())
+        prompt = body["contents"][0]["parts"][0]["text"]
+        if "You are checking teaching material" in prompt:
+            calls.append("verify")
+            if verdict is None:
+                raise OSError("network down")
+            return _FakeResp({"candidates": [{"content": {"parts": [{"text": json.dumps(verdict)}]}}]})
+        calls.append("text")
+        return _FakeResp({"candidates": [{"content": {"parts": [{"text": json.dumps({
+            "topic": "Budget review", "scene_ja": "上司と部下が予算と経費について話している。",
+            "dialogue": [{"speaker": sp, "text": t, "ja": j} for (sp, t), j in zip(GOOD_DIALOGUE, GOOD_JA)],
+            "transfers": GOOD_TRANSFERS})}]}}]})
+    return fake
+
+
+def test_gemini_lesson_carries_verified_translations_and_transfers(client, tmp_path, monkeypatch):
+    from app import lessons, study
+    _need_tts(tmp_path, monkeypatch)
+    client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
+    calls = []
+    # the checker rejects the second line's translation and the third transfer question
+    verdict = {"lines": [True, False, True, True, True, True], "transfers": [True, True, False], "issues": ["line 2 adds meaning"]}
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", _notes_fake(calls, verdict))
+    r = client.post("/v1/audio-lessons/generate", json={"words": ["allocate", "postpone", "reimbursement"]})
+    assert r.status_code == 200, r.text
+    lesson = r.json()
+    assert calls == ["text", "verify"]
+    raw = json.loads((lessons.lessons_dir() / f"{lesson['id']}.json").read_text())
+    notes = raw["notes"]
+    assert notes["scene"] and notes["lines"][1] is None and notes["lines"][0]["ja"] == GOOD_JA[0]
+    assert notes["lines"][0]["key"]["expr"] == "allocate" and notes["lines"][0]["transfer"]["form"] == "allocate"
+    assert notes["lines"][2]["transfer"] is None                    # rejected by the checker
+    check = next(c for c in lesson["checks"] if c["check"] == "訳・応用問題の意味の一致")
+    assert "日本語訳 5/6" in check["detail"] and "応用文 2/3" in check["detail"]
+    # the lesson's transfer sentence is built (macOS voice) and served like the built-in ones
+    t = study.bank().transfers[f"{lesson['id']}#0"]
+    assert study.bank().audio(t)
+    assert t.voice not in raw["voices"].values()
+
+
+def test_gemini_notes_dropped_when_unverifiable(client, tmp_path, monkeypatch):
+    from app import lessons
+    _need_tts(tmp_path, monkeypatch)
+    client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
+    calls = []
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", _notes_fake(calls, None))
+    r = client.post("/v1/audio-lessons/generate", json={"words": ["allocate", "postpone", "reimbursement"]})
+    assert r.status_code == 200, r.text
+    raw = json.loads((lessons.lessons_dir() / f"{r.json()['id']}.json").read_text())
+    assert "notes" not in raw                                       # nothing unverified is shown to the learner
+    assert any("検証できなかった" in c["detail"] for c in r.json()["checks"])

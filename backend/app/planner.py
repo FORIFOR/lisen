@@ -7,8 +7,8 @@ extra learning rather than padding.
 from __future__ import annotations
 
 BLOCK_INFO = {
-    "review": ("復習・ウォームアップ", "FSRS で今日復習すべき音声と、聞き分けの準備運動"),
-    "new": ("初見リスニング・理解", "まだ聞いたことのない音声を、まず文字なしで理解する"),
+    "review": ("語彙・表現の復習", "FSRS で今日復習すべき文・単語。期限のものがなければ TOEIC 語彙か聞き分けの準備運動"),
+    "new": ("会話 → 1文 → 応用", "初見の会話で要点をつかみ、聞き取れなかった1文を理解し、同じ表現を別の文で聞く"),
     "weak": ("弱点別の集中訓練", "あなたの聞き取りミスが多い音のパターンを集中的に"),
     "shadow": ("シャドーイング・総仕上げ", "今日の英文を音声に重ねて声に出す"),
     "multi": ("複数話者の会話", "話者が入れ替わる会話を追う"),
@@ -29,7 +29,9 @@ ADAPT_SHARE = 0.15
 
 TEMPLATES: dict[int, list[tuple[str, int]]] = {
     15: [("review", 5), ("new", 10)],
-    30: [("review", 5), ("new", 10), ("weak", 7), ("words", 5), ("shadow", 3)],
+    # review 5 + about 10 min of first-time conversations, 10 min on the sentences missed in them and 5 min of
+    # transfer sentences: one "new" block runs that cycle, so its minutes are the sum of the three
+    30: [("review", 5), ("new", 25)],
     60: [("review", 8), ("words", 6), ("new", 15), ("weak", 10), ("vocab", 6), ("new", 8), ("shadow", 7)],
     90: [("review", 10), ("new", 15), ("weak", 12), ("multi", 15), ("words", 8), ("vocab", 7), ("weak", 8),
          ("shadow", 8), ("final", 7)],

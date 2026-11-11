@@ -97,6 +97,12 @@ CREATE TABLE IF NOT EXISTS audio_lessons (
   id TEXT PRIMARY KEY, cache_key TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL, engine TEXT NOT NULL,
   targets TEXT NOT NULL, level INTEGER NOT NULL, checks TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS sentence_studies (
+  id TEXT PRIMARY KEY, session_id TEXT, created_at TEXT NOT NULL, date TEXT NOT NULL, clip_id TEXT NOT NULL,
+  context_score REAL, first_listen INTEGER NOT NULL DEFAULT 0, segment_id TEXT, dictation_accuracy REAL,
+  replays INTEGER, response_ms INTEGER, text_check TEXT, unknown_words TEXT, meaning_understood INTEGER,
+  error_type TEXT NOT NULL DEFAULT 'unknown', transfer_id TEXT, transfer_correct INTEGER, transfer_ms INTEGER
+);
 """
 
 DEFAULT_SETTINGS = {

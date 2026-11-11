@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from . import abilities, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, tts, vocab
+from . import abilities, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, study, tts, vocab
 from .content import library, reload_library
 from .vocab_data import vocab_library
 
@@ -46,7 +46,9 @@ def health():
     vl = vocab_library()
     return {"ok": True, "clips": len(lib.clips), "missing_audio": lib.missing_audio(),
             "words": len(vl.words), "missing_word_audio": vl.missing_audio(), "asr": asr.available()[0],
-            "sentences": len(sentences.bank().items), "missing_sentence_audio": sentences.bank().missing_audio()}
+            "sentences": len(sentences.bank().items), "missing_sentence_audio": sentences.bank().missing_audio(),
+            "transfers": len(study.bank().transfers), "missing_transfer_audio": study.bank().missing_audio(),
+            "note_errors": study.bank().errors[:20]}
 
 
 @app.get("/profile")
@@ -142,7 +144,7 @@ def create_session(body: SessionIn):
 @app.get("/v1/listening-profile")
 def listening_profile():
     return {**_listening_profile_brief(), "history": abilities.history(), "kpis": analytics.kpis(),
-            "growth": growth.recent(14, 20)}
+            "growth": growth.recent(14, 20), "error_trends": study.trends()}
 
 
 @app.get("/v1/recommendations")
@@ -209,6 +211,10 @@ class AnswerIn(BaseModel):
     replays: int = 0
     plays: int | None = Field(None, ge=0, le=100)   # comprehension: how many times the audio was started
     slow: bool = False
+    # study step (Context -> Sentence -> Transfer)
+    text_check: Literal["clear", "unknown_words", "structure"] | None = None
+    unknown_words: list[str] | None = Field(None, max_length=12)
+    meaning_understood: bool | None = None
 
 
 @app.post("/sessions/{sid}/answer")

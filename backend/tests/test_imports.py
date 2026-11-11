@@ -116,7 +116,8 @@ def test_clip_without_questions_is_not_scored(client, media):
     before = client.get("/profile").json()["level"]
     s = client.post("/sessions", json={"minutes": 15}).json()
     for _ in range(80):
-        item = client.post(f"/sessions/{s['id']}/next", json={"elapsed": 1}).json()["item"]
+        # ~30 s per item: the review block (TOEIC words when nothing is due) lasts its 5 minutes, then new audio
+        item = client.post(f"/sessions/{s['id']}/next", json={"elapsed": 30}).json()["item"]
         if item["type"] == "comprehension" and item["clip"]["id"] == cid:
             assert item["questions"] == []
             fb = client.post(f"/sessions/{s['id']}/answer", json={"item_id": item["item_id"], "answers": []}).json()

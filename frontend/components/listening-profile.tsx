@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Target } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ABILITY_ORDER, api, type AbilityKey, type Kpi, type ListeningProfile } from "@/lib/api";
+import { ABILITY_ORDER, api, type AbilityKey, type ErrorTrends, type ErrorType, type Kpi, type ListeningProfile } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export type AbilityRow = {
@@ -99,6 +99,44 @@ function KpiTile({ k, primary }: { k: Kpi; primary?: boolean }) {
   );
 }
 
+function ErrorTrendsPanel({ t }: { t: ErrorTrends }) {
+  const order: ErrorType[] = ["phonetic", "vocabulary", "grammar", "meaning"];
+  return (
+    <div className="rounded-2xl border bg-card p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-medium">聞き取れなかった原因の傾向</h3>
+        <span className="text-xs text-muted-foreground tabular">直近 {t.n} 件の「1文の攻略」</span>
+      </div>
+      {t.n === 0 ? (
+        <p className="mt-2 text-xs text-muted-foreground">まだ記録がありません。トレーニングで聞き取れなかった1文を確かめると、ここに集計されます。</p>
+      ) : (
+        <>
+          <ul className="mt-3 space-y-2">
+            {order.map((e) => {
+              const v = t.counts[e] ?? 0;
+              const pctv = t.n ? Math.round((v / t.n) * 100) : 0;
+              return (
+                <li key={e} className="grid grid-cols-[8.5rem_1fr_3rem] items-center gap-2 text-sm">
+                  <span className={cn(t.dominant === e && "font-medium")}>{t.labels[e]}</span>
+                  <div className="h-2 rounded-full bg-muted" role="meter" aria-label={t.labels[e]} aria-valuenow={pctv} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="h-2 rounded-full bg-[var(--series-1)]" style={{ width: `${pctv}%` }} />
+                  </div>
+                  <span className="text-right text-xs text-muted-foreground tabular">{v}件</span>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {t.dominant
+              ? `いちばん多い原因は「${t.labels[t.dominant]}」です。次は ${t.next_step} を増やすと効果が見込めます。`
+              : `原因を判断するには ${t.min_n} 件以上の記録が必要です（1回の誤答では断定しません）。`}
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 const SOURCE_LABEL: Record<string, string> = { diagnostic: "リスニング診断" };
 
 export function ListeningProfilePanel() {
@@ -128,11 +166,10 @@ export function ListeningProfilePanel() {
         直近の回答ほど重く数えた推定値です（帯は95%区間の目安）。回答が8問未満の能力は暫定です。TOEIC スコアの予測ではありません。
       </p>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <div className="col-span-2 lg:col-span-1">
-          <KpiTile k={k.unseen_comprehension} primary />
-        </div>
-        <KpiTile k={k.first_play} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <KpiTile k={k.unseen_comprehension} primary />
+        <KpiTile k={k.first_play} primary />
+        <KpiTile k={k.transfer} />
         <KpiTile k={k.sound} />
         <KpiTile k={k.audio_vocab} />
         <div className="rounded-2xl border bg-card p-4">
@@ -143,6 +180,8 @@ export function ListeningProfilePanel() {
           <div className="text-[11px] text-muted-foreground tabular">30日では {pct(k.retention.d30)}</div>
         </div>
       </div>
+
+      <ErrorTrendsPanel t={p.error_trends} />
 
       {p.history.length > 0 && (
         <div className="overflow-x-auto">

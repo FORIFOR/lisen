@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 from fsrs import Rating
 
-from . import abilities, db, planner, progress, sentences, srs, vocab
+from . import abilities, db, planner, progress, sentences, srs, study, vocab
 from .content import Clip, Segment, library
 from .scoring import SKILLS, is_typo, make_discrimination, score_dictation, tokenize
 
@@ -55,7 +55,7 @@ def _save(conn, s: dict) -> None:
 def _new_state(n_blocks: int) -> dict:
     return {"block_index": 0, "block_seconds": [0.0] * n_blocks, "study_seconds": 0.0,
             "shown": {"segment": [], "clip": [], "vocab": [], "card": [], "shadow": [], "word": []},
-            "clip_queue": None, "missed_cards": [], "final_done": [], "counter": 0,
+            "cycle": None, "missed_cards": [], "final_done": [], "counter": 0,
             "test_queue": None, "events": [], "notes": [], "block_items": [0] * n_blocks}
 
 
@@ -189,7 +189,7 @@ def finish(session_id: str) -> dict:
 def _advance(conn, s: dict) -> None:
     st = s["state"]
     st["block_index"] += 1
-    st["clip_queue"] = None
+    st["cycle"] = None
     conn.execute("UPDATE pending_items SET answered=2 WHERE session_id=? AND answered=0", (s["id"],))
     if st["block_index"] >= len(s["plan"]):
         s["status"] = "completed"
@@ -229,7 +229,10 @@ def next_item(session_id: str, elapsed: float | None = None) -> dict:
                 if st["block_items"][bi] >= DIAG_ITEMS[block["kind"]]:
                     _advance(conn, s)
                     continue
-            elif block["kind"] not in ("test", "d_words") and st["block_seconds"][bi] >= limit:
+            elif block["kind"] not in ("test", "d_words") and st["block_seconds"][bi] >= limit \
+                    and not _cycle_open(st, bi):
+                # (a cycle already at its study or transfer step is finished first: cutting it there would
+                # leave a missed sentence unexplained)
                 _advance(conn, s)
                 continue
             payload = _select(conn, s, block)
@@ -432,6 +435,45 @@ def _due_card_payload(conn, s: dict) -> dict | None:
     return None
 
 
+def _cycle_lines(clip: Clip, shown: list[str]) -> list[str]:
+    """Lines to dictate in search of the one not heard. In a generated lesson the lines with its target words
+    come first: those words are why the lesson exists."""
+    segs = [sg for sg in clip.segments if sg.id not in shown]
+    if clip.targets:
+        from .vocab_data import vocab_library
+        words = [w for w in (vocab_library().words.get(t) for t in clip.targets) if w]
+        segs.sort(key=lambda sg: not any(w.appears_in(sg.text) for w in words))
+    return [sg.id for sg in segs]
+
+
+def _cycle_open(st: dict, bi: int) -> bool:
+    cyc = st.get("cycle")
+    return bool(cyc) and cyc.get("block") == bi and cyc.get("stage") in ("study", "transfer")
+
+
+def _cycle_item(conn, s: dict, cyc: dict) -> dict | None:
+    """The next step of the Context -> Sentence -> Transfer cycle, or None when it is over."""
+    lib = library()
+    st = s["state"]
+    if cyc["stage"] == "lines":
+        while cyc["segments"]:
+            sid = cyc["segments"].pop(0)
+            if sid in lib.segments:
+                st["shown"]["segment"].append(sid)
+                return _dictation_payload(lib.segments[sid], reason="聞き取れなかった1文を探す")
+        # every line was heard: if the questions were still missed, the problem is putting it together
+        rec = conn.execute("SELECT context_score, first_listen FROM sentence_studies WHERE id=?", (cyc["record"],)).fetchone()
+        if rec and rec["first_listen"] and rec["context_score"] is not None and rec["context_score"] < 1:
+            study.update_record(conn, cyc["record"], error_type="meaning")
+        return None
+    if cyc["stage"] == "study" and cyc.get("target") in lib.segments:
+        return study.study_payload(lib.segments[cyc["target"]], cyc.get("tokens") or [], cyc.get("accuracy") or 0.0)
+    if cyc["stage"] == "transfer" and cyc.get("transfer") in study.bank().transfers:
+        seg = lib.segments.get(cyc.get("target"))
+        return study.transfer_payload(study.bank().transfers[cyc["transfer"]], seg.text if seg else "")
+    return None
+
+
 def _select(conn, s: dict, block: dict) -> dict | None:
     prof = dict(conn.execute("SELECT * FROM profile WHERE id=1").fetchone())
     st = s["state"]
@@ -448,11 +490,12 @@ def _select(conn, s: dict, block: dict) -> dict | None:
         return _dictation_payload(lib.segments[item["segment_id"]])
 
     if kind in ("new", "multi", "long"):
-        cq = st.get("clip_queue")
-        if cq and cq.get("block") == st["block_index"] and cq["segments"]:
-            seg = lib.segments[cq["segments"].pop(0)]
-            st["shown"]["segment"].append(seg.id)
-            return _dictation_payload(seg, reason="この音声を細部まで聞き取る")
+        cyc = st.get("cycle")
+        if cyc and cyc.get("block") == st["block_index"]:
+            item = _cycle_item(conn, s, cyc)
+            if item:
+                return item
+        st["cycle"] = None
         picked = _pick_new_clip(conn, s, kind, prof)
         if not picked:
             return None
@@ -484,6 +527,11 @@ def _select(conn, s: dict, block: dict) -> dict | None:
         p = _due_card_payload(conn, s)
         if p:
             return p
+        if kind == "review" and not any(b["kind"] == "words" for b in s["plan"]):
+            # short plans have no TOEIC vocabulary block: nothing due -> the review time goes to words
+            p = _select(conn, s, {**block, "kind": "words"})
+            if p:
+                return p
         # warm-up: hear-the-difference drills on easier, already-known material
         st["counter"] += 1
         lo = max(1, prof["level"] - 2)
@@ -721,11 +769,13 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                     ev = progress.update_level(conn, clip.level, comprehension=score)
                     if ev:
                         events.append(ev)
-                # adaptive follow-up: dictate lines of this clip until the learner is solid, then move on
+                # Context -> Sentence -> Transfer: dictate lines of this clip to find the one that was not heard
                 if block in ("new", "multi", "long"):
-                    s["state"]["clip_queue"] = {"clip_id": clip.id, "block": s["state"]["block_index"],
-                                                "segments": [sg.id for sg in clip.segments if sg.id not in s["state"]["shown"]["segment"]],
-                                                "streak": 0}
+                    s["state"]["cycle"] = {
+                        "clip_id": clip.id, "block": s["state"]["block_index"], "stage": "lines",
+                        "segments": _cycle_lines(clip, s["state"]["shown"]["segment"]),
+                        "streak": 0, "target": None,
+                        "record": study.start_record(conn, s["id"], clip.id, score, first_listen)}
 
         elif typ == "dictation":
             seg = lib.segments[sec["segment_id"]]
@@ -754,12 +804,19 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                 clip = lib.clips[seg.clip_id]
                 if clip.targets:
                     _lesson_context_evidence(conn, clip, seg, res)
-                cq = s["state"].get("clip_queue")
-                if cq and cq.get("clip_id") == seg.clip_id:
-                    cq["streak"] = cq["streak"] + 1 if res.accuracy >= MOVE_ON_ACCURACY else 0
-                    if cq["streak"] >= MOVE_ON_STREAK and cq["segments"]:
-                        cq["segments"] = []
-                        fb["moving_on"] = True
+                cyc = s["state"].get("cycle")
+                if cyc and cyc.get("clip_id") == seg.clip_id and cyc["stage"] == "lines":
+                    if res.accuracy < study.STUDY_BELOW:
+                        # this is the sentence to work on: explanation next, then a new sentence using it
+                        cyc.update(stage="study", target=seg.id, segments=[], tokens=res.tokens, accuracy=res.accuracy)
+                        study.update_record(conn, cyc["record"], segment_id=seg.id, dictation_accuracy=res.accuracy,
+                                            replays=int(body.get("replays") or 0))
+                        fb["study_next"] = True
+                    else:
+                        cyc["streak"] += 1
+                        if cyc["streak"] >= MOVE_ON_STREAK and cyc["segments"]:
+                            cyc["segments"] = []
+                            fb["moving_on"] = True
 
         elif typ == "discrimination":
             seg = lib.segments[sec["segment_id"]]
@@ -823,6 +880,51 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                 cid = srs.card_id(vocab.CARD_KIND[fb["modality"]], payload["secret"]["word_id"])
                 if cid not in s["state"]["missed_cards"]:
                     s["state"]["missed_cards"].append(cid)
+
+        elif typ == "study":
+            seg = lib.segments[sec["segment_id"]]
+            check = body.get("text_check") if body.get("text_check") in study.TEXT_CHECKS else None
+            understood = body.get("meaning_understood")
+            understood = bool(understood) if isinstance(understood, bool) else None
+            unknown = [str(w)[:40] for w in (body.get("unknown_words") or [])][:12]
+            etype = study.classify(check, understood)
+            cyc = s["state"].get("cycle") or {}
+            ms = body.get("ms")
+            if cyc.get("record"):
+                study.update_record(conn, cyc["record"], text_check=check, meaning_understood=understood,
+                                    unknown_words=json.dumps(unknown, ensure_ascii=False), error_type=etype,
+                                    response_ms=int(ms) if isinstance(ms, (int, float)) else None)
+            fb.update({"error_type": etype, "error_label": study.ERROR_LABEL[etype], "next_step": study.NEXT_STEP[etype]})
+            t = study.transfer_for(conn, seg) if not is_test else None
+            if cyc and t:
+                cyc.update(stage="transfer", transfer=t.id)
+                fb["transfer_next"] = True
+            elif cyc:
+                cyc["stage"] = "done"
+
+        elif typ == "transfer":
+            t = study.bank().transfers[sec["transfer_id"]]
+            correct = body.get("choice") == sec["answer"]
+            ms = body.get("ms")
+            fb.update({"correct": correct, "answer": sec["answer"], "text": t.text, "form": t.form, "ja": t.ja,
+                       "practice": sec.get("practice"), "audio": study.bank().audio(t)})
+            # a never-heard sentence: first-listen evidence of its own, kept apart from the practised line
+            _attempt(conn, s, "transfer", block, t.id, t.level, float(correct),
+                     {"choice": body.get("choice"), "plays": body.get("plays"), "ms": ms})
+            _expose(conn, "transfer", t.id, float(correct))
+            cyc = s["state"].get("cycle") or {}
+            if cyc.get("record"):
+                study.update_record(conn, cyc["record"], transfer_id=t.id, transfer_correct=int(correct),
+                                    transfer_ms=int(ms) if isinstance(ms, (int, float)) else None)
+            if cyc:
+                cyc["stage"] = "done"
+            if correct:
+                from . import growth
+                growth.add(conn, "transfer", t.id, f"応用：{t.form}",
+                           "練習した表現を、初めて聞く別の文でも聞き取れました")
+            elif not is_test and cyc.get("target"):
+                # not transferred yet: the practised line comes back sooner
+                srs.review(conn, "seg", cyc["target"], Rating.Again, create=True)
 
         elif typ == "shadowing":
             seg = lib.segments[sec["segment_id"]]

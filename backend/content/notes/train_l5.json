@@ -1,0 +1,626 @@
+{
+ "l5-economics": {
+  "scene": "講師が講義でインフレの仕組みを説明している。",
+  "lines": [
+   {
+    "ja": "インフレはよく「少なすぎる商品を多すぎるお金が追いかける状態」と表現されますが、それは話の一部にすぎません。",
+    "key": {
+     "expr": "described as",
+     "ja": "～と表現される、～と言われる"
+    },
+    "grammar": {
+     "pattern": "is often described as",
+     "ja": "よく～と表現される（受動態）"
+    },
+    "transfer": {
+     "text": "The new manager is often described as strict, but her team says she is very fair.",
+     "form": "described as",
+     "ja": "新しいマネージャーは厳しいとよく言われるが、彼女のチームはとても公平だと言っている。",
+     "q": "新しいマネージャーについて合うのは？",
+     "choices": [
+      "厳しいと言われるが、チームは公平だと言っている",
+      "厳しいと言われ、チームも不公平だと言っている",
+      "優しいと言われるが、チームは厳しいと言っている",
+      "チームから厳しすぎると不満が出ている"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "期待が驚くほど大きな役割を果たします。人々は物価が上がると思うと、早めにお金を使い、より高い賃金を求める傾向があるのです。",
+    "key": {
+     "expr": "tend to",
+     "ja": "～する傾向がある"
+    },
+    "grammar": {
+     "pattern": "if people believe ..., they tend to",
+     "ja": "もし～と思うなら、…する傾向がある（条件）"
+    },
+    "transfer": {
+     "text": "When the weather turns cold, customers tend to order hot soup instead of salad at our cafe.",
+     "form": "tend to",
+     "ja": "寒くなると、うちのカフェのお客さんはサラダの代わりに温かいスープを注文する傾向がある。",
+     "q": "このカフェの客について合うのは？",
+     "choices": [
+      "寒くなるとスープよりサラダを注文しがちだ",
+      "寒くなるとサラダよりスープを注文しがちだ",
+      "暑くなるとスープを注文しがちだ",
+      "季節に関係なくスープばかり注文する"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "企業はコストの上昇を見込んで前もって価格を上げ、それが今度はみんなの予想を裏付けることになります。",
+    "key": {
+     "expr": "in advance",
+     "ja": "前もって、事前に"
+    },
+    "grammar": {
+     "pattern": "anticipating higher costs",
+     "ja": "コストの上昇を見込んで（分詞構文）"
+    },
+    "transfer": {
+     "text": "Tickets for the final match sold out within hours, so fans who hadn't booked in advance were left disappointed.",
+     "form": "in advance",
+     "ja": "決勝戦のチケットは数時間で売り切れたので、事前に予約していなかったファンはがっかりすることになった。",
+     "q": "決勝戦のチケットについて合うのは？",
+     "choices": [
+      "当日でも数時間並べば買えた",
+      "売り切れるまでに数日かかった",
+      "事前に予約しなかったファンは買えずにがっかりした",
+      "事前に予約したファンも買えなかった"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "だからこそ中央銀行は、時には金利そのもの以上に、信頼できるように見せることに多大な労力を注ぐのです。",
+    "key": {
+     "expr": "put so much effort into",
+     "ja": "～に多大な労力を注ぐ"
+    },
+    "grammar": {
+     "pattern": "This is why",
+     "ja": "だからこそ～なのだ"
+    },
+    "transfer": {
+     "text": "The team put so much effort into the presentation that the client signed the deal on the spot.",
+     "form": "put so much effort into",
+     "ja": "チームはプレゼンにとても力を注いだので、顧客はその場で契約に署名した。",
+     "q": "プレゼンの結果について合うのは？",
+     "choices": [
+      "顧客は後日返事をすると言った",
+      "チームの準備不足で契約を逃した",
+      "顧客はプレゼンの前にすでに契約していた",
+      "顧客はその場で契約した"
+     ],
+     "answer": 3
+    }
+   }
+  ]
+ },
+ "l5-panel-ai": {
+  "scene": "パネル討論で司会者と専門家たちがAIが仕事に与える影響を議論している。",
+  "lines": [
+   {
+    "ja": "誰もが気にしている問題に移りましょう。これらのツールは仕事を奪うのでしょうか、それとも仕事の形を変えるだけなのでしょうか？",
+    "key": {
+     "expr": "turn to",
+     "ja": "（話題）に移る"
+    },
+    "grammar": {
+     "pattern": "the question everyone's asking",
+     "ja": "誰もが問うている問題（目的格の関係代名詞の省略）"
+    },
+    "transfer": {
+     "text": "Before we finish, let's turn to the budget, which is the last item on today's agenda.",
+     "form": "turn to",
+     "ja": "終わる前に、今日の議題の最後の項目である予算の話に移りましょう。",
+     "q": "話し手が次に話題にするのは？",
+     "choices": [
+      "予算",
+      "前回の議事録",
+      "次回の会議の日程",
+      "新しい採用計画"
+     ],
+     "answer": 0
+    }
+   },
+   {
+    "ja": "歴史的に見ると、自動化は職業全体ではなく特定の作業をなくしてきました。今回が根本的に違うと考える理由は私には見当たりません。",
+    "key": {
+     "expr": "rather than",
+     "ja": "～ではなく"
+    },
+    "grammar": {
+     "pattern": "has eliminated",
+     "ja": "（これまで）～をなくしてきた（現在完了）"
+    },
+    "transfer": {
+     "text": "The company decided to repair its old machines rather than buy new ones this year.",
+     "form": "rather than",
+     "ja": "その会社は今年、新しい機械を買うのではなく古い機械を修理することにした。",
+     "q": "この会社が今年決めたことは？",
+     "choices": [
+      "新しい機械を買うこと",
+      "古い機械を修理すること",
+      "古い機械を売ること",
+      "修理も購入もしないこと"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "その点には少し反論したいですね。違うのはスピードです。以前は人々が適応するのに何十年もありましたが、今は数年かもしれません。",
+    "key": {
+     "expr": "push back on",
+     "ja": "～に反論する、異を唱える"
+    },
+    "grammar": {
+     "pattern": "I'd push back on",
+     "ja": "～に反論したい（would で控えめに）"
+    },
+    "transfer": {
+     "text": "Several board members pushed back on the plan to close the factory, arguing it would hurt the local community.",
+     "form": "pushed back on",
+     "ja": "複数の役員が、地域社会に悪影響を与えると主張して、工場を閉鎖する計画に反対した。",
+     "q": "工場閉鎖の計画について合うのは？",
+     "choices": [
+      "役員全員がすぐに賛成した",
+      "地域住民が閉鎖を提案した",
+      "複数の役員が地域への悪影響を理由に反対した",
+      "役員たちは閉鎖を早めるよう求めた"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "それはもっともです。ただ、ボトルネックは技術そのものではなく再教育だと私は主張したいですね。",
+    "key": {
+     "expr": "bottleneck",
+     "ja": "障害、ボトルネック"
+    },
+    "grammar": {
+     "pattern": "the bottleneck is retraining, not the technology itself",
+     "ja": "ボトルネックは技術そのものではなく再教育だ（A, not B）"
+    },
+    "transfer": {
+     "text": "The real bottleneck in our delivery process is packing, not shipping, so we are hiring two more packers.",
+     "form": "bottleneck",
+     "ja": "配送工程の本当のボトルネックは発送ではなく梱包なので、梱包担当をあと2人採用する。",
+     "q": "配送工程について合うのは？",
+     "choices": [
+      "発送が遅れの原因なので配送業者を変える",
+      "発送担当を二人増やす",
+      "梱包も発送も問題なく採用は不要だ",
+      "梱包が遅れの原因なので梱包担当を増やす"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "では、政策にはまだ追いつくべき部分がある、という点で私たちは一致したということですね。",
+    "key": {
+     "expr": "catching up to do",
+     "ja": "遅れを取り戻す必要がある"
+    },
+    "grammar": {
+     "pattern": "we're agreed that",
+     "ja": "～という点で意見が一致している"
+    },
+    "transfer": {
+     "text": "After two weeks off sick, Maria has a lot of catching up to do on her reports.",
+     "form": "catching up to do",
+     "ja": "2週間病気で休んだので、マリアは報告書の遅れをたくさん取り戻さなければならない。",
+     "q": "マリアについて合うのは？",
+     "choices": [
+      "病欠の後で報告書の遅れを取り戻さなければならない",
+      "病欠の前に報告書をすべて終えていた",
+      "これから2週間の休暇を取る予定だ",
+      "報告書を同僚に任せた"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "l5-history-podcast": {
+  "scene": "ポッドキャストで話し手が時間の標準化の歴史を語っている。",
+  "lines": [
+   {
+    "ja": "19世紀後半まで、ほぼすべての町が太陽の位置で決めた独自の地方時を使っていたことは、つい忘れがちです。",
+    "key": {
+     "expr": "easy to forget",
+     "ja": "忘れがちだ"
+    },
+    "grammar": {
+     "pattern": "It's easy to forget that",
+     "ja": "～ということは忘れやすい（形式主語 it）"
+    },
+    "transfer": {
+     "text": "When you work from home, it's easy to forget to take breaks, so set a reminder on your phone.",
+     "form": "easy to forget",
+     "ja": "在宅勤務をしていると休憩を取るのを忘れがちなので、携帯でリマインダーを設定しよう。",
+     "q": "話し手の助言は？",
+     "choices": [
+      "在宅勤務では休憩を取りすぎがちなので注意する",
+      "休憩を忘れがちなので携帯でリマインダーを設定する",
+      "携帯の通知を切って仕事に集中する",
+      "休憩は会社に出勤した日にまとめて取る"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "鉄道によって、一日の午後のうちにそうした時間帯をいくつも越えられるようになるまでは、それで全く問題なかったのです。",
+    "key": {
+     "expr": "made it possible to",
+     "ja": "～することを可能にした"
+    },
+    "grammar": {
+     "pattern": "made it possible to",
+     "ja": "～することを可能にした（形式目的語 it）"
+    },
+    "transfer": {
+     "text": "The new online system has made it possible to renew your passport without visiting an office.",
+     "form": "made it possible to",
+     "ja": "新しいオンラインシステムによって、事務所に行かずにパスポートを更新できるようになった。",
+     "q": "新しいオンラインシステムでできるようになったことは？",
+     "choices": [
+      "事務所の来所予約をオンラインで取ること",
+      "パスポートを即日受け取ること",
+      "事務所に行かずにパスポートを更新すること",
+      "事務所の窓口で更新手続きをすること"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "時刻表は悪夢のような状態になり、1883年、アメリカの鉄道会社は自分たちの間で標準時間帯を採用することにあっさり合意しました。",
+    "key": {
+     "expr": "adopt",
+     "ja": "採用する"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "After a long debate, the school board voted to adopt a four-day week starting next September.",
+     "form": "adopt",
+     "ja": "長い議論の末、教育委員会は来年9月から週4日制を採用することを投票で決めた。",
+     "q": "教育委員会が決めたことは？",
+     "choices": [
+      "週4日制の導入を見送る",
+      "来月から週4日制を試行する",
+      "議論を来年9月まで延期する",
+      "来年9月から週4日制を導入する"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "驚くべきことに、連邦政府がそれを正式なものにするまでには、さらに35年かかりました。",
+    "key": {
+     "expr": "it took",
+     "ja": "（時間が）かかった"
+    },
+    "grammar": {
+     "pattern": "it took ... another thirty-five years to",
+     "ja": "…が～するのにさらに35年かかった（it took + 人 + 期間 + to do）"
+    },
+    "transfer": {
+     "text": "It took the builders almost three years to finish the new bridge over the river.",
+     "form": "It took",
+     "ja": "作業員たちが川に架かる新しい橋を完成させるのに、ほぼ3年かかった。",
+     "q": "新しい橋について合うのは？",
+     "choices": [
+      "完成までにほぼ3年かかった",
+      "完成までに3か月かかった",
+      "3年後に工事が始まる予定だ",
+      "完成まであと3年かかる"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "l5-science-news": {
+  "scene": "ニュースで、チリ沖の深海で新種が見つかったことを伝えている。",
+  "lines": [
+   {
+    "ja": "チリ沖の深海の海溝を調査している研究者たちが、これまで知られていなかったと考えられる十数種の生物を特定しました。",
+    "key": {
+     "expr": "previously unknown",
+     "ja": "これまで知られていなかった"
+    },
+    "grammar": {
+     "pattern": "Researchers exploring",
+     "ja": "～を調査している研究者たち（現在分詞の後置修飾）"
+    },
+    "transfer": {
+     "text": "Historians have found a previously unknown letter that shows the poet lived in Paris for a year.",
+     "form": "previously unknown",
+     "ja": "歴史家たちが、その詩人が1年間パリに住んでいたことを示す、これまで知られていなかった手紙を発見した。",
+     "q": "発見された手紙について合うのは？",
+     "choices": [
+      "以前から有名な手紙の写しだ",
+      "これまで知られていなかった手紙だ",
+      "詩人がパリを一度も訪れなかったことを示している",
+      "詩人がパリに10年住んでいたことを示している"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "その中には、ほとんどの潜水艦が押しつぶされるほどの水圧がかかる深さで生きているとみられる半透明の魚もいます。",
+    "key": {
+     "expr": "appears to",
+     "ja": "～するようだ、～するとみられる"
+    },
+    "grammar": {
+     "pattern": "depths where",
+     "ja": "～するような深さ（関係副詞 where）"
+    },
+    "transfer": {
+     "text": "The printer appears to be broken again, so please send your files to the one upstairs.",
+     "form": "appears to",
+     "ja": "プリンターがまた壊れているようなので、ファイルは上の階のプリンターに送ってください。",
+     "q": "プリンターについて話し手が言っていることは？",
+     "choices": [
+      "修理が終わったのでもう使える",
+      "上の階のプリンターが壊れているらしい",
+      "また壊れているようなので上の階のを使ってほしい",
+      "新しいプリンターに交換された"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "しかし研究チームは、この発見を確定させるには遺伝子解析が必要で、それには最大2年かかる可能性があると注意を促しました。",
+    "key": {
+     "expr": "up to",
+     "ja": "最大～、～まで"
+    },
+    "grammar": {
+     "pattern": ", which could take",
+     "ja": "そしてそれは～かかる可能性がある（非制限用法の関係代名詞）"
+    },
+    "transfer": {
+     "text": "The new battery charges in about an hour and can last up to three days on a single charge.",
+     "form": "up to",
+     "ja": "新しいバッテリーは約1時間で充電でき、1回の充電で最大3日もつ。",
+     "q": "新しいバッテリーについて合うのは？",
+     "choices": [
+      "充電に約3日かかる",
+      "一回の充電で最低でも3日はもつ",
+      "約1時間しかもたない",
+      "一回の充電で最大3日もつ"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "また、この海域での深海採掘の計画が、これらの生態系が十分に理解される前にそれらを脅かすおそれがあるとも警告しました。",
+    "key": {
+     "expr": "threaten",
+     "ja": "脅かす"
+    },
+    "grammar": {
+     "pattern": "before they're properly understood",
+     "ja": "十分に理解される前に（受動態）"
+    },
+    "transfer": {
+     "text": "Rising sea levels could threaten hundreds of homes along the coast within the next few decades.",
+     "form": "threaten",
+     "ja": "海面上昇は、今後数十年のうちに沿岸の数百軒の家を脅かすおそれがある。",
+     "q": "この文の内容に合うのは？",
+     "choices": [
+      "海面上昇が今後数十年で沿岸の家々を脅かすおそれがある",
+      "沿岸の家々はすでに水没してしまった",
+      "海面は今後数十年で下がる見込みだ",
+      "沿岸に数百軒の家が新しく建てられる"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "l5-book-club": {
+  "scene": "読書会で二人が小説の結末について意見を交わしている。",
+  "lines": [
+   {
+    "ja": "正直に言うと、前半があれほど引き込まれる内容だったのに、結末は少し期待外れでした。",
+    "key": {
+     "expr": "letdown",
+     "ja": "期待外れ"
+    },
+    "grammar": null,
+    "transfer": {
+     "text": "The concert was a real letdown; the band played for only forty minutes and skipped their biggest hits.",
+     "form": "letdown",
+     "ja": "そのコンサートは本当に期待外れだった。バンドは40分しか演奏せず、一番のヒット曲もやらなかった。",
+     "q": "コンサートについて合うのは？",
+     "choices": [
+      "40分遅れて始まったが内容はよかった",
+      "演奏が短く代表曲もなく期待外れだった",
+      "予想より長く演奏してくれて満足だった",
+      "代表曲ばかりで新曲がなく物足りなかった"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "本当に？私はあの曖昧さこそが肝心な点だと思いました。作者はわざと結末をはっきりさせずにいるんです。",
+    "key": {
+     "expr": "the whole point",
+     "ja": "肝心な点、要点"
+    },
+    "grammar": {
+     "pattern": "leaves it unresolved",
+     "ja": "それを未解決のままにしておく（leave + 目的語 + 過去分詞）"
+    },
+    "transfer": {
+     "text": "The whole point of the training is to let new staff ask questions, not just listen.",
+     "form": "The whole point",
+     "ja": "この研修の一番の目的は、新しいスタッフにただ聞かせるだけでなく、質問させることだ。",
+     "q": "研修の目的について合うのは？",
+     "choices": [
+      "新人に講義をしっかり聞かせること",
+      "新人の能力を評価すること",
+      "新人が質問できるようにすること",
+      "新人同士を知り合わせること"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "そうかもしれません。でも、それは意図的な選択というより、作者のアイデアが尽きてしまったように感じました。",
+    "key": {
+     "expr": "run out of",
+     "ja": "～を使い果たす、～が尽きる"
+    },
+    "grammar": {
+     "pattern": "less like a choice and more like",
+     "ja": "選択というよりむしろ～のように"
+    },
+    "transfer": {
+     "text": "We ran out of paper halfway through printing the handouts, so some people had to share.",
+     "form": "ran out of",
+     "ja": "配布資料を印刷している途中で紙がなくなったので、何人かは共有しなければならなかった。",
+     "q": "配布資料について合うのは？",
+     "choices": [
+      "紙が余ったので全員に二部ずつ配った",
+      "印刷機が故障して配れなかった",
+      "全員に一部ずつ行き渡った",
+      "途中で紙がなくなり、共有しなければならない人がいた"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "あなたがそう読む理由はわかりますが、冒頭の章に戻れば手がかりはすべてそこにありますよ。",
+    "key": {
+     "expr": "go back to",
+     "ja": "～に戻る"
+    },
+    "grammar": {
+     "pattern": "I can see why",
+     "ja": "なぜ～なのかわかる（間接疑問）"
+    },
+    "transfer": {
+     "text": "If you get lost in the museum, go back to the main entrance and ask at the information desk.",
+     "form": "go back to",
+     "ja": "博物館で迷ったら、正面入口に戻って案内所で尋ねてください。",
+     "q": "博物館で迷ったらどうするべき？",
+     "choices": [
+      "正面入口に戻って案内所で尋ねる",
+      "その場で係員が来るのを待つ",
+      "出口から外に出る",
+      "携帯の地図アプリで調べる"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ },
+ "l5-strategy": {
+  "scene": "経営者が欧州市場進出の失敗を振り返っている。",
+  "lines": [
+   {
+    "ja": "振り返ると、私たちの最大の失敗は欧州市場に参入したことではなく、5か国に同時に参入しようとしたことでした。",
+    "key": {
+     "expr": "at once",
+     "ja": "同時に、一度に"
+    },
+    "grammar": {
+     "pattern": "wasn't entering ...; it was trying to enter",
+     "ja": "～したことではなく、…しようとしたことだった（動名詞）"
+    },
+    "transfer": {
+     "text": "Please don't send all the invitations at once; spread them out over the week instead.",
+     "form": "at once",
+     "ja": "招待状を一度に全部送らないでください。代わりに一週間かけて分けて送ってください。",
+     "q": "話し手が求めていることは？",
+     "choices": [
+      "招待状を今日中に全部送る",
+      "招待状を一度に送らず、一週間かけて分けて送る",
+      "招待状を来週まとめて送る",
+      "招待状を送るのをやめる"
+     ],
+     "answer": 1
+    }
+   },
+   {
+    "ja": "資源をあまりに薄く分散させたため、どこにも意味のある存在感を築けませんでした。",
+    "key": {
+     "expr": "spread",
+     "ja": "（薄く）広げる、分散させる"
+    },
+    "grammar": {
+     "pattern": "so thin that",
+     "ja": "あまりに薄いので…（so ～ that）"
+    },
+    "transfer": {
+     "text": "Our manager spread the work so thin across the team that nobody felt responsible for finishing it.",
+     "form": "spread",
+     "ja": "マネージャーが仕事をチーム全体に細かく分散させすぎたので、誰もそれを仕上げる責任を感じなかった。",
+     "q": "チームの仕事について合うのは？",
+     "choices": [
+      "一人に仕事が集中して、その人が疲れ切った",
+      "全員が責任を持って期限内に仕上げた",
+      "仕事を分散させすぎて、誰も完成させる責任を感じなかった",
+      "マネージャーが自分で全部片付けた"
+     ],
+     "answer": 2
+    }
+   },
+   {
+    "ja": "最初の18か月間ドイツだけに集中していたら、今ごろは黒字になっていただろうと思います。",
+    "key": {
+     "expr": "focused on",
+     "ja": "～に集中した"
+    },
+    "grammar": {
+     "pattern": "Had we focused",
+     "ja": "もし～していたら（if を省略した倒置の仮定法過去完了）"
+    },
+    "transfer": {
+     "text": "This quarter, the sales team will focus on existing customers instead of looking for new ones.",
+     "form": "focus on",
+     "ja": "今四半期、営業チームは新しい顧客を探すのではなく既存の顧客に集中する。",
+     "q": "営業チームの今期の方針は？",
+     "choices": [
+      "新規顧客の開拓に力を入れる",
+      "既存顧客と新規顧客に同じだけ力を入れる",
+      "営業活動を一時休止する",
+      "既存の顧客に力を入れる"
+     ],
+     "answer": 3
+    }
+   },
+   {
+    "ja": "私が伝えたい教訓は、順序のほうが戦略そのものより重要であることが多い、ということです。",
+    "key": {
+     "expr": "matters more than",
+     "ja": "～より重要だ"
+    },
+    "grammar": {
+     "pattern": "The lesson I'd pass on",
+     "ja": "私が伝えたい教訓（目的格の関係代名詞の省略）"
+    },
+    "transfer": {
+     "text": "For a job interview, being on time matters more than wearing an expensive suit.",
+     "form": "matters more than",
+     "ja": "就職の面接では、高いスーツを着ることより時間を守ることのほうが大切だ。",
+     "q": "話し手の考えに合うのは？",
+     "choices": [
+      "面接では高い服より時間を守ることが大事だ",
+      "面接では時間より服装が大事だ",
+      "面接には高いスーツを着ていくべきだ",
+      "面接に少し遅れても問題ない"
+     ],
+     "answer": 0
+    }
+   }
+  ]
+ }
+}

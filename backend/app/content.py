@@ -173,4 +173,6 @@ def library() -> Library:
 def reload_library() -> Library:
     global _lib
     _lib = Library()
+    from . import study
+    study.reload_bank()      # notes and transfer sentences follow the clips (generated lessons carry their own)
     return _lib

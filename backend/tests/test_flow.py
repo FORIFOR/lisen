@@ -22,7 +22,9 @@ def solve(item, good=True):
         return {"text": v["word"] if good else "zzz"}
     if t == "shadowing":
         return {"rating": 3 if good else 1}
-    if t in ("word", "sentence"):
+    if t == "study":
+        return {"text_check": "clear", "meaning_understood": True, "ms": 4000}
+    if t in ("word", "sentence", "transfer"):
         import json
         sec = json.loads(db.q1("SELECT payload FROM pending_items WHERE id=?", (item["item_id"],))["payload"])["secret"]
         if sec.get("vocab_item"):   # profile diagnostic: graded by the vocabulary diagnostic
@@ -72,10 +74,12 @@ def test_full_learning_loop(client):
 
     # 2. a 30-minute session with some mistakes
     s = client.post("/sessions", json={"minutes": 30}).json()
-    assert [b["kind"] for b in s["blocks"]] == ["review", "new", "weak", "words", "shadow"]
+    assert [b["kind"] for b in s["blocks"]] == ["review", "new"]
     types, done = run(client, s["id"], elapsed=30, good=lambda i: i % 3 != 0)
     assert done["session"]["status"] == "completed"
-    assert "comprehension" in types and "dictation" in types and "shadowing" in types and "word" in types
+    # Context -> Sentence -> Transfer: conversations, the lines in them, the missed line explained, a new sentence
+    for t in ("comprehension", "dictation", "study", "transfer"):
+        assert t in types, t
     summ = client.get(f"/sessions/{s['id']}/summary").json()
     assert summ["errors"], "mistakes should be analysed"
     assert summ["new_clips"] >= 1

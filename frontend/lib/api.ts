@@ -148,6 +148,30 @@ export type VocabItem = ItemBase & {
 };
 export type ShadowingItem = ItemBase & { type: "shadowing"; segment: SegmentRef; text: string; clip_title: string };
 export type SentenceItem = ItemBase & { type: "sentence"; audio: string; q: string; choices: string[]; focus: string };
+export type StudyItem = ItemBase & {
+  type: "study";
+  clip_title: string;
+  segment: SegmentRef;
+  text: string;
+  words_in_text?: string[];
+  ja: string | null;
+  scene: string | null;
+  key: { expr: string; ja: string } | null;
+  grammar: { pattern: string; ja: string } | null;
+  listening: { category: string; label: string; words: string[] }[];
+  accuracy: number;
+  context: { speaker: string; text: string; ja?: string | null }[];
+};
+export type TransferItem = ItemBase & { type: "transfer"; audio: string; q: string; choices: string[] };
+export type ErrorType = "phonetic" | "vocabulary" | "grammar" | "meaning" | "unknown";
+export type ErrorTrends = {
+  n: number;
+  counts: Record<ErrorType, number>;
+  labels: Record<ErrorType, string>;
+  dominant: ErrorType | null;
+  next_step: string | null;
+  min_n: number;
+};
 export type Modality = "text" | "audio" | "context";
 export type WordItem = {
   type: "word";
@@ -273,7 +297,7 @@ export type VocabStats = {
 };
 export const MODALITY_LABEL: Record<Modality, string> = { text: "文字で理解", audio: "音声で認識", context: "会話で理解" };
 
-export type Item = ComprehensionItem | DictationItem | DiscriminationItem | VocabItem | ShadowingItem | WordItem | SentenceItem;
+export type Item = ComprehensionItem | DictationItem | DiscriminationItem | VocabItem | ShadowingItem | WordItem | SentenceItem | StudyItem | TransferItem;
 
 export type AbilityKey = "sound" | "vocab" | "sentence" | "conversation";
 export type Ability = {
@@ -291,8 +315,9 @@ export type Kpi = { label: string; note: string; recent: { value: number | null;
 export type GrowthEvent = { id: number; created_at: string; date: string; kind: string; ref: string; title: string; detail: string };
 export type ListeningProfile = ListeningBrief & {
   history: { created_at: string; date: string; source: string; data: Record<AbilityKey, { value: number | null; n: number }> }[];
-  kpis: { unseen_comprehension: Kpi; first_play: Kpi; sound: Kpi; audio_vocab: Kpi; retention: { label: string; note: string; d7: number; d30: number } };
+  kpis: { unseen_comprehension: Kpi; first_play: Kpi; sound: Kpi; transfer: Kpi; audio_vocab: Kpi; retention: { label: string; note: string; d7: number; d30: number } };
   growth: GrowthEvent[];
+  error_trends: ErrorTrends;
 };
 export type Recommendation = { id: string; title: string; topic: string; topic_label: string; level: number; kind: string; duration: number; speakers: number; source: string };
 export const ABILITY_ORDER: AbilityKey[] = ["sound", "vocab", "sentence", "conversation"];
@@ -321,6 +346,15 @@ export type Feedback = {
   error_labels?: Record<string, string>;
   reference?: string;
   moving_on?: boolean;
+  study_next?: boolean;
+  // study (Context -> Sentence -> Transfer)
+  error_type?: ErrorType;
+  error_label?: string;
+  next_step?: string;
+  transfer_next?: boolean;
+  // transfer
+  form?: string;
+  practice?: string;
   // discrimination / vocab
   correct?: boolean;
   answer?: number;

@@ -12,6 +12,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import logging
 import os
 import random
 import re
@@ -22,7 +23,9 @@ from . import asr, config, db, tts, vocab
 from .content import reload_library
 from .vocab_data import Word, vocab_library
 
-GENERATOR_VERSION = 2   # 2: speech-recognition checks
+log = logging.getLogger(__name__)
+
+GENERATOR_VERSION = 3   # 2: speech-recognition checks; 3: translations and transfer sentences
 MIN_SECONDS, MAX_SECONDS = 8.0, 150.0
 WORDS_PER_SECOND = (1.0, 4.8)          # outside this range the synthesized speech is suspect
 # "-latest" alias: Google retires versioned models for new keys (2.5 was refused with 404 in Nov 2026)
@@ -311,7 +314,13 @@ def _gemini_prompt(targets: list[Word], level: int) -> str:
         f"- Use EACH of these words at least once, spelled exactly as given (inflections like -s/-ed/-ing are OK): {words}.\n"
         f"- Difficulty: CEFR around {['A2', 'B1', 'B1', 'B2', 'C1'][max(0, min(4, level - 1))]}. Plain spoken English, no names of real companies.\n"
         "- No stage directions, no speaker names inside the text, no non-English characters.\n"
-        'Return JSON only: {"topic": "<2-4 words>", "dialogue": [{"speaker": "A", "text": "..."}]}'
+        "- For every line give a faithful natural Japanese translation (ja).\n"
+        "- scene_ja: one short Japanese sentence describing the situation.\n"
+        "- transfers: for EACH word, one NEW English sentence (6-18 words, plain ASCII) in a DIFFERENT situation from the"
+        " conversation that uses the word, its Japanese translation, a Japanese question about the sentence's meaning,"
+        " 4 Japanese choices where exactly one is correct and the word matters for the answer, and the correct index.\n"
+        'Return JSON only: {"topic": "<2-4 words>", "scene_ja": "...", "dialogue": [{"speaker": "A", "text": "...", "ja": "..."}],'
+        ' "transfers": [{"word": "...", "text": "...", "ja": "...", "q": "...", "choices": ["...", "...", "...", "..."], "answer": 0}]}'
     )
 
 
@@ -347,7 +356,106 @@ def parse_gemini_response(data: dict) -> dict:
         lines = [[str(x["speaker"]).strip().upper()[:1], _plain(str(x["text"]))] for x in obj["dialogue"]]
     except (KeyError, IndexError, TypeError, json.JSONDecodeError) as e:
         raise LessonError(502, "Gemini の応答を読み取れませんでした") from e
-    return {"topic": str(obj.get("topic", ""))[:40], "lines": lines, "engine": "gemini"}
+    ja = [str(x.get("ja") or "").strip()[:300] for x in obj["dialogue"]]
+    transfers = [t for t in (obj.get("transfers") or []) if isinstance(t, dict)][:6]
+    return {"topic": str(obj.get("topic", ""))[:40], "lines": lines, "engine": "gemini",
+            "ja": ja, "scene": str(obj.get("scene_ja") or "")[:120], "transfers": transfers}
+
+
+# --- explanations: translation, key expression and a transfer sentence per target word ----------------------
+
+def build_notes(script: dict, targets: list[Word]) -> dict | None:
+    """Notes in the content/notes format, from what Gemini returned. Unusable parts are left out, never repaired."""
+    from . import study
+    lines = script.get("lines") or []
+    ja = script.get("ja") or []
+    if len(ja) != len(lines) or not all(ja):
+        return None
+    notes: list[dict | None] = [{"ja": j, "key": None, "grammar": None, "transfer": None} for j in ja]
+    by_word = {}
+    for t in script.get("transfers") or []:
+        w = next((w for w in targets if w.lemma.lower() == str(t.get("word", "")).strip().lower()), None)
+        if w and w.id not in by_word:
+            by_word[w.id] = t
+    for w in targets:
+        idx = next((i for i, (_, text) in enumerate(lines) if w.appears_in(text)), None)
+        if idx is None or notes[idx]["key"]:
+            continue
+        notes[idx]["key"] = {"expr": w.appears_in(lines[idx][1]), "ja": w.meaning}
+        t = by_word.get(w.id)
+        if not t:
+            continue
+        text = _plain(str(t.get("text") or ""))
+        tr = {"text": text, "form": w.appears_in(text) or "", "ja": str(t.get("ja") or "").strip(),
+              "q": str(t.get("q") or "").strip(), "choices": [str(c).strip() for c in (t.get("choices") or [])],
+              "answer": t.get("answer")}
+        if not study.validate_transfer(tr, lines[idx][1]) and not any(text.lower() == l.lower() for _, l in lines):
+            notes[idx]["transfer"] = tr
+    return {"scene": script.get("scene") or "", "lines": notes}
+
+
+def _verify_prompt(lines: list, notes: dict) -> str:
+    items = {"lines": [{"en": t, "ja": n["ja"]} for (_, t), n in zip(lines, notes["lines"])],
+             "transfers": [{"en": n["transfer"]["text"], "ja": n["transfer"]["ja"], "q": n["transfer"]["q"],
+                            "choices": n["transfer"]["choices"], "answer": n["transfer"]["answer"]}
+                           for n in notes["lines"] if n.get("transfer")]}
+    return (
+        "You are checking teaching material for Japanese learners of English. Be strict.\n"
+        "For each item in lines: is ja a faithful translation of en (no added or missing meaning)?\n"
+        "For each item in transfers: is ja faithful to en, and is choices[answer] correct AND the only correct choice"
+        " for question q about en?\n"
+        'Return JSON only: {"lines": [true|false, ...], "transfers": [true|false, ...], "issues": ["short reason", ...]}\n\n'
+        + json.dumps(items, ensure_ascii=False)
+    )
+
+
+def verify_notes(lines: list, notes: dict, timeout: float = 40.0) -> tuple[dict | None, dict]:
+    """Second Gemini call: does the Japanese match the English, and is each answer key the only right answer?
+    Items it rejects are removed. Returns (notes or None, check entry). The check never blocks the lesson."""
+    n_tr = sum(1 for n in notes["lines"] if n.get("transfer"))
+    try:
+        data = _gemini_json(_verify_prompt(lines, notes), timeout, temperature=0.0)
+        ok_lines = data["lines"]
+        ok_tr = data["transfers"]
+        if len(ok_lines) != len(lines) or len(ok_tr) != n_tr:
+            raise ValueError("length mismatch")
+    except Exception as e:  # noqa: BLE001 - without a verdict nothing unverified is shown
+        return None, {"check": "訳・応用問題の意味の一致", "ok": True,
+                      "detail": f"検証できなかったため、日本語訳と応用文は付けていません（{str(e)[:80]}）"}
+    out = {"scene": notes["scene"], "lines": []}
+    k = 0
+    kept_tr = 0
+    for n, good in zip(notes["lines"], ok_lines):
+        n = dict(n)
+        if n.get("transfer"):
+            if ok_tr[k] is True:
+                kept_tr += 1
+            else:
+                n["transfer"] = None
+            k += 1
+        out["lines"].append(n if good is True else None)
+    kept = sum(1 for n in out["lines"] if n)
+    issues = "; ".join(str(x) for x in (data.get("issues") or [])[:3])[:160]
+    return out, {"check": "訳・応用問題の意味の一致", "ok": True,
+                 "detail": f"日本語訳 {kept}/{len(lines)} 行・応用文 {kept_tr}/{n_tr} 問を採用" + (f"（除外理由: {issues}）" if issues else "")}
+
+
+def _gemini_json(prompt: str, timeout: float, temperature: float = 0.8) -> dict:
+    key = gemini_key()
+    if not key:
+        raise LessonError(503, "Gemini の API キーが設定されていません")
+    url = f"{GEMINI_API}/{gemini_model()}:generateContent"
+    body = {"contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "temperature": temperature}}
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", "x-goog-api-key": key})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = json.loads(r.read().decode())
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
+        raise _gemini_error(e) from e
+    text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"] if not p.get("thought"))
+    return json.loads(text)
 
 
 # --- questions (generated mechanically so that exactly one answer is right) -------------------------
@@ -552,6 +660,12 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
         script, checks, text, qs = write("local")
     if fallback:
         checks.insert(0, {"check": "生成エンジン", "ok": True, "detail": f"Gemini が使えなかったためローカル生成に切り替え（{fallback}）"})
+    notes = None
+    if script["engine"] == "gemini":
+        draft = build_notes(script, targets)
+        if draft:
+            notes, note_check = verify_notes(script["lines"], draft)
+            checks.append(note_check)
     script_checks = checks
     # Gemini voices first when chosen; in "auto" mode a Gemini TTS failure falls back to the Mac voices
     attempts = [voice] + (["mac"] if voice == "gemini" and mode == "auto" else [])
@@ -572,6 +686,8 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
             "target_words": [w.id for w in targets], "engine": script["engine"], "topic": script.get("topic"),
             "voice_engine": v,
         }
+        if notes:
+            raw["notes"] = notes
         res = None
         try:
             res = tts.synthesize_one(raw, gemini_speak if v == "gemini" else None)
@@ -604,6 +720,12 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
                      (lid, key, db.now_iso(), script["engine"], json.dumps(raw["target_words"]), level,
                       json.dumps(checks, ensure_ascii=False)))
     reload_library()
+    if notes:
+        from . import study
+        try:
+            study.build_audio(only={lid}, log=lambda *_: None)     # transfer sentences (macOS voices)
+        except Exception as e:  # noqa: BLE001 - the lesson itself is fine; only its transfer step is missing
+            log.warning("transfer audio for %s failed: %s", lid, e)
     return {**lesson_public(db.q1("SELECT * FROM audio_lessons WHERE id=?", (lid,))), "cached": False, "fallback": fallback}
 
 

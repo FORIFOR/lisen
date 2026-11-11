@@ -12,6 +12,7 @@ import { WordQuestion } from "@/components/word-question";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, ApiError, type Feedback, type NextResult, type Profile, type Session, type Summary, type WordFeedback } from "@/lib/api";
+import { StudyView, TransferView } from "@/components/study-items";
 import { cn } from "@/lib/utils";
 
 /** Counts active seconds (tab visible and not paused); report() hands the delta to the server. */
@@ -286,6 +287,8 @@ export default function SessionPage() {
               {current.item.type === "vocab" && <VocabView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "shadowing" && <ShadowingView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "sentence" && <SentenceView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
+              {current.item.type === "study" && <StudyView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
+              {current.item.type === "transfer" && <TransferView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "word" && (
                 <WordQuestion
                   item={current.item}

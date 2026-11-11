@@ -7,7 +7,8 @@ def kinds(blocks):
 
 def test_30_minute_standard_plan():
     p = planner.build_plan(30, {})
-    assert kinds(p) == ["review", "new", "weak", "words", "shadow"]
+    # review, then one Context -> Sentence -> Transfer block (about 10 + 10 + 5 minutes)
+    assert kinds(p) == ["review", "new"] and p[1]["minutes"] == 25
     assert planner.study_minutes(p) == 30
 
 

@@ -95,7 +95,7 @@ def test_profile_diagnostic_measures_four_abilities_and_adapts_plan(client):
     plan = client.post("/plan/preview", json={"minutes": 30}).json()["blocks"]
     base = planner.build_plan(30, {}, "standard", None)
     weak = next(b for b in plan if b["kind"] == "weak")
-    assert weak["minutes"] > next(b for b in base if b["kind"] == "weak")["minutes"]
+    assert weak["minutes"] > sum(b["minutes"] for b in base if b["kind"] == "weak")
     assert "音声識別" in weak["adapted"]
     total = sum(b["minutes"] for b in plan if b["kind"] != "break")
     assert total == pytest.approx(30, abs=0.01)
