@@ -314,15 +314,22 @@ export function TransferView({ item, rate, submit, next }: Props<TransferItem>) 
   );
 }
 
-/** Commute mode, step 2: each line of the conversation is played; one tap says whether it was heard. */
+type LineReport = "understood" | "sound_only" | "not_heard";
+const LINE_REPORTS: { id: LineReport; label: string; key: string }[] = [
+  { id: "understood", label: "意味まで分かった", key: "1" },
+  { id: "sound_only", label: "音は聞こえたが意味が分からない", key: "2" },
+  { id: "not_heard", label: "音を聞き取れなかった", key: "3" },
+];
+
+/** Commute mode, step 2: each line of the conversation is played; one tap says how much of it got through. */
 export function LineCheckView({ item, rate, submit, next }: Props<LineCheckItem>) {
   const ctl = useAudio(item.segment.audio, { rate, autoplay: true });
   const [fb, setFb] = useState<Feedback | null>(null);
   const [busy, setBusy] = useState(false);
-  const send = async (heard: boolean) => {
+  const send = async (report: LineReport) => {
     if (busy || fb) return;
     setBusy(true);
-    const r = await submit({ heard, plays: ctl.plays });
+    const r = await submit({ report, plays: ctl.plays });
     setBusy(false);
     if (r) setFb(r);
   };
@@ -330,8 +337,8 @@ export function LineCheckView({ item, rate, submit, next }: Props<LineCheckItem>
     if (fb) return;
     const onKey = (e: KeyboardEvent) => {
       if (isTyping(e)) return;
-      if (e.key === "1") send(true);
-      if (e.key === "2") send(false);
+      const hit = LINE_REPORTS.find((x) => x.key === e.key);
+      if (hit) send(hit.id);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -344,18 +351,24 @@ export function LineCheckView({ item, rate, submit, next }: Props<LineCheckItem>
       <AudioPlayer ctl={ctl} label={`話者 ${item.segment.speaker}`} />
       {!fb ? (
         <div className="mt-6 space-y-3">
-          <p className="text-center text-sm text-muted-foreground">この文は聞き取れましたか？（何度聞き直してもかまいません）</p>
-          {/* phones: the two answers sit at the bottom, within reach of the thumb */}
-          <div className="h-24 md:hidden" aria-hidden />
-          <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 border-t bg-background/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
-            <Button size="lg" variant="outline" className="h-20 flex-col gap-1 text-base" disabled={busy} onClick={() => send(true)}>
-              <CheckIcon className="size-5 text-success" /> 聞き取れた
-            </Button>
-            <Button size="lg" variant="outline" className="h-20 flex-col gap-1 text-base" disabled={busy} onClick={() => send(false)}>
-              <EarOff className="size-5 text-warning" /> 聞き取れなかった
-            </Button>
+          <p className="text-center text-sm text-muted-foreground">この文はどこまで分かりましたか？（何度聞き直してもかまいません）</p>
+          {/* phones: the answers sit at the bottom, within reach of the thumb and above the home indicator */}
+          <div className="h-52 md:hidden" aria-hidden />
+          <div className="fixed inset-x-0 bottom-0 z-20 grid gap-2 border-t bg-background/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
+            {LINE_REPORTS.map((x) => (
+              <Button key={x.id} size="lg" variant="outline" className="h-14 justify-start gap-3 text-base" disabled={busy} onClick={() => send(x.id)}>
+                {x.id === "understood" ? (
+                  <CheckIcon className="size-5 text-success" />
+                ) : x.id === "sound_only" ? (
+                  <Ear className="size-5 text-warning" />
+                ) : (
+                  <EarOff className="size-5 text-destructive" />
+                )}
+                {x.label}
+                <span className="ml-auto hidden text-xs text-muted-foreground md:inline">{x.key}</span>
+              </Button>
+            ))}
           </div>
-          <p className="hidden text-center text-xs text-muted-foreground md:block">1: 聞き取れた · 2: 聞き取れなかった · Space: 再生</p>
         </div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 space-y-4">

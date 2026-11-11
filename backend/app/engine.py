@@ -22,6 +22,8 @@ MOVE_ON_ACCURACY = 0.9       # two consecutive segments at this accuracy -> new 
 MOVE_ON_STREAK = 2
 # blocks that run the Context -> Sentence -> Transfer cycle
 CYCLE_BLOCKS = ("new", "multi", "long", "commute")
+# commute mode: what a tap on one line says
+LINE_REPORTS = ("understood", "sound_only", "not_heard")
 # listening-profile diagnostic: blocks that end after a number of items instead of a time budget
 DIAG_ITEMS = {"d_sound": 10, "d_sentence": 10}
 DIAG_WORDS = 20
@@ -837,26 +839,30 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                             fb["moving_on"] = True
 
         elif typ == "line_check":
-            # a self-report, kept apart from dictation accuracy: it moves neither skills nor the level
+            # a self-report, kept apart from dictation accuracy: it moves neither skills nor the level.
+            # "sound_only" (heard the words, not the meaning) is studied like a line not heard.
             seg = lib.segments[sec["segment_id"]]
-            heard = body.get("heard") is True
+            report = body.get("report")
+            if report not in LINE_REPORTS:
+                report = "understood" if body.get("heard") is True else "not_heard"
+            ok = report == "understood"
             plays = body.get("plays")
-            fb.update({"heard": heard, "reference": seg.text, "speaker": seg.speaker})
-            _attempt(conn, s, "line_check", block, seg.id, seg.level, float(heard),
-                     {"plays": int(plays) if isinstance(plays, (int, float)) else None})
+            fb.update({"heard": ok, "report": report, "reference": seg.text, "speaker": seg.speaker})
+            _attempt(conn, s, "line_check", block, seg.id, seg.level, float(ok),
+                     {"report": report, "plays": int(plays) if isinstance(plays, (int, float)) else None})
             if not is_test:
-                _expose(conn, "segment", seg.id, float(heard))
+                _expose(conn, "segment", seg.id, float(ok))
                 cyc = s["state"].get("cycle")
-                if not heard:
+                if not ok:
                     # the line is reviewed later (by dictation in a normal session)
                     srs.review(conn, "seg", seg.id, Rating.Again, create=True)
                     cid = srs.card_id("seg", seg.id)
                     if cid not in s["state"]["missed_cards"]:
                         s["state"]["missed_cards"].append(cid)
                 if cyc and cyc.get("clip_id") == seg.clip_id and cyc["stage"] == "lines":
-                    if not heard:
+                    if not ok:
                         cyc.update(stage="study", target=seg.id, segments=[], tokens=[], accuracy=None)
-                        study.update_record(conn, cyc["record"], segment_id=seg.id,
+                        study.update_record(conn, cyc["record"], segment_id=seg.id, line_report=report,
                                             replays=int(plays) if isinstance(plays, (int, float)) else None)
                         fb["study_next"] = True
                     else:

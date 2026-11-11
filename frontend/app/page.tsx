@@ -191,7 +191,7 @@ export default function Home() {
               <span className="text-xs font-semibold tracking-wider text-primary tabular">{minutes} MIN</span>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {style === "commute" ? "文字入力なし。会話を聞いて答え、聞き取れなかった1文をタップで選び、意味と場面を確かめてから、同じ表現を別の文で聞きます。" : pitch}
+              {style === "commute" ? "文字入力なし。会話を聞いて答え、1文ずつ「どこまで分かったか」をタップで答え、意味と場面を確かめてから、同じ表現を別の文で聞きます。" : pitch}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border p-1" role="radiogroup" aria-label="学習の形">
               {(

@@ -362,6 +362,7 @@ export type Feedback = {
   moving_on?: boolean;
   study_next?: boolean;
   heard?: boolean;
+  report?: "understood" | "sound_only" | "not_heard";
   speaker?: string;
   // study (Context -> Sentence -> Transfer)
   error_type?: ErrorType;

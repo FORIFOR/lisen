@@ -119,7 +119,7 @@ function ModeComparison({ k }: { k: ListeningProfile["kpis"] }) {
         {row(k.line_heard)}
       </div>
       <p className="mt-1 text-[11px] text-muted-foreground">
-        初見の会話の設問は両方とも同じ形式です。聞いた会話が違うので、差は目安です。「聞き取れた」は自己申告で、書き取りの正確さとは別に数えています。
+        初見の会話の設問は両方とも同じ形式です。聞いた会話が違うので、差は目安です。「意味まで分かった」は自己申告で、書き取りの正確さとは別に数えています。
       </p>
     </div>
   );

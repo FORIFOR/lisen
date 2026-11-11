@@ -314,7 +314,8 @@ class AnswerIn(BaseModel):
     text_check: Literal["clear", "unknown_words", "structure"] | None = None
     unknown_words: list[str] | None = Field(None, max_length=12)
     meaning_understood: bool | None = None
-    # commute mode: was this line heard? (a tap, not typing)
+    # commute mode: one tap per line (heard=True/False is still accepted from older pages)
+    report: Literal["understood", "sound_only", "not_heard"] | None = None
     heard: bool | None = None
 
 

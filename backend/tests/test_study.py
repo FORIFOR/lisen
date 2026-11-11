@@ -197,12 +197,12 @@ def test_commute_cycle_needs_no_typing(client):
     lc = _next(client, sid)
     assert lc["type"] == "line_check" and lc["segment"]["id"].startswith(cid + "#")
     assert "text" not in lc and lc["index"] == 1 and lc["total"] >= 1          # heard, not read
-    fb = _answer(client, sid, lc, {"heard": True, "plays": 1})
-    assert fb["heard"] is True and fb["reference"]
+    fb = _answer(client, sid, lc, {"report": "understood", "plays": 1})
+    assert fb["heard"] is True and fb["report"] == "understood" and fb["reference"]
     lc2 = _next(client, sid)
     assert lc2["type"] == "line_check", "every conversation has two lines or more"
     if lc2["type"] == "line_check":
-        fb = _answer(client, sid, lc2, {"heard": False, "plays": 2})
+        fb = _answer(client, sid, lc2, {"report": "sound_only", "plays": 2})
         assert fb["study_next"]
         st = _next(client, sid)
         assert st["type"] == "study" and st["segment"]["id"] == lc2["segment"]["id"] and st["accuracy"] is None
@@ -216,6 +216,7 @@ def test_commute_cycle_needs_no_typing(client):
         assert db.q1("SELECT 1 FROM srs_cards WHERE id=?", (f"seg:{lc2['segment']['id']}",))
         rec = db.q1("SELECT * FROM sentence_studies WHERE session_id=?", (sid,))
         assert rec["mode"] == "commute" and rec["segment_id"] == lc2["segment"]["id"] and rec["dictation_accuracy"] is None
+        assert rec["line_report"] == "sound_only"            # heard the words, not the meaning
     # taps are self-reports: no dictation attempt, the skill estimates do not move
     kinds = [r["kind"] for r in db.q("SELECT kind FROM attempts WHERE session_id=?", (sid,))]
     assert "dictation" not in kinds and "line_check" in kinds
@@ -235,7 +236,7 @@ def test_commute_moves_on_after_lines_heard(client):
     item = _next(client, sid)
     while item["type"] == "line_check":
         seen += 1
-        _answer(client, sid, item, {"heard": True})
+        _answer(client, sid, item, {"report": "understood"})
         item = _next(client, sid)
     assert item["type"] == "comprehension" and seen <= 2       # two heard lines in a row -> next conversation
 
@@ -244,3 +245,17 @@ def test_commute_extend_adds_commute_time(client):
     sid = _start_commute(client, 5)
     s = client.post(f"/sessions/{sid}/extend", json={"minutes": 10}).json()
     assert [b["kind"] for b in s["blocks"]] == ["commute", "commute"]
+
+
+def test_commute_line_reports(client):
+    sid = _start_commute(client)
+    comp = _next(client, sid)
+    _answer(client, sid, comp, solve(comp))
+    lc = _next(client, sid)
+    assert client.post(f"/sessions/{sid}/answer", json={"item_id": lc["item_id"], "report": "maybe"}).status_code == 422
+    fb = _answer(client, sid, lc, {"heard": False})                    # the older two-button page still works
+    assert fb["report"] == "not_heard" and fb["study_next"]
+    rec = db.q1("SELECT line_report FROM sentence_studies WHERE session_id=?", (sid,))
+    assert rec["line_report"] == "not_heard"
+    detail = json.loads(db.q1("SELECT detail FROM attempts WHERE session_id=? AND kind='line_check'", (sid,))["detail"])
+    assert detail["report"] == "not_heard"

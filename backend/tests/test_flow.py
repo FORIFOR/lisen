@@ -23,7 +23,7 @@ def solve(item, good=True):
     if t == "shadowing":
         return {"rating": 3 if good else 1}
     if t == "line_check":
-        return {"heard": good, "plays": 1}
+        return {"report": "understood" if good else "not_heard", "plays": 1}
     if t == "study":
         return {"text_check": "clear", "meaning_understood": True, "ms": 4000}
     if t in ("word", "sentence", "transfer"):

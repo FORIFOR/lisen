@@ -82,7 +82,7 @@ def kpis() -> dict:
             "standard": {"label": "初見会話理解率（通常）", "note": "通常のセッション", **pair(unseen + " AND block!='commute'")},
             "commute": {"label": "初見会話理解率（移動）", "note": "移動リスニング", **pair(unseen + " AND block='commute'")},
         },
-        "line_heard": {"label": "1文の聞き取り（自己申告）", "note": "移動リスニングで「聞き取れた」と答えた文の割合。書き取りの正確さとは別",
+        "line_heard": {"label": "1文の理解（自己申告）", "note": "移動リスニングで「意味まで分かった」と答えた文の割合。書き取りの正確さとは別",
                        **pair("kind='line_check'")},
         "transfer": {"label": "応用文の理解率", "note": "練習した表現を、初めて聞く別の文で理解できた割合",
                      **pair("kind='transfer'")},
