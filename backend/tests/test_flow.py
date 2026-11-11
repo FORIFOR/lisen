@@ -22,6 +22,8 @@ def solve(item, good=True):
         return {"text": v["word"] if good else "zzz"}
     if t == "shadowing":
         return {"rating": 3 if good else 1}
+    if t == "line_check":
+        return {"heard": good, "plays": 1}
     if t == "study":
         return {"text_check": "clear", "meaning_understood": True, "ms": 4000}
     if t in ("word", "sentence", "transfer"):

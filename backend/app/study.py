@@ -248,7 +248,7 @@ def listening_notes(tokens: list[dict]) -> list[dict]:
     return [{"category": c, "label": SKILLS.get(c, c), "words": ws} for c, ws in out.items()]
 
 
-def study_payload(seg, tokens: list[dict], accuracy: float) -> dict:
+def study_payload(seg, tokens: list[dict], accuracy: float | None) -> dict:
     from .content import library
     b = bank()
     clip = library().clips[seg.clip_id]
@@ -315,11 +315,12 @@ def transfer_payload(t: Transfer, practice_text: str) -> dict:
 
 # --- records -------------------------------------------------------------------------------------------------
 
-def start_record(conn, session_id: str, clip_id: str, context_score: float | None, first_listen: bool) -> str:
+def start_record(conn, session_id: str, clip_id: str, context_score: float | None, first_listen: bool,
+                 mode: str = "standard") -> str:
     sid = uuid.uuid4().hex[:12]
     conn.execute("INSERT INTO sentence_studies (id, session_id, created_at, date, clip_id, context_score, first_listen,"
-                 " error_type) VALUES (?,?,?,?,?,?,?,?)",
-                 (sid, session_id, db.now_iso(), db.local_date(), clip_id, context_score, int(first_listen), "unknown"))
+                 " error_type, mode) VALUES (?,?,?,?,?,?,?,?,?)",
+                 (sid, session_id, db.now_iso(), db.local_date(), clip_id, context_score, int(first_listen), "unknown", mode))
     return sid
 
 

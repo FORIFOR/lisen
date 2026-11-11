@@ -20,6 +20,8 @@ from .scoring import SKILLS, is_typo, make_discrimination, score_dictation, toke
 MAX_ELAPSED_REPORT = 120     # seconds accepted per time report (guards against sleeping tabs)
 MOVE_ON_ACCURACY = 0.9       # two consecutive segments at this accuracy -> new audio
 MOVE_ON_STREAK = 2
+# blocks that run the Context -> Sentence -> Transfer cycle
+CYCLE_BLOCKS = ("new", "multi", "long", "commute")
 # listening-profile diagnostic: blocks that end after a number of items instead of a time budget
 DIAG_ITEMS = {"d_sound": 10, "d_sentence": 10}
 DIAG_WORDS = 20
@@ -147,8 +149,11 @@ def extend(session_id: str, minutes: int) -> dict:
         s = _load(session_id, conn)
         if s["status"] in ("completed", "abandoned"):
             raise SessionError(409, "このセッションは終了しています")
-        extra = planner.extra_blocks(minutes, start=s["state"]["counter"],
-                                     first=abilities.BLOCK_FOR.get(abilities.priority(abilities.current(conn)) or ""))
+        if s["mode"] == "commute":
+            extra = [planner._block("commute", minutes)]
+        else:
+            extra = planner.extra_blocks(minutes, start=s["state"]["counter"],
+                                         first=abilities.BLOCK_FOR.get(abilities.priority(abilities.current(conn)) or ""))
         plan = s["plan"]
         idx = s["state"]["block_index"]
         # put extension before an unstarted closing block (shadowing / final review)
@@ -451,6 +456,14 @@ def _cycle_open(st: dict, bi: int) -> bool:
     return bool(cyc) and cyc.get("block") == bi and cyc.get("stage") in ("study", "transfer")
 
 
+def _line_check_payload(seg: Segment, index: int, total: int) -> dict:
+    """Commute mode: hear one line and tap whether it was heard (no typing)."""
+    return {"type": "line_check",
+            "public": {"type": "line_check", "segment": {"id": seg.id, "audio": seg.audio, "speaker": seg.speaker},
+                       "level": seg.level, "index": index, "total": total, "reason": "聞き取れなかった1文を探す"},
+            "secret": {"segment_id": seg.id}}
+
+
 def _cycle_item(conn, s: dict, cyc: dict) -> dict | None:
     """The next step of the Context -> Sentence -> Transfer cycle, or None when it is over."""
     lib = library()
@@ -460,6 +473,9 @@ def _cycle_item(conn, s: dict, cyc: dict) -> dict | None:
             sid = cyc["segments"].pop(0)
             if sid in lib.segments:
                 st["shown"]["segment"].append(sid)
+                if cyc.get("tap"):
+                    cyc["asked"] = cyc.get("asked", 0) + 1
+                    return _line_check_payload(lib.segments[sid], cyc["asked"], cyc["asked"] + len(cyc["segments"]))
                 return _dictation_payload(lib.segments[sid], reason="聞き取れなかった1文を探す")
         # every line was heard: if the questions were still missed, the problem is putting it together
         rec = conn.execute("SELECT context_score, first_listen FROM sentence_studies WHERE id=?", (cyc["record"],)).fetchone()
@@ -467,7 +483,7 @@ def _cycle_item(conn, s: dict, cyc: dict) -> dict | None:
             study.update_record(conn, cyc["record"], error_type="meaning")
         return None
     if cyc["stage"] == "study" and cyc.get("target") in lib.segments:
-        return study.study_payload(lib.segments[cyc["target"]], cyc.get("tokens") or [], cyc.get("accuracy") or 0.0)
+        return study.study_payload(lib.segments[cyc["target"]], cyc.get("tokens") or [], cyc.get("accuracy"))
     if cyc["stage"] == "transfer" and cyc.get("transfer") in study.bank().transfers:
         seg = lib.segments.get(cyc.get("target"))
         return study.transfer_payload(study.bank().transfers[cyc["transfer"]], seg.text if seg else "")
@@ -489,7 +505,7 @@ def _select(conn, s: dict, block: dict) -> dict | None:
             return _comprehension_payload(lib.clips[item["clip_id"]], False, "test")
         return _dictation_payload(lib.segments[item["segment_id"]])
 
-    if kind in ("new", "multi", "long"):
+    if kind in CYCLE_BLOCKS:
         cyc = st.get("cycle")
         if cyc and cyc.get("block") == st["block_index"]:
             item = _cycle_item(conn, s, cyc)
@@ -770,12 +786,14 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                     if ev:
                         events.append(ev)
                 # Context -> Sentence -> Transfer: dictate lines of this clip to find the one that was not heard
-                if block in ("new", "multi", "long"):
+                if block in CYCLE_BLOCKS:
+                    tap = block == "commute"
                     s["state"]["cycle"] = {
                         "clip_id": clip.id, "block": s["state"]["block_index"], "stage": "lines",
                         "segments": _cycle_lines(clip, s["state"]["shown"]["segment"]),
-                        "streak": 0, "target": None,
-                        "record": study.start_record(conn, s["id"], clip.id, score, first_listen)}
+                        "streak": 0, "target": None, "tap": tap,
+                        "record": study.start_record(conn, s["id"], clip.id, score, first_listen,
+                                                     mode="commute" if tap else "standard")}
 
         elif typ == "dictation":
             seg = lib.segments[sec["segment_id"]]
@@ -811,6 +829,35 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                         cyc.update(stage="study", target=seg.id, segments=[], tokens=res.tokens, accuracy=res.accuracy)
                         study.update_record(conn, cyc["record"], segment_id=seg.id, dictation_accuracy=res.accuracy,
                                             replays=int(body.get("replays") or 0))
+                        fb["study_next"] = True
+                    else:
+                        cyc["streak"] += 1
+                        if cyc["streak"] >= MOVE_ON_STREAK and cyc["segments"]:
+                            cyc["segments"] = []
+                            fb["moving_on"] = True
+
+        elif typ == "line_check":
+            # a self-report, kept apart from dictation accuracy: it moves neither skills nor the level
+            seg = lib.segments[sec["segment_id"]]
+            heard = body.get("heard") is True
+            plays = body.get("plays")
+            fb.update({"heard": heard, "reference": seg.text, "speaker": seg.speaker})
+            _attempt(conn, s, "line_check", block, seg.id, seg.level, float(heard),
+                     {"plays": int(plays) if isinstance(plays, (int, float)) else None})
+            if not is_test:
+                _expose(conn, "segment", seg.id, float(heard))
+                cyc = s["state"].get("cycle")
+                if not heard:
+                    # the line is reviewed later (by dictation in a normal session)
+                    srs.review(conn, "seg", seg.id, Rating.Again, create=True)
+                    cid = srs.card_id("seg", seg.id)
+                    if cid not in s["state"]["missed_cards"]:
+                        s["state"]["missed_cards"].append(cid)
+                if cyc and cyc.get("clip_id") == seg.clip_id and cyc["stage"] == "lines":
+                    if not heard:
+                        cyc.update(stage="study", target=seg.id, segments=[], tokens=[], accuracy=None)
+                        study.update_record(conn, cyc["record"], segment_id=seg.id,
+                                            replays=int(plays) if isinstance(plays, (int, float)) else None)
                         fb["study_next"] = True
                     else:
                         cyc["streak"] += 1

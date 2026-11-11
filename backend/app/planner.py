@@ -9,6 +9,7 @@ from __future__ import annotations
 BLOCK_INFO = {
     "review": ("語彙・表現の復習", "FSRS で今日復習すべき文・単語。期限のものがなければ TOEIC 語彙か聞き分けの準備運動"),
     "new": ("会話 → 1文 → 応用", "初見の会話で要点をつかみ、聞き取れなかった1文を理解し、同じ表現を別の文で聞く"),
+    "commute": ("移動リスニング", "会話を聞いて要点に答え、聞き取れなかった1文をタップで選んで理解し、同じ表現を別の文で聞く（文字入力なし）"),
     "weak": ("弱点別の集中訓練", "あなたの聞き取りミスが多い音のパターンを集中的に"),
     "shadow": ("シャドーイング・総仕上げ", "今日の英文を音声に重ねて声に出す"),
     "multi": ("複数話者の会話", "話者が入れ替わる会話を追う"),
@@ -146,6 +147,9 @@ def build_plan(minutes: int, settings: dict | None = None, mode: str = "standard
     minutes = int(minutes)
     if mode == "review":
         return [_block("review", max(5, minutes))]
+    if mode == "commute":
+        # one block: the same cycle as "new", answered by tapping; no breaks (short rides)
+        return [_block("commute", minutes)]
     if minutes < 15:
         base = TEMPLATES[15]
         scale = minutes / 15

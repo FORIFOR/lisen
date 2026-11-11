@@ -227,7 +227,7 @@ def plan_preview(body: PlanIn):
 
 class SessionIn(BaseModel):
     minutes: int = Field(30, ge=0, le=300)
-    mode: str = Field("standard", pattern="^(standard|review|test|profile)$")
+    mode: str = Field("standard", pattern="^(standard|review|test|profile|commute)$")
     replace: bool = False
     form: str | None = None
     focus_clip: str | None = Field(None, max_length=80)
@@ -314,6 +314,8 @@ class AnswerIn(BaseModel):
     text_check: Literal["clear", "unknown_words", "structure"] | None = None
     unknown_words: list[str] | None = Field(None, max_length=12)
     meaning_understood: bool | None = None
+    # commute mode: was this line heard? (a tap, not typing)
+    heard: bool | None = None
 
 
 @app.post("/sessions/{sid}/answer")

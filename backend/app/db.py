@@ -101,7 +101,8 @@ CREATE TABLE IF NOT EXISTS sentence_studies (
   id TEXT PRIMARY KEY, session_id TEXT, created_at TEXT NOT NULL, date TEXT NOT NULL, clip_id TEXT NOT NULL,
   context_score REAL, first_listen INTEGER NOT NULL DEFAULT 0, segment_id TEXT, dictation_accuracy REAL,
   replays INTEGER, response_ms INTEGER, text_check TEXT, unknown_words TEXT, meaning_understood INTEGER,
-  error_type TEXT NOT NULL DEFAULT 'unknown', transfer_id TEXT, transfer_correct INTEGER, transfer_ms INTEGER
+  error_type TEXT NOT NULL DEFAULT 'unknown', transfer_id TEXT, transfer_correct INTEGER, transfer_ms INTEGER,
+  mode TEXT NOT NULL DEFAULT 'standard'
 );
 CREATE TABLE IF NOT EXISTS devices (
   id TEXT PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL, last_seen TEXT NOT NULL
@@ -155,6 +156,9 @@ def connect() -> sqlite3.Connection:
             cols = {r[1] for r in _conn.execute("PRAGMA table_info(user_vocab)")}
             if "lapsed" not in cols:
                 _conn.execute("ALTER TABLE user_vocab ADD COLUMN lapsed INTEGER NOT NULL DEFAULT 0")
+            cols = {r[1] for r in _conn.execute("PRAGMA table_info(sentence_studies)")}
+            if "mode" not in cols:     # 'standard' (dictation finds the line) or 'commute' (tap: heard / not heard)
+                _conn.execute("ALTER TABLE sentence_studies ADD COLUMN mode TEXT NOT NULL DEFAULT 'standard'")
             if not _conn.execute("SELECT 1 FROM profile WHERE id=1").fetchone():
                 _conn.execute("INSERT INTO profile (id, settings, created_at) VALUES (1, ?, ?)",
                               (json.dumps(DEFAULT_SETTINGS), now_iso()))

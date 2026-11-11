@@ -168,3 +168,79 @@ def test_wrong_transfer_brings_the_practised_line_back(client):
             assert study.transfer_for(db.connect(), lib.segments[d["segment"]["id"]]) is None
             return
     pytest.fail("no transfer item in four cycles")
+
+
+# --- commute mode: the same cycle, answered by tapping ------------------------------------------
+
+def _start_commute(client, minutes=10):
+    client.post("/onboarding/skip", json={"level": 2})
+    r = client.post("/sessions", json={"minutes": minutes, "mode": "commute"})
+    assert r.status_code == 200, r.text
+    s = r.json()
+    assert [b["kind"] for b in s["blocks"]] == ["commute"] and s["mode"] == "commute"
+    return s["id"]
+
+
+@pytest.mark.parametrize("minutes", [5, 10, 15, 30])
+def test_commute_plan_is_one_tap_only_block(client, minutes):
+    sid = _start_commute(client, minutes)
+    s = client.get(f"/sessions/{sid}").json()
+    assert s["blocks"][0]["minutes"] == minutes
+
+
+def test_commute_cycle_needs_no_typing(client):
+    sid = _start_commute(client)
+    comp = _next(client, sid)
+    assert comp["type"] == "comprehension"
+    cid = comp["clip"]["id"]
+    _answer(client, sid, comp, solve(comp, good=False))
+    lc = _next(client, sid)
+    assert lc["type"] == "line_check" and lc["segment"]["id"].startswith(cid + "#")
+    assert "text" not in lc and lc["index"] == 1 and lc["total"] >= 1          # heard, not read
+    fb = _answer(client, sid, lc, {"heard": True, "plays": 1})
+    assert fb["heard"] is True and fb["reference"]
+    lc2 = _next(client, sid)
+    assert lc2["type"] == "line_check", "every conversation has two lines or more"
+    if lc2["type"] == "line_check":
+        fb = _answer(client, sid, lc2, {"heard": False, "plays": 2})
+        assert fb["study_next"]
+        st = _next(client, sid)
+        assert st["type"] == "study" and st["segment"]["id"] == lc2["segment"]["id"] and st["accuracy"] is None
+        fb = _answer(client, sid, st, {"text_check": "clear", "meaning_understood": True})
+        assert fb["error_type"] == "phonetic"
+        if fb.get("transfer_next"):
+            tr = _next(client, sid)
+            assert tr["type"] == "transfer"
+            _answer(client, sid, tr, solve(tr))
+        # the missed line comes back later as a normal review card
+        assert db.q1("SELECT 1 FROM srs_cards WHERE id=?", (f"seg:{lc2['segment']['id']}",))
+        rec = db.q1("SELECT * FROM sentence_studies WHERE session_id=?", (sid,))
+        assert rec["mode"] == "commute" and rec["segment_id"] == lc2["segment"]["id"] and rec["dictation_accuracy"] is None
+    # taps are self-reports: no dictation attempt, the skill estimates do not move
+    kinds = [r["kind"] for r in db.q("SELECT kind FROM attempts WHERE session_id=?", (sid,))]
+    assert "dictation" not in kinds and "line_check" in kinds
+    blocks = {r["block"] for r in db.q("SELECT block FROM attempts WHERE session_id=? AND kind='comprehension'", (sid,))}
+    assert blocks == {"commute"}
+    k = client.get("/v1/listening-profile").json()["kpis"]
+    assert k["unseen_by_mode"]["commute"]["recent"]["n"] == 1
+    assert k["unseen_by_mode"]["standard"]["recent"]["n"] == 0
+    assert k["line_heard"]["recent"]["n"] >= 1
+
+
+def test_commute_moves_on_after_lines_heard(client):
+    sid = _start_commute(client)
+    comp = _next(client, sid)
+    _answer(client, sid, comp, solve(comp))
+    seen = 0
+    item = _next(client, sid)
+    while item["type"] == "line_check":
+        seen += 1
+        _answer(client, sid, item, {"heard": True})
+        item = _next(client, sid)
+    assert item["type"] == "comprehension" and seen <= 2       # two heard lines in a row -> next conversation
+
+
+def test_commute_extend_adds_commute_time(client):
+    sid = _start_commute(client, 5)
+    s = client.post(f"/sessions/{sid}/extend", json={"minutes": 10}).json()
+    assert [b["kind"] for b in s["blocks"]] == ["commute", "commute"]

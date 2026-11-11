@@ -76,6 +76,14 @@ def kpis() -> dict:
         "first_play": {"label": "初回再生での理解率", "note": "1回だけ再生して答えた初見音声",
                        **pair(unseen + " AND json_extract(detail,'$.plays')=1")},
         "sound": {"label": "音声識別正答率", "note": "似た音・弱形・連結の聞き分け", **pair("kind='discrimination'")},
+        # the same first-listen questions answered in a normal session vs on the move, kept apart so the
+        # two can be compared (the clips differ, so a gap is a hint, not proof)
+        "unseen_by_mode": {
+            "standard": {"label": "初見会話理解率（通常）", "note": "通常のセッション", **pair(unseen + " AND block!='commute'")},
+            "commute": {"label": "初見会話理解率（移動）", "note": "移動リスニング", **pair(unseen + " AND block='commute'")},
+        },
+        "line_heard": {"label": "1文の聞き取り（自己申告）", "note": "移動リスニングで「聞き取れた」と答えた文の割合。書き取りの正確さとは別",
+                       **pair("kind='line_check'")},
         "transfer": {"label": "応用文の理解率", "note": "練習した表現を、初めて聞く別の文で理解できた割合",
                      **pair("kind='transfer'")},
         "audio_vocab": {"label": "音声語彙認識率", "note": "TOEIC 語彙を音・文脈で認識",

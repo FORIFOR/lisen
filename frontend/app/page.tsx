@@ -29,6 +29,10 @@ import { api, ApiError, LEVEL_LABEL, type Block, type GrowthEvent, type Profile,
 import { cn } from "@/lib/utils";
 
 const PRESETS = [15, 30, 60, 90, 120];
+// commute mode: short rides, answered by tapping only
+const COMMUTE_PRESETS = [5, 10, 15, 30];
+type Style = "standard" | "commute";
+const STYLE_KEY = "lf-style";
 const TOPIC_ICON: Record<string, typeof Cpu> = {
   tech: Cpu,
   business: Briefcase,
@@ -46,6 +50,7 @@ export default function Home() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [minutes, setMinutes] = useState(30);
+  const [style, setStyle] = useState<Style>("standard");
   const [plan, setPlan] = useState<Plan | null>(null);
   const [showPlan, setShowPlan] = useState(false);
   const [recs, setRecs] = useState<{ items: Recommendation[]; topics: Record<string, string>; interests: string[] } | null>(null);
@@ -58,7 +63,14 @@ export default function Home() {
       .then((p) => {
         if (!p.onboarded) router.replace("/onboarding");
         setProfile(p);
-        setMinutes((m) => (p.settings.daily_goal && PRESETS.includes(p.settings.daily_goal) ? p.settings.daily_goal : m));
+        let saved: string | null = null;
+        try {
+          saved = window.localStorage.getItem(STYLE_KEY);
+        } catch {}
+        if (saved === "commute") {
+          setStyle("commute");
+          setMinutes(10);
+        } else setMinutes((m) => (p.settings.daily_goal && PRESETS.includes(p.settings.daily_goal) ? p.settings.daily_goal : m));
       })
       .catch((e) => setError(e.message));
     api<{ items: Recommendation[]; topics: Record<string, string>; interests: string[] }>("/v1/recommendations?limit=6").then(setRecs).catch(() => {});
@@ -66,10 +78,19 @@ export default function Home() {
   }, [router]);
 
   useEffect(() => {
-    api<Plan>("/plan/preview", { body: { minutes } })
+    api<Plan>("/plan/preview", { body: { minutes, mode: style } })
       .then(setPlan)
       .catch(() => {});
-  }, [minutes]);
+  }, [minutes, style]);
+
+  const chooseStyle = (v: Style) => {
+    setStyle(v);
+    try {
+      window.localStorage.setItem(STYLE_KEY, v);
+    } catch {}
+    const list = v === "commute" ? COMMUTE_PRESETS : PRESETS;
+    if (!list.includes(minutes)) setMinutes(v === "commute" ? 10 : 30);
+  };
 
   const start = async (body: Record<string, unknown>, replace = false) => {
     setStarting(true);
@@ -169,9 +190,31 @@ export default function Home() {
               <h2 className="text-lg font-semibold">今日のトレーニング</h2>
               <span className="text-xs font-semibold tracking-wider text-primary tabular">{minutes} MIN</span>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">{pitch}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {style === "commute" ? "文字入力なし。会話を聞いて答え、聞き取れなかった1文をタップで選び、意味と場面を確かめてから、同じ表現を別の文で聞きます。" : pitch}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border p-1" role="radiogroup" aria-label="学習の形">
+              {(
+                [
+                  ["standard", "集中トレーニング", "書き取りあり"],
+                  ["commute", "移動リスニング", "タップだけ"],
+                ] as const
+              ).map(([v, label, hint]) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={style === v}
+                  onClick={() => chooseStyle(v)}
+                  className={cn("rounded-lg px-2 py-1.5 text-sm transition-colors", style === v ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
+                >
+                  {label}
+                  <span className={cn("block text-[11px]", style === v ? "opacity-80" : "text-muted-foreground")}>{hint}</span>
+                </button>
+              ))}
+            </div>
             <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1" role="radiogroup" aria-label="学習時間">
-              {PRESETS.map((m) => (
+              {(style === "commute" ? COMMUTE_PRESETS : PRESETS).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -192,7 +235,7 @@ export default function Home() {
                 <Target className="mt-px size-3.5 shrink-0 text-primary" /> 診断にもとづき「{adapted.label}」を {adapted.adapted}
               </p>
             )}
-            <Button size="lg" className="mt-4 h-12 w-full text-base" disabled={starting} onClick={() => start({ minutes })}>
+            <Button size="lg" className="mt-4 h-12 w-full text-base" disabled={starting} onClick={() => start({ minutes, mode: style })}>
               {starting ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
               学習を始める
             </Button>

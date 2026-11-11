@@ -99,6 +99,32 @@ function KpiTile({ k, primary }: { k: Kpi; primary?: boolean }) {
   );
 }
 
+/** Normal vs commute sessions, side by side, so a drop on the move would be visible. */
+function ModeComparison({ k }: { k: ListeningProfile["kpis"] }) {
+  if (!k.unseen_by_mode.commute.recent.n && !k.line_heard.recent.n) return null;
+  const row = (x: Kpi) => (
+    <div className="flex items-baseline justify-between gap-2 py-1.5 text-sm">
+      <span>{x.label}</span>
+      <span className="tabular">
+        <span className="font-semibold">{pct(x.recent.value)}</span> <span className="text-xs text-muted-foreground">{x.recent.n}問</span>
+      </span>
+    </div>
+  );
+  return (
+    <div className="rounded-2xl border bg-card p-4">
+      <h3 className="text-sm font-medium">通常と移動リスニングの比較（直近14日）</h3>
+      <div className="mt-1 divide-y">
+        {row(k.unseen_by_mode.standard)}
+        {row(k.unseen_by_mode.commute)}
+        {row(k.line_heard)}
+      </div>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        初見の会話の設問は両方とも同じ形式です。聞いた会話が違うので、差は目安です。「聞き取れた」は自己申告で、書き取りの正確さとは別に数えています。
+      </p>
+    </div>
+  );
+}
+
 function ErrorTrendsPanel({ t }: { t: ErrorTrends }) {
   const order: ErrorType[] = ["phonetic", "vocabulary", "grammar", "meaning"];
   return (
@@ -181,6 +207,7 @@ export function ListeningProfilePanel() {
         </div>
       </div>
 
+      <ModeComparison k={k} />
       <ErrorTrendsPanel t={p.error_trends} />
 
       {p.history.length > 0 && (

@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "motion/react";
-import { BookOpen, Ear, Lightbulb, MapPin, Repeat2 } from "lucide-react";
+import { BookOpen, Check as CheckIcon, Ear, EarOff, Lightbulb, MapPin, Repeat2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AudioPlayer, isTyping, useAudio } from "@/components/audio-player";
 import { ERROR_TIPS, Header, NextButton, type Props, useEnter, Verdict } from "@/components/items";
 import { Button } from "@/components/ui/button";
-import type { Feedback, StudyItem, TransferItem } from "@/lib/api";
+import type { Feedback, LineCheckItem, StudyItem, TransferItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 type Check = "clear" | "unknown_words" | "structure";
@@ -68,7 +68,7 @@ export function StudyView({ item, rate, submit, next }: Props<StudyItem>) {
   const keySpan = phraseSpan(words, item.key?.expr);
   return (
     <div className="mx-auto max-w-2xl">
-      <Header kind="1文の攻略" title={item.clip_title} level={item.level} reason={`聞き取り ${Math.round(item.accuracy * 100)}%`} />
+      <Header kind="1文の攻略" title={item.clip_title} level={item.level} reason={item.accuracy == null ? "聞き取れなかった1文" : `聞き取り ${Math.round(item.accuracy * 100)}%`} />
       {item.context.length > 0 && (
         <p className="mb-2 text-sm text-muted-foreground">
           直前: {item.context[0].speaker}「{item.context[0].text}」
@@ -308,6 +308,64 @@ export function TransferView({ item, rate, submit, next }: Props<TransferItem>) 
           <div className="flex justify-end">
             <NextButton onClick={next} />
           </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+/** Commute mode, step 2: each line of the conversation is played; one tap says whether it was heard. */
+export function LineCheckView({ item, rate, submit, next }: Props<LineCheckItem>) {
+  const ctl = useAudio(item.segment.audio, { rate, autoplay: true });
+  const [fb, setFb] = useState<Feedback | null>(null);
+  const [busy, setBusy] = useState(false);
+  const send = async (heard: boolean) => {
+    if (busy || fb) return;
+    setBusy(true);
+    const r = await submit({ heard, plays: ctl.plays });
+    setBusy(false);
+    if (r) setFb(r);
+  };
+  useEffect(() => {
+    if (fb) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (isTyping(e)) return;
+      if (e.key === "1") send(true);
+      if (e.key === "2") send(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+  useEnter(!!fb, next);
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <Header kind="1文ずつ確認" level={item.level} reason={`${item.index} 文目`} />
+      <AudioPlayer ctl={ctl} label={`話者 ${item.segment.speaker}`} />
+      {!fb ? (
+        <div className="mt-6 space-y-3">
+          <p className="text-center text-sm text-muted-foreground">この文は聞き取れましたか？（何度聞き直してもかまいません）</p>
+          {/* phones: the two answers sit at the bottom, within reach of the thumb */}
+          <div className="h-24 md:hidden" aria-hidden />
+          <div className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 border-t bg-background/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
+            <Button size="lg" variant="outline" className="h-20 flex-col gap-1 text-base" disabled={busy} onClick={() => send(true)}>
+              <CheckIcon className="size-5 text-success" /> 聞き取れた
+            </Button>
+            <Button size="lg" variant="outline" className="h-20 flex-col gap-1 text-base" disabled={busy} onClick={() => send(false)}>
+              <EarOff className="size-5 text-warning" /> 聞き取れなかった
+            </Button>
+          </div>
+          <p className="hidden text-center text-xs text-muted-foreground md:block">1: 聞き取れた · 2: 聞き取れなかった · Space: 再生</p>
+        </div>
+      ) : (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 space-y-4">
+          <div className="rounded-2xl border bg-card p-4">
+            <p className="text-xs text-muted-foreground">話者 {fb.speaker}</p>
+            <p className="mt-1 text-lg">{fb.reference}</p>
+          </div>
+          {fb.study_next && <p className="text-sm text-muted-foreground">次は、この1文を日本語訳・場面・重要表現で確かめます。</p>}
+          {fb.moving_on && <p className="text-sm text-success">この会話は十分に聞き取れています。新しい会話へ進みます。</p>}
+          <NextButton onClick={next} />
         </motion.div>
       )}
     </div>
