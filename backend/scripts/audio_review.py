@@ -58,12 +58,13 @@ def main(argv: list[str]) -> int:
         print(f"\n{key}  「{spoken_text(w, kind)}」\n  理由: {data['items'][key].get('reason', '')}\n  ファイル: {config.AUDIO_DIR / rel if rel else 'なし'}")
         if "--play" not in argv or not rel:
             continue
-        while True:
+        ans = "p"
+        while ans == "p":
             subprocess.run(["afplay", str(config.AUDIO_DIR / rel)], check=False)
             ans = input("  正しく読まれていますか？ [y]使う [n]保留のまま [r]別の声で作り直す [p]もう一度 [s]あとで > ").strip().lower()
-            if ans == "p":
-                continue
-            break
+            # e.g. "yy" when a key was also pressed during playback: ask again instead of silently skipping
+            while ans not in ("y", "n", "r", "p", "s"):
+                ans = input("  y / n / r / p / s のどれか1文字を入力してください > ").strip().lower()
         if ans == "y":
             _set(data, key, status="ok")
         elif ans == "n":
