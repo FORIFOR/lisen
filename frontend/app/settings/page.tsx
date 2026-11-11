@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { Download, Laptop, Loader2, Monitor, Moon, Smartphone, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AccessSettings } from "@/components/access-settings";
 import { GeminiSettings } from "@/components/gemini-settings";
 import { InterestPicker } from "@/components/interest-picker";
 import { Button } from "@/components/ui/button";
@@ -120,7 +121,7 @@ export default function SettingsPage() {
       <section className="rounded-2xl border bg-card p-4 md:p-5">
         <h2 className="text-sm font-medium">ほかの端末から使う</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          学習データはこの Mac に1か所で保存されます。Windows や iPhone のブラウザで下のアドレスを開くと、同じ学習履歴の続きから学習できます（Mac がスリープ中は接続できません）。
+          学習データはこの Mac に1か所で保存されます。Windows や iPhone のブラウザで下のアドレスを開き、アクセスコードで端末を登録すると、同じ学習履歴の続きから学習できます（Mac がスリープ中は接続できません）。
         </p>
         <ul className="mt-3 space-y-2 text-sm">
           {sys?.urls.map((u) => (
@@ -142,6 +143,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </section>
+
+      <AccessSettings />
 
       <section className="rounded-2xl border bg-card px-4 md:px-5">
         {p.tests.map((t) => (

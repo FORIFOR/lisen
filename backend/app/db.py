@@ -103,6 +103,9 @@ CREATE TABLE IF NOT EXISTS sentence_studies (
   replays INTEGER, response_ms INTEGER, text_check TEXT, unknown_words TEXT, meaning_understood INTEGER,
   error_type TEXT NOT NULL DEFAULT 'unknown', transfer_id TEXT, transfer_correct INTEGER, transfer_ms INTEGER
 );
+CREATE TABLE IF NOT EXISTS devices (
+  id TEXT PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL, last_seen TEXT NOT NULL
+);
 """
 
 DEFAULT_SETTINGS = {

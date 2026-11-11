@@ -7,15 +7,114 @@ import re
 import threading
 from typing import Any, Literal
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from . import abilities, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, study, tts, vocab
+from . import abilities, access, backup, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, study, tts, vocab
 from .content import library, reload_library
 from .vocab_data import vocab_library
 
-app = FastAPI(title="ListenFlow API", version="1.0.0")
+
+@asynccontextmanager
+async def _lifespan(_: FastAPI):
+    if os.environ.get("LISTENFLOW_BACKUPS", "on").lower() not in {"off", "0", "false"}:
+        backup.start_daily()
+    yield
+
+
+app = FastAPI(title="ListenFlow API", version="1.0.0", lifespan=_lifespan)
+
+
+# --- access control -------------------------------------------------------------
+
+@app.middleware("http")
+async def _require_device(request: Request, call_next):
+    request.state.device = None
+    if access.required() and not access.is_direct(request.headers) and request.url.path not in access.OPEN_PATHS:
+        dev = access.device_for(request.cookies.get(access.COOKIE))
+        if dev is None:
+            return JSONResponse(status_code=401, content={"detail": "この端末はまだ登録されていません", "auth": True})
+        request.state.device = dev
+        if dev["last_seen"][:13] != db.now_iso()[:13]:      # at most one write per device per hour
+            access.touch(dev["id"])
+    return await call_next(request)
+
+
+@app.exception_handler(access.LoginError)
+def _login_error(_: Request, exc: access.LoginError):
+    return JSONResponse(status_code=exc.status, content={"detail": exc.msg})
+
+
+class LoginIn(BaseModel):
+    code: str = Field(min_length=1, max_length=40)
+    name: str = Field(default="", max_length=60)
+
+
+@app.get("/auth/status")
+def auth_status(request: Request):
+    direct = access.is_direct(request.headers)
+    dev = access.device_for(request.cookies.get(access.COOKIE))
+    return {"required": access.required(), "signed_in": (not access.required()) or direct or dev is not None,
+            "device": dev["name"] if dev else None}
+
+
+@app.post("/auth/login")
+def auth_login(body: LoginIn, response: Response):
+    token = access.login(body.code, body.name)
+    # not Secure: other devices reach the app over plain HTTP on the LAN / Tailscale
+    response.set_cookie(access.COOKIE, token, max_age=access.COOKIE_MAX_AGE, httponly=True, samesite="lax", path="/")
+    return {"ok": True}
+
+
+@app.post("/auth/logout")
+def auth_logout(request: Request, response: Response):
+    access.logout(request.cookies.get(access.COOKIE))
+    response.delete_cookie(access.COOKIE, path="/")
+    return {"ok": True}
+
+
+def _current_device_id(request: Request) -> str | None:
+    dev = getattr(request.state, "device", None)
+    return dev["id"] if dev else None
+
+
+@app.get("/auth/devices")
+def auth_devices(request: Request):
+    return {"devices": access.devices(_current_device_id(request))}
+
+
+@app.delete("/auth/devices/{device_id}")
+def auth_revoke(device_id: str):
+    if not access.revoke(device_id):
+        raise HTTPException(404, "端末が見つかりません")
+    return {"ok": True}
+
+
+@app.get("/auth/code")
+def auth_code():
+    """The access code, for a device that is already signed in (to add another device)."""
+    return {"code": access.access_code()}
+
+
+@app.post("/auth/code/rotate")
+def auth_rotate(request: Request):
+    return {"code": access.rotate(_current_device_id(request))}
+
+
+# --- backups --------------------------------------------------------------------
+
+@app.get("/backups")
+def backups():
+    return {"backups": backup.list_backups(), "keep": backup.KEEP, "dir": str(backup.backup_dir())}
+
+
+@app.post("/backups")
+def backup_create():
+    return backup.backup_now()
+
 
 
 @app.exception_handler(engine.SessionError)

@@ -57,5 +57,11 @@ echo "✅ ListenFlow を起動しました"
 echo "   この Mac:     http://localhost:$PORT"
 curl -s "http://127.0.0.1:$LISTENFLOW_API_PORT/system" | python3 -c 'import json,sys
 for u in json.load(sys.stdin)["urls"]: print("   " + u["label"] + ": " + u["url"])' 2>/dev/null || true
+code=$(curl -s "http://127.0.0.1:$LISTENFLOW_API_PORT/auth/code" | python3 -c 'import json,sys; print(json.load(sys.stdin)["code"])' 2>/dev/null || true)
+if [ -n "$code" ]; then
+  echo ""
+  echo "   🔑 アクセスコード: $code"
+  echo "      初めて開く端末（この Mac のブラウザも含む）で1回だけ入力します。設定 → 端末とアクセス でも確認・変更できます。"
+fi
 echo "   終了するには Ctrl+C"
 wait

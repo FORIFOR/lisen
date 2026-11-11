@@ -26,10 +26,21 @@ export async function api<T = unknown>(path: string, init?: { method?: string; b
     } catch {}
     // a 5xx without our JSON detail means the proxy could not reach the API
     if (res.status >= 500 && typeof data?.detail !== "string") msg = "サーバーに接続できません。Mac で ListenFlow が起動しているか確認してください";
+    if (res.status === 401 && data?.auth) toLogin();
     throw new ApiError(res.status, msg, data);
   }
   return res.json() as Promise<T>;
 }
+
+/** this device is not signed in: go to the access-code screen and come back afterwards */
+export function toLogin() {
+  if (typeof window === "undefined" || window.location.pathname.startsWith("/login")) return;
+  const next = window.location.pathname + window.location.search;
+  window.location.replace(`/login?next=${encodeURIComponent(next)}`);
+}
+
+export type Device = { id: string; name: string; created_at: string; last_seen: string; current: boolean };
+export type Backup = { name: string; bytes: number; created_at: string };
 
 export const audioUrl = (rel?: string | null) => (rel ? `/api/audio/${rel}` : "");
 

@@ -20,7 +20,8 @@ MacBook Pro で動かすローカルファーストの Web アプリです。Mac
 
 - iPhone: Safari で開いて「共有 → ホーム画面に追加」でアプリのように使えます。
 - Mac がスリープ中は他の端末から接続できません。
-- 認証はありません。`./start.sh` は既定で全インターフェース（同じ Wi-Fi 上の誰でも）に公開します。Tailscale 経由だけにしたい場合は `LISTENFLOW_HOST=<Tailscale IP> ./start.sh`。
+- **端末の登録が必要です。** 各端末（この Mac のブラウザも含む）で初回だけ、`./start.sh` が表示するアクセスコード（12桁）を入力します。登録した端末はブラウザの Cookie（HttpOnly、約1年）で識別し、Mac にはその値のハッシュだけを保存します。未登録の端末からは学習データ・音声・設定・エクスポートのどれも読めません。コードの入力に5回失敗すると10分間は登録できません。端末の一覧・登録の解除・コードの変更（ほかの端末はすべて登録が外れます）は「設定 → 端末とアクセス」で行えます。コードは `data/secrets/access.code`（権限 600）にあります。
+- Web は既定で全インターフェースで待ち受けます（同じ Wi-Fi の iPhone から使うため）。HTTP なので、同じネットワーク上で通信を盗み見られる可能性は残ります。外出先や共用の Wi-Fi では Tailscale 経由で使い、Tailscale だけに絞るなら `LISTENFLOW_HOST=<Tailscale IP> ./start.sh`、この Mac だけなら `LISTENFLOW_HOST=127.0.0.1 ./start.sh`。認証をやめる場合は `LISTENFLOW_AUTH=off`（おすすめしません）。
 - シャドーイングの録音はブラウザの仕様で HTTPS か localhost が必要です。iPhone で使う場合は `tailscale serve --bg 3210` で HTTPS 化してください（録音以外の機能は HTTP でも動きます）。
 - ポート: Web 3210 / API 8765（`LISTENFLOW_WEB_PORT` / `LISTENFLOW_API_PORT` で変更可。API は 127.0.0.1 のみで待ち受け、Web 経由で `/api/*` として中継）。
 
@@ -60,6 +61,13 @@ MacBook Pro で動かすローカルファーストの Web アプリです。Mac
 同梱の教材は 74 本（練習用 49 本: レベル A2〜C1、うち AI・ビジネス・自然な会話の 9 本を追加。テスト用 5 回分 × 5 本）と、構文理解の短文 40 問（`backend/content/sentences.json`、CC0、レベル1〜5 × 8問）。すべて ListenFlow 用に書き下ろしたもので、追加分は音声認識で台本どおりに読まれているかを確認済みです。音声は macOS の音声合成（`say`：米・英・豪・アイルランドの複数話者）で**スクリプトから生成**しているため、正解テキストと音声区間は構造上一致します。採点は Whisper などの自動文字起こしに依存しません。
 
 合成音声は実際の会話より音の変化（脱落・連結）が少ないため、上級者には物足りない可能性があります。実音声の教材は、教材ページの「NotebookLM の音声を取り込む」から取り込めます（下記）。
+
+## 学習データのバックアップと復元
+
+- API の起動時と、その後24時間ごとに、学習データ（SQLite）を `data/backups/listenflow-YYYY-MM-DD.db` に保存します。使用中でも一貫した状態で複製し、壊れていないことを確かめてから置き換えます。最新14件を残します。「設定 → 端末とアクセス → 今すぐバックアップ」でも作れます。
+- 復元は ListenFlow を止めてから: `cd backend && .venv/bin/python -m scripts.restore_backup`（一覧）→ `.venv/bin/python -m scripts.restore_backup <ファイル名>`。今のデータは `listenflow.db.before-restore-<日時>` として残すので、元に戻せます。
+- バックアップは同じ Mac の中にあるだけなので、Mac の故障には備えられません。Time Machine などで `data/` も外部に保存してください。
+- 学習データは Mac の1か所だけにあり、端末ごとの複製を同期する仕組みではないため、同期の競合は起きません。書き込みは1件ずつ順に行います。ただし、2台で同じセッションを同時に進める使い方は想定していません。
 
 ## 語彙データと Gemini
 
