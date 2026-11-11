@@ -575,8 +575,7 @@ def test_gemini_tts_voices_lesson(client, tmp_path, monkeypatch, wav):
     assert raw["voice_engine"] == "gemini", lesson["checks"]
     assert set(raw["voices"].values()) <= set(lessons.GEMINI_VOICES)
     assert len(set(raw["voices"].values())) == 2
-    v = set(raw["voices"].values())   # one lower and one higher voice, so the speakers are easy to tell apart
-    assert v & set(lessons.GEMINI_VOICES_LOW) and v & set(lessons.GEMINI_VOICES_HIGH)
+    assert set(raw["voices"].values()) == {"Algieba", "Aoede"}   # default male + female pair
     assert calls.count("text") == 1 and len(calls) == 1 + len(GOOD_DIALOGUE)   # one TTS call per line
     assert all(c["ok"] for c in lesson["checks"])
     if asr.available()[0]:
@@ -586,6 +585,22 @@ def test_gemini_tts_voices_lesson(client, tmp_path, monkeypatch, wav):
     monkeypatch.setattr(tts, "synthesize_clip", lambda raw, speak=None: built.append(raw["id"]) or {})
     tts.build_all([raw], force=True, log=lambda *_: None)
     assert built == []
+
+
+def test_gemini_voice_pair_is_configurable(client, tmp_path, monkeypatch):
+    from app import lessons
+    _need_tts(tmp_path, monkeypatch)
+    client.put("/v1/integrations/gemini", json={"api_key": FAKE_KEY})
+    st = client.get("/v1/integrations/gemini").json()
+    assert (st["gemini_voice_male"], st["gemini_voice_female"]) == ("Algieba", "Aoede")
+    assert client.put("/settings", json={"gemini_voice_male": "Nobody"}).status_code == 422
+    r = client.put("/settings", json={"lesson_voice": "gemini", "gemini_voice_male": "Charon", "gemini_voice_female": "Kore"})
+    assert r.status_code == 200
+    calls = []
+    monkeypatch.setattr(lessons.urllib.request, "urlopen", _fake_tts_and_text(calls))
+    lesson = client.post("/v1/audio-lessons/generate", json={"words": ["allocate", "postpone", "reimbursement"]}).json()
+    raw = json.loads((lessons.lessons_dir() / f"{lesson['id']}.json").read_text())
+    assert set(raw["voices"].values()) == {"Charon", "Kore"}
 
 
 def test_gemini_tts_failure_falls_back_to_mac_voices_in_auto(client, tmp_path, monkeypatch):

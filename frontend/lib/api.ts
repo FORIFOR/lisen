@@ -81,6 +81,8 @@ export type Settings = {
   auto_lessons: boolean;
   lesson_engine: "auto" | "gemini" | "local";
   lesson_voice: "mac" | "gemini";
+  gemini_voice_male: string;
+  gemini_voice_female: string;
   interests: string[];
   gemini_model: string | null;
 };
@@ -247,6 +249,9 @@ export type GeneratorStatus = {
   voice: "mac" | "gemini";
   voice_setting: "mac" | "gemini";
   gemini_tts_model: string;
+  gemini_voices: string[];
+  gemini_voice_male: string;
+  gemini_voice_female: string;
 };
 export type VocabStats = {
   dataset: { name: string; license: string; words: number };

@@ -32,12 +32,24 @@ KEY_RE = re.compile(r"^[\x21-\x7E]{20,300}$")   # any printable ASCII without sp
 GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models"
 VOICES = {"A": "Samantha", "B": "Daniel"}
 GEMINI_TTS_MODEL = os.environ.get("LISTENFLOW_GEMINI_TTS_MODEL", "gemini-3.8-flash-tts")
-# prebuilt Gemini voices; each lesson draws a different pair so the same word is heard from different speakers.
-# One lower and one higher voice per pair: in a real lesson, two same-register voices measured only ~26 Hz
-# apart in median pitch (157 vs 183 Hz), too close to tell the speakers apart easily.
-GEMINI_VOICES_LOW = ["Puck", "Charon", "Fenrir", "Orus"]
-GEMINI_VOICES_HIGH = ["Kore", "Aoede", "Leda", "Zephyr"]
-GEMINI_VOICES = GEMINI_VOICES_LOW + GEMINI_VOICES_HIGH
+# prebuilt Gemini voices. Each lesson pairs one male and one female voice (the learner's choice, by default
+# Algieba and Aoede) so the two speakers are easy to tell apart; which of them speaks first varies per lesson.
+GEMINI_VOICES = ["Achernar", "Achird", "Algenib", "Algieba", "Alnilam", "Aoede", "Autonoe", "Callirrhoe", "Charon",
+                 "Despina", "Enceladus", "Erinome", "Fenrir", "Gacrux", "Iapetus", "Kore", "Laomedeia", "Leda", "Orus",
+                 "Puck", "Pulcherrima", "Rasalgethi", "Sadachbia", "Sadaltager", "Schedar", "Sulafat", "Umbriel",
+                 "Vindemiatrix", "Zephyr", "Zubenelgenubi"]
+DEFAULT_MALE_VOICE = "Algieba"
+DEFAULT_FEMALE_VOICE = "Aoede"
+
+
+def gemini_voice_pair() -> tuple[str, str]:
+    """(male, female) from the settings, falling back to the defaults for unknown names."""
+    st = db.profile()["settings"]
+    m = st.get("gemini_voice_male") or DEFAULT_MALE_VOICE
+    f = st.get("gemini_voice_female") or DEFAULT_FEMALE_VOICE
+    return (m if m in GEMINI_VOICES else DEFAULT_MALE_VOICE, f if f in GEMINI_VOICES else DEFAULT_FEMALE_VOICE)
+
+
 GEMINI_TTS_RATE = 24000
 
 
@@ -187,7 +199,8 @@ def engine_status() -> dict:
     key = gemini_key()
     return {"engine": effective_engine(), "mode": engine_mode(), "gemini_configured": bool(key),
             "voice": voice_engine(), "voice_setting": db.profile()["settings"].get("lesson_voice", "mac"),
-            "gemini_tts_model": GEMINI_TTS_MODEL,
+            "gemini_tts_model": GEMINI_TTS_MODEL, "gemini_voices": GEMINI_VOICES,
+            "gemini_voice_male": gemini_voice_pair()[0], "gemini_voice_female": gemini_voice_pair()[1],
             "key_source": key_source(), "key_hint": f"…{key[-4:]}" if key else None,
             "gemini_model": gemini_model(), "tts_available": ok, "tts_message": msg}
 
@@ -546,7 +559,7 @@ def generate(word_ids: list[str] | None = None, engine: str | None = None, seed:
         key = cache_key(targets, level, engine, v)
         lid = f"g-{key[:10]}"
         if v == "gemini":
-            pair = [rng.choice(GEMINI_VOICES_LOW), rng.choice(GEMINI_VOICES_HIGH)]
+            pair = list(gemini_voice_pair())
             rng.shuffle(pair)
             voices = {"A": pair[0], "B": pair[1]}
         else:

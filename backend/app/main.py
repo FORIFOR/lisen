@@ -82,12 +82,18 @@ class SettingsIn(BaseModel):
     auto_lessons: bool | None = None
     lesson_engine: Literal["auto", "gemini", "local"] | None = None
     lesson_voice: Literal["mac", "gemini"] | None = None
+    gemini_voice_male: str | None = Field(None, pattern=r"^[A-Z][a-z]{2,20}$")
+    gemini_voice_female: str | None = Field(None, pattern=r"^[A-Z][a-z]{2,20}$")
     gemini_model: str | None = Field(None, pattern=r"^gemini-[a-z0-9][a-z0-9.\-]{1,60}$")
     interests: list[Literal["tech", "business", "conversation", "science", "travel", "daily"]] | None = Field(None, max_length=6)
 
 
 @app.put("/settings")
 def put_settings(body: SettingsIn):
+    from . import lessons
+    for v in (body.gemini_voice_male, body.gemini_voice_female):
+        if v is not None and v not in lessons.GEMINI_VOICES:
+            raise HTTPException(422, f"未知の Gemini の声です: {v}")
     with db.tx() as conn:
         cur = json.loads(conn.execute("SELECT settings FROM profile WHERE id=1").fetchone()["settings"])
         cur.update({k: v for k, v in body.model_dump().items() if v is not None})

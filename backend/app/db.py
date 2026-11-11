@@ -109,7 +109,9 @@ DEFAULT_SETTINGS = {
     "auto_lessons": True,
     "lesson_engine": "auto",      # auto = Gemini when a key is configured, local otherwise (and on Gemini failure)
     "gemini_model": None,
-    "lesson_voice": "mac",        # "gemini": Gemini TTS with a different voice pair per lesson (needs a key)
+    "lesson_voice": "mac",        # "gemini": Gemini TTS, one male + one female voice (needs a key)
+    "gemini_voice_male": "Algieba",
+    "gemini_voice_female": "Aoede",
     "interests": ["tech", "business", "conversation"],   # topics preferred for new listening material         # None = LISTENFLOW_GEMINI_MODEL or the default in lessons.py
 }
 

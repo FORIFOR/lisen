@@ -165,7 +165,7 @@ export function GeminiSettings({ settings, update }: { settings: Settings; updat
             <div className="grid gap-1.5 sm:grid-cols-2">
               {([
                 ["mac", "Mac の音声合成", "無料・オフライン。6種類の声"],
-                ["gemini", "Gemini TTS", `教材ごとに別の話者の組み合わせ（${st.gemini_tts_model}）。1行ごとに呼び出し`],
+                ["gemini", "Gemini TTS", `男性1人＋女性1人の会話（${st.gemini_tts_model}）。1行ごとに呼び出し`],
               ] as const).map(([id, label, hint]) => (
                 <button
                   key={id}
@@ -182,6 +182,33 @@ export function GeminiSettings({ settings, update }: { settings: Settings; updat
                 </button>
               ))}
             </div>
+            {(st.voice_setting ?? "mac") === "gemini" && (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {([
+                  ["gemini_voice_male", "男性の声", st.gemini_voice_male],
+                  ["gemini_voice_female", "女性の声", st.gemini_voice_female],
+                ] as const).map(([field, label, value]) => (
+                  <label key={field} className="text-xs text-muted-foreground">
+                    {label}
+                    <select
+                      value={value}
+                      onChange={async (e) => {
+                        const v = e.target.value;
+                        await update({ [field]: v } as Partial<Settings>);
+                        setSt((s) => (s ? { ...s, [field]: v } : s));
+                      }}
+                      className="mt-1 block h-9 w-full rounded-lg border bg-background px-2 text-sm text-foreground"
+                    >
+                      {st.gemini_voices.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            )}
             <p className="mt-1.5 text-xs text-muted-foreground">
               どちらの音声も、音声認識で台本どおりか・指定語が聞き取れるかを確認してから採用します。Gemini TTS が使えないときは、「自動」なら Mac の音声に切り替えます。
             </p>
