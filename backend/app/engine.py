@@ -27,7 +27,7 @@ LINE_REPORTS = ("understood", "sound_only", "not_heard")
 # listening-profile diagnostic: blocks that end after a number of items instead of a time budget
 DIAG_ITEMS = {"d_sound": 10, "d_sentence": 10}
 DIAG_WORDS = 20
-SOUND_FOCUS = ["weak_forms", "linking", "contractions", "endings", "numbers"]
+SOUND_FOCUS = ["weak_forms", "contractions", "numbers"]
 
 
 class SessionError(Exception):
@@ -219,7 +219,30 @@ def next_item(session_id: str, elapsed: float | None = None) -> dict:
             pending = conn.execute("SELECT * FROM pending_items WHERE session_id=? AND answered=0 ORDER BY created_at DESC LIMIT 1",
                                    (session_id,)).fetchone()
             if pending:
-                result = {"type": "item", "item": json.loads(pending["payload"])["public"]}
+                payload = json.loads(pending["payload"])
+                if payload["type"] == "discrimination" and not payload["secret"].get("safe_options_v5"):
+                    # Pending questions survive deployments. Refresh old generated choices without
+                    # touching any answered item or attempt in the learner's history.
+                    seg_id = payload["secret"]["segment_id"]
+                    seg = library().segments[seg_id]
+                    fresh = make_discrimination(seg.text, rng=random.Random(pending["id"]))
+                    if fresh:
+                        new_id = uuid.uuid4().hex[:12]
+                        payload["public"]["item_id"] = new_id
+                        payload["public"]["options"] = fresh["options"]
+                        payload["public"]["focus"] = SKILLS[fresh["category"]]
+                        payload["secret"] = {"segment_id": seg_id, **fresh, "safe_options_v5": True}
+                        conn.execute("UPDATE pending_items SET answered=2 WHERE id=?", (pending["id"],))
+                        conn.execute("INSERT INTO pending_items (id, session_id, created_at, payload) VALUES (?,?,?,?)",
+                                     (new_id, session_id, db.now_iso(), json.dumps(payload)))
+                    else:
+                        conn.execute("UPDATE pending_items SET answered=2 WHERE id=?", (pending["id"],))
+                        st = s["state"]
+                        st["shown"]["segment"].remove(seg_id)
+                        st["block_items"][st["block_index"]] -= 1
+                        st["counter"] -= 1
+                        continue
+                result = {"type": "item", "item": payload["public"]}
                 break
             st = s["state"]
             block = s["plan"][st["block_index"]]
@@ -347,7 +370,7 @@ def _discrimination_payload(seg: Segment, prefer: str | None) -> dict | None:
         "public": {"type": "discrimination", "segment": {"id": seg.id, "audio": seg.audio, "speaker": seg.speaker},
                    "clip_title": clip.title, "level": seg.level, "options": d["options"],
                    "focus": SKILLS.get(d["category"], d["category"])},
-        "secret": {"segment_id": seg.id, **d},
+        "secret": {"segment_id": seg.id, **d, "safe_options_v5": True},
     }
 
 

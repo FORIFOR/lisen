@@ -1,4 +1,6 @@
 """End-to-end: diagnostic -> daily session -> review -> analytics, through the HTTP API."""
+import json
+
 from app import db
 from app.content import library
 
@@ -52,6 +54,21 @@ def run(client, sid, elapsed=40, good=lambda i: True, max_steps=400):
         assert fb.status_code == 200, fb.text
         steps += 1
     raise AssertionError("session did not finish")
+
+
+def test_pending_discrimination_choices_are_refreshed_without_losing_answer_state(client):
+    s = client.post("/sessions", json={"mode": "profile", "minutes": 0}).json()
+    item = client.post(f"/sessions/{s['id']}/next", json={"elapsed": 0}).json()["item"]
+    with db.tx() as conn:
+        payload = json.loads(conn.execute("SELECT payload FROM pending_items WHERE id=?", (item["item_id"],)).fetchone()[0])
+        payload["public"]["options"] = ["bad old choice", "another old choice"]
+        payload["secret"].pop("safe_options_v5")
+        conn.execute("UPDATE pending_items SET payload=? WHERE id=?", (json.dumps(payload), item["item_id"]))
+    refreshed = client.post(f"/sessions/{s['id']}/next", json={"elapsed": 0}).json()["item"]
+    assert refreshed["item_id"] != item["item_id"]
+    assert "bad old choice" not in refreshed["options"]
+    assert library().segments[refreshed["segment"]["id"]].text in refreshed["options"]
+    assert client.post(f"/sessions/{s['id']}/answer", json={"item_id": item["item_id"], "choice": 0}).status_code == 409
 
 
 def test_full_learning_loop(client):

@@ -60,7 +60,7 @@ type Props = {
 /** One vocabulary question: read (text), hear the word (audio) or hear it in a sentence (context). */
 export function WordQuestion({ item, rate, submit, next, blind }: Props) {
   const listen = item.modality !== "text";
-  const ctl = useAudio(listen ? item.audio : null, { rate, autoplay: listen });
+  const ctl = useAudio(listen ? item.audio : null, { rate, autoplay: listen && !blind, allowSlow: !blind });
   const [fb, setFb] = useState<WordFeedback | null>(null);
   const [choice, setChoice] = useState<number | null | undefined>(undefined);
   const [guess, setGuess] = useState(false);
@@ -115,7 +115,7 @@ export function WordQuestion({ item, rate, submit, next, blind }: Props) {
           {item.pos && <div className="mt-1 text-sm text-muted-foreground">{POS_LABEL[item.pos] ?? item.pos}</div>}
         </div>
       ) : (
-        <AudioPlayer ctl={ctl} label={item.modality === "audio" ? "単語の音声（文字は表示されません）" : "例文の音声（文字は表示されません）"} />
+        <AudioPlayer ctl={ctl} allowSlow={!blind} label={item.modality === "audio" ? "単語の音声（文字は表示されません）" : "例文の音声（文字は表示されません）"} />
       )}
 
       <p className="mt-5 text-sm font-medium">{item.prompt}</p>

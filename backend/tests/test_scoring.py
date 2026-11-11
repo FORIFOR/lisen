@@ -77,6 +77,16 @@ def test_discrimination_contains_original():
     assert len(set(d["options"])) == 2
 
 
+def test_discrimination_rejects_context_free_word_and_ending_swaps():
+    # Replacing "to" with "the" made a visibly ungrammatical diagnostic choice.
+    assert make_discrimination("OK. I was gonna cook pasta. Do you want me to save you some?") is None
+    assert make_discrimination("She ordered the tickets yesterday.") is None
+    d = make_discrimination("I'd seen the result.")
+    assert d is None  # "I'll seen" cannot be offered as a listening contrast
+    assert make_discrimination("My suitcase didn't come out on the belt.") is None
+    assert make_discrimination("I'll be your guide today.") is None
+
+
 def test_plural_ending_is_not_a_typo():
     r = score_dictation("Do you sell magazines too?", "do you sell magazine too")
     assert r.errors == {"endings": 1}

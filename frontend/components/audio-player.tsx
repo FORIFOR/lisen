@@ -26,7 +26,7 @@ function sharedAudio(): HTMLAudioElement {
 }
 
 /** The page's audio element, pointed at `src`; tracks plays so we can record how often a learner replayed. */
-export function useAudio(src: string | null | undefined, opts?: { rate?: number; autoplay?: boolean }) {
+export function useAudio(src: string | null | undefined, opts?: { rate?: number; autoplay?: boolean; allowSlow?: boolean }) {
   const ref = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -37,6 +37,7 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
   const [listens, setListens] = useState(0);
   const [blocked, setBlocked] = useState(false);
   const baseRate = opts?.rate ?? 1;
+  const allowSlow = opts?.allowSlow !== false;
 
   useEffect(() => {
     if (!src) return;
@@ -81,7 +82,7 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
     (from?: number, useSlow?: boolean) => {
       const a = ref.current;
       if (!a) return;
-      const s = useSlow ?? slow;
+      const s = allowSlow && (useSlow ?? slow);
       a.playbackRate = s ? Math.min(baseRate, 1) * 0.75 : baseRate;
       if (from !== undefined) a.currentTime = from;
       else if (a.ended || a.currentTime >= (a.duration || Infinity) - 0.05) a.currentTime = 0;
@@ -92,18 +93,19 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
         if (fromStart) setListens((n) => n + 1);
       }).catch(() => setBlocked(true));
     },
-    [slow, baseRate],
+    [slow, baseRate, allowSlow],
   );
   const pause = useCallback(() => ref.current?.pause(), []);
   const toggle = useCallback(() => (ref.current && !ref.current.paused ? pause() : play()), [play, pause]);
   const replay = useCallback(() => play(0), [play]);
   const toggleSlow = useCallback(() => {
+    if (!allowSlow) return;
     setSlow((s) => {
       const next = !s;
       if (ref.current && !ref.current.paused) ref.current.playbackRate = next ? Math.min(baseRate, 1) * 0.75 : baseRate;
       return next;
     });
-  }, [baseRate]);
+  }, [baseRate, allowSlow]);
   const seek = useCallback((t: number) => {
     if (ref.current) ref.current.currentTime = t;
   }, []);
@@ -119,7 +121,7 @@ function fmt(t: number) {
 }
 
 /** Space: play/pause · R: replay · S: slow (outside text fields). Tab inside text fields replays. */
-export function AudioPlayer({ ctl, className, compact, label }: { ctl: AudioCtl; className?: string; compact?: boolean; label?: string }) {
+export function AudioPlayer({ ctl, className, compact, label, allowSlow = true }: { ctl: AudioCtl; className?: string; compact?: boolean; label?: string; allowSlow?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -135,11 +137,11 @@ export function AudioPlayer({ ctl, className, compact, label }: { ctl: AudioCtl;
         e.preventDefault();
         ctl.toggle();
       } else if (e.key === "r" || e.key === "R") ctl.replay();
-      else if (e.key === "s" || e.key === "S") ctl.toggleSlow();
+      else if (allowSlow && (e.key === "s" || e.key === "S")) ctl.toggleSlow();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ctl]);
+  }, [ctl, allowSlow]);
 
   const pct = ctl.duration ? Math.min(100, (ctl.time / ctl.duration) * 100) : 0;
   return (
@@ -151,7 +153,7 @@ export function AudioPlayer({ ctl, className, compact, label }: { ctl: AudioCtl;
           className={cn(
             "relative flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95",
             compact ? "size-11" : "size-14",
-            ctl.blocked && "ring-4 ring-primary/30 animate-pulse",
+            ctl.blocked && !ctl.playing && "hidden",
           )}
           aria-label={ctl.playing ? "一時停止 (Space)" : "再生 (Space)"}
         >
@@ -177,7 +179,7 @@ export function AudioPlayer({ ctl, className, compact, label }: { ctl: AudioCtl;
         <button type="button" onClick={ctl.replay} className="flex size-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="最初から (R)" title="最初から (R)">
           <RotateCcw className="size-4" />
         </button>
-        <button
+        {allowSlow && <button
           type="button"
           onClick={ctl.toggleSlow}
           className={cn("flex h-10 items-center gap-1 rounded-lg px-2 text-xs", ctl.slow ? "bg-brand-soft text-primary" : "text-muted-foreground hover:bg-muted")}
@@ -186,7 +188,7 @@ export function AudioPlayer({ ctl, className, compact, label }: { ctl: AudioCtl;
         >
           <Snail className="size-4" />
           <span className="hidden sm:inline">0.75x</span>
-        </button>
+        </button>}
       </div>
       {ctl.blocked && !ctl.playing && (
         // autoplay was refused (iOS needs a tap, e.g. after the screen was locked): a large, plain way to go on

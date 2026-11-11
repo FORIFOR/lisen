@@ -258,13 +258,10 @@ def score_dictation(reference: str, typed: str) -> DictationResult:
 # --- discrimination (minimal pairs) ------------------------------------------
 
 SWAPS = {
-    "a": "the", "the": "a", "in": "on", "on": "in", "at": "in", "can": "can't", "can't": "can",
-    "was": "is", "is": "was", "were": "are", "are": "were", "has": "had", "had": "has", "have": "had",
-    "will": "would", "would": "will", "this": "that", "that": "this", "these": "those", "those": "these",
-    "i'll": "i'd", "i'd": "i'll", "we'll": "we'd", "we'd": "we'll", "you'll": "you'd", "you'd": "you'll",
-    "he's": "he'd", "she's": "she'd", "it's": "it was", "don't": "didn't", "didn't": "don't",
-    "doesn't": "didn't", "couldn't": "could", "wouldn't": "would", "won't": "want", "to": "the",
-    "for": "four", "than": "then", "then": "than",
+    # Only substitutions that preserve a plausible sentence without changing surrounding words.
+    "will": "would", "would": "will",
+    "this": "that", "that": "this", "these": "those", "those": "these", "i'll": "i'd", "i'd": "i'll",
+    "we'll": "we'd", "we'd": "we'll", "you'll": "you'd", "you'd": "you'll",
 }
 SWAP_CATEGORY = {k: ("contractions" if "'" in k else "weak_forms") for k in SWAPS}
 
@@ -281,16 +278,23 @@ def make_discrimination(text: str, prefer: str | None = None, rng: random.Random
     for pos, raw in enumerate(words):
         core = re.sub(r"^[^A-Za-z']+|[^A-Za-z']+$", "", raw).replace("’", "'")
         low = core.lower()
-        if not core:
-            continue
-        if low in SWAPS and pos > 0:
+        previous = re.sub(r"[^A-Za-z']", "", words[pos - 1]).lower() if pos else ""
+        next_word = re.sub(r"[^A-Za-z']", "", words[pos + 1]).lower() if pos + 1 < len(words) else ""
+        subject = previous in {"i", "you", "he", "she", "it", "we", "they", "this", "that"}
+        safe = (low in {"these", "those"}
+                or (low in {"this", "that"} and next_word in {"is", "was", "will", "would", "can", "could"})
+                or (low in {"will", "would"} and subject and next_word in {"be", "have"})
+                or (low in {"i'll", "i'd", "we'll", "we'd", "you'll", "you'd"} and
+                    next_word == "have" and pos + 2 < len(words) and
+                    re.sub(r"[^A-Za-z']", "", words[pos + 2]).lower() in {"to", "a", "the"}))
+        if low in SWAPS and safe:
             candidates.append((pos, core, _match_case(core, SWAPS[low]), SWAP_CATEGORY[low]))
-        elif (low.endswith("s") and not low.endswith(("ss", "us", "is", "'s")) and len(low) > 4
-              and low not in FUNCTION_WORDS and core.islower()):
-            candidates.append((pos, core, core[:-1], "endings"))
-        elif low.endswith("ed") and len(low) > 5 and core.islower() and low[-3] not in "e":
-            base = core[:-1] if low[-3] in "vcgsuz" else core[:-2]
-            candidates.append((pos, core, base, "endings"))
+        number = re.search(r"(?<![A-Za-z0-9])\d+(?![A-Za-z0-9])", raw)
+        if number and not re.search(r"\d+(?:st|nd|rd|th)\b", raw, re.I):
+            value = int(number.group())
+            if value > 1:
+                other = value + (10 if value % 10 == 0 and 20 <= value < 90 else 1)
+                candidates.append((pos, number.group(), str(other), "numbers"))
     if not candidates:
         return None
     if prefer:

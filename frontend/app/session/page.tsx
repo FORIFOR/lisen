@@ -260,7 +260,7 @@ export default function SessionPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 pb-16 pt-6">
+      <main className="mx-auto flex min-h-[calc(100dvh-3.5rem)] w-full max-w-5xl flex-col justify-center px-4 pb-16 pt-6">
         {session?.notes?.length ? <p className="mb-4 rounded-lg bg-warning-soft px-3 py-2 text-xs">{session.notes[session.notes.length - 1]}</p> : null}
         {loading && !current ? (
           <div className="flex justify-center py-24 text-muted-foreground">
@@ -281,19 +281,19 @@ export default function SessionPage() {
         ) : current?.type === "item" ? (
           <AnimatePresence mode="wait">
             <motion.div key={itemKey} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.18 }}>
-              {current.item.type === "comprehension" && <ComprehensionView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
+              {current.item.type === "comprehension" && <ComprehensionView item={current.item} rate={isProfile ? 1 : rate} diagnostic={isProfile} submit={submit} next={() => loadNext()} />}
               {current.item.type === "dictation" && <DictationView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
-              {current.item.type === "discrimination" && <DiscriminationView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
+              {current.item.type === "discrimination" && <DiscriminationView item={current.item} rate={isProfile ? 1 : rate} diagnostic={isProfile} submit={submit} next={() => loadNext()} />}
               {current.item.type === "vocab" && <VocabView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "shadowing" && <ShadowingView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
-              {current.item.type === "sentence" && <SentenceView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
+              {current.item.type === "sentence" && <SentenceView item={current.item} rate={isProfile ? 1 : rate} diagnostic={isProfile} submit={submit} next={() => loadNext()} />}
               {current.item.type === "study" && <StudyView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "line_check" && <LineCheckView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "transfer" && <TransferView item={current.item} rate={rate} submit={submit} next={() => loadNext()} />}
               {current.item.type === "word" && (
                 <WordQuestion
                   item={current.item}
-                  rate={rate}
+                  rate={isProfile ? 1 : rate}
                   submit={(b) => submit(b) as unknown as Promise<WordFeedback | null>}
                   next={() => loadNext()}
                   blind={!!current.item.diagnostic}

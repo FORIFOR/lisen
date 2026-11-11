@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 export type Props<T> = {
   item: T;
   rate: number;
+  diagnostic?: boolean;
   submit: (body: Record<string, unknown>) => Promise<Feedback | null>;
   next: () => void;
 };
@@ -96,8 +97,8 @@ function SrsNote({ fb }: { fb: Feedback }) {
 
 // ---------------------------------------------------------------- comprehension
 
-export function ComprehensionView({ item, rate, submit, next }: Props<ComprehensionItem>) {
-  const ctl = useAudio(item.clip.audio, { rate });
+export function ComprehensionView({ item, rate, diagnostic, submit, next }: Props<ComprehensionItem>) {
+  const ctl = useAudio(item.clip.audio, { rate, allowSlow: !diagnostic });
   const [answers, setAnswers] = useState<(number | null)[]>(item.questions.map(() => null));
   const [fb, setFb] = useState<Feedback | null>(null);
   const [busy, setBusy] = useState(false);
@@ -140,7 +141,7 @@ export function ComprehensionView({ item, rate, submit, next }: Props<Comprehens
       {item.relisten && <p className="mb-3 rounded-lg bg-warning-soft px-3 py-2 text-xs">未聴の教材を使い切ったため、以前の音声を再聴しています。</p>}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-3">
-          <AudioPlayer ctl={ctl} label={`${item.clip.speakers > 1 ? `${item.clip.speakers}人の会話` : "1人の話"} · まず文字を見ずに聞きましょう`} />
+          <AudioPlayer ctl={ctl} allowSlow={!diagnostic} label={`${item.clip.speakers > 1 ? `${item.clip.speakers}人の会話` : "1人の話"} · まず文字を見ずに聞きましょう`} />
           <AnimatePresence>
             {fb && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border bg-card p-4">
@@ -375,8 +376,8 @@ export function DictationView({ item, rate, submit, next }: Props<DictationItem>
 
 // ---------------------------------------------------------------- discrimination
 
-export function DiscriminationView({ item, rate, submit, next }: Props<DiscriminationItem>) {
-  const ctl = useAudio(item.segment.audio, { rate, autoplay: true });
+export function DiscriminationView({ item, rate, diagnostic, submit, next }: Props<DiscriminationItem>) {
+  const ctl = useAudio(item.segment.audio, { rate, autoplay: !diagnostic, allowSlow: !diagnostic });
   const [fb, setFb] = useState<Feedback | null>(null);
   const [choice, setChoice] = useState<number | null>(null);
 
@@ -400,9 +401,10 @@ export function DiscriminationView({ item, rate, submit, next }: Props<Discrimin
   useEnter(!!fb, next);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-3xl">
       <Header kind={item.block === "d_sound" ? "診断：音声識別" : "聞き分け"} title={item.block === "d_sound" ? undefined : item.clip_title} level={item.level} reason={item.reason ?? item.focus} />
-      <AudioPlayer ctl={ctl} label="どちらの文が聞こえましたか？" />
+      <h1 className="mb-4 text-xl font-semibold sm:text-2xl">どちらの英文が聞こえましたか？</h1>
+      <AudioPlayer ctl={ctl} allowSlow={!diagnostic} label="音声を聞いてから選んでください" />
       <div className="mt-4 grid gap-3">
         {item.options.map((o, i) => {
           const isAns = fb && fb.answer === i;
@@ -410,11 +412,13 @@ export function DiscriminationView({ item, rate, submit, next }: Props<Discrimin
             <button
               key={i}
               type="button"
-              disabled={!!fb}
+              disabled={!!fb || choice !== null}
+              aria-pressed={choice === i}
               onClick={() => choose(i)}
               className={cn(
-                "flex min-h-14 items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-left text-lg transition-colors",
-                !fb && "hover:bg-muted",
+                "flex min-h-16 items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-left text-base leading-relaxed transition-colors sm:text-lg",
+                !fb && choice === null && "hover:bg-muted",
+                !fb && choice === i && "border-primary bg-brand-soft",
                 fb && isAns && "border-success bg-success-soft",
                 fb && choice === i && !isAns && "border-destructive bg-danger-soft",
               )}
@@ -610,8 +614,8 @@ export function playUrl(rel: string) {
 // ---------------------------------------------------------------- sentence (構文理解)
 
 /** Hear one sentence (no text), answer a question whose answer depends on its grammar. */
-export function SentenceView({ item, rate, submit, next }: Props<SentenceItem>) {
-  const ctl = useAudio(item.audio, { rate, autoplay: true });
+export function SentenceView({ item, rate, diagnostic, submit, next }: Props<SentenceItem>) {
+  const ctl = useAudio(item.audio, { rate, autoplay: !diagnostic, allowSlow: !diagnostic });
   const [fb, setFb] = useState<Feedback | null>(null);
   const [choice, setChoice] = useState<number | null>(null);
   const diag = item.block === "d_sentence";
@@ -643,7 +647,7 @@ export function SentenceView({ item, rate, submit, next }: Props<SentenceItem>) 
   return (
     <div className="mx-auto max-w-2xl">
       <Header kind={diag ? "診断：構文理解" : "構文の聞き取り"} title={diag ? "1文を聞いて答える" : item.focus} level={item.level} reason={item.reason ?? undefined} />
-      <AudioPlayer ctl={ctl} label="1文の音声（文字は答えた後に表示）" />
+      <AudioPlayer ctl={ctl} allowSlow={!diagnostic} label="1文の音声（文字は答えた後に表示）" />
       <p className="mt-5 text-[15px] font-medium">{item.q}</p>
       <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
         {item.choices.map((c, i) => {
