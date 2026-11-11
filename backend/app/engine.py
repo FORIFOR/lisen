@@ -485,7 +485,10 @@ def _cycle_item(conn, s: dict, cyc: dict) -> dict | None:
             study.update_record(conn, cyc["record"], error_type="meaning")
         return None
     if cyc["stage"] == "study" and cyc.get("target") in lib.segments:
-        return study.study_payload(lib.segments[cyc["target"]], cyc.get("tokens") or [], cyc.get("accuracy"))
+        p = study.study_payload(lib.segments[cyc["target"]], cyc.get("tokens") or [], cyc.get("accuracy"))
+        # commute: what the tap said decides what the explanation leads with (meaning vs sound)
+        p["public"]["report"] = cyc.get("report")
+        return p
     if cyc["stage"] == "transfer" and cyc.get("transfer") in study.bank().transfers:
         seg = lib.segments.get(cyc.get("target"))
         return study.transfer_payload(study.bank().transfers[cyc["transfer"]], seg.text if seg else "")
@@ -861,7 +864,7 @@ def answer(session_id: str, item_id: str, body: dict, elapsed: float | None = No
                         s["state"]["missed_cards"].append(cid)
                 if cyc and cyc.get("clip_id") == seg.clip_id and cyc["stage"] == "lines":
                     if not ok:
-                        cyc.update(stage="study", target=seg.id, segments=[], tokens=[], accuracy=None)
+                        cyc.update(stage="study", target=seg.id, segments=[], tokens=[], accuracy=None, report=report)
                         study.update_record(conn, cyc["record"], segment_id=seg.id, line_report=report,
                                             replays=int(plays) if isinstance(plays, (int, float)) else None)
                         fb["study_next"] = True

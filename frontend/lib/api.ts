@@ -172,6 +172,8 @@ export type StudyItem = ItemBase & {
   listening: { category: string; label: string; words: string[] }[];
   /** dictation accuracy; null in commute mode (the line was picked by a tap) */
   accuracy: number | null;
+  /** commute mode: the learner's tap for this line */
+  report?: "understood" | "sound_only" | "not_heard" | null;
   context: { speaker: string; text: string; ja?: string | null }[];
 };
 export type TransferItem = ItemBase & { type: "transfer"; audio: string; q: string; choices: string[] };

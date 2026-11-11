@@ -12,7 +12,20 @@ export function isTyping(e: KeyboardEvent) {
 
 export type AudioCtl = ReturnType<typeof useAudio>;
 
-/** One <audio> element per player; tracks plays so we can record how often a learner replayed. */
+// iOS Safari lets an <audio> element start without a tap only after that same element was started by a
+// tap. One element for the whole page is therefore reused by every player: after the learner presses
+// play once, the following sentences start on their own. (Only one player is on screen at a time.)
+let shared: HTMLAudioElement | null = null;
+function sharedAudio(): HTMLAudioElement {
+  if (!shared) {
+    shared = new Audio();
+    shared.preload = "auto";
+    shared.setAttribute("playsinline", "");
+  }
+  return shared;
+}
+
+/** The page's audio element, pointed at `src`; tracks plays so we can record how often a learner replayed. */
 export function useAudio(src: string | null | undefined, opts?: { rate?: number; autoplay?: boolean }) {
   const ref = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -27,8 +40,11 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
 
   useEffect(() => {
     if (!src) return;
-    const a = new Audio(audioUrl(src));
-    a.preload = "auto";
+    const a = sharedAudio();
+    a.pause();
+    a.src = audioUrl(src);
+    a.currentTime = 0;
+    a.load();
     ref.current = a;
     const onTime = () => setTime(a.currentTime);
     const onMeta = () => setDuration(a.duration || 0);
@@ -47,7 +63,7 @@ export function useAudio(src: string | null | undefined, opts?: { rate?: number;
           setPlays(1);
           setListens(1);
         })
-        .catch(() => setBlocked(true)); // iOS needs a tap first
+        .catch(() => setBlocked(true)); // the first sentence on iOS needs a tap
     }
     return () => {
       a.pause();

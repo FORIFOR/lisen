@@ -68,13 +68,13 @@ export function StudyView({ item, rate, submit, next }: Props<StudyItem>) {
   const keySpan = phraseSpan(words, item.key?.expr);
   return (
     <div className="mx-auto max-w-2xl">
-      <Header kind="1文の攻略" title={item.clip_title} level={item.level} reason={item.accuracy == null ? "聞き取れなかった1文" : `聞き取り ${Math.round(item.accuracy * 100)}%`} />
+      <Header kind="1文の攻略" title={item.clip_title} level={item.level} reason={item.accuracy == null ? (item.report === "sound_only" ? "意味が分からなかった1文" : "聞き取れなかった1文") : `聞き取り ${Math.round(item.accuracy * 100)}%`} />
       {item.context.length > 0 && (
         <p className="mb-2 text-sm text-muted-foreground">
           直前: {item.context[0].speaker}「{item.context[0].text}」
         </p>
       )}
-      <AudioPlayer ctl={ctl} label={`話者 ${item.segment.speaker} · 聞き取れなかった文`} />
+      <AudioPlayer ctl={ctl} label={`話者 ${item.segment.speaker} · ${item.report === "sound_only" ? "意味が分からなかった文" : "聞き取れなかった文"}`} />
 
       <div className="mt-4 rounded-2xl border bg-card p-4">
         <p className="mb-2 text-xs font-medium text-muted-foreground">英文{check === "unknown_words" && !revealed ? "（分からない単語をタップ）" : ""}</p>
@@ -131,7 +131,25 @@ export function StudyView({ item, rate, submit, next }: Props<StudyItem>) {
 
       {revealed && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 space-y-3">
-          <div className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
+          {item.report === "not_heard" && (
+            <div className="rounded-2xl border border-warning/40 bg-warning-soft p-3 text-sm">
+              <p className="font-medium">音を聞き取れなかった文です。英文を見ながら聞いて、音と文字を照らし合わせましょう</p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button variant="outline" className="h-11" onClick={() => ctl.play(0, true)}>
+                  <Ear className="size-4" /> ゆっくり聞く
+                </Button>
+                <Button variant="outline" className="h-11" onClick={() => ctl.play(0, false)}>
+                  <Repeat2 className="size-4" /> 普通の速さで
+                </Button>
+              </div>
+            </div>
+          )}
+          {item.report === "sound_only" && (
+            <p className="rounded-2xl border border-primary/30 bg-brand-soft p-3 text-sm font-medium">
+              音は聞こえていた文です。訳・重要表現・構文で、意味のつかみ方を確かめましょう
+            </p>
+          )}
+          <div className={cn("space-y-3 rounded-2xl border bg-card p-4 text-sm", item.report === "sound_only" && "border-primary/40")}>
             <Row icon={<BookOpen className="size-4" />} label="日本語訳">
               {item.ja ?? <span className="text-muted-foreground">この教材には日本語訳がありません</span>}
             </Row>

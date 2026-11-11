@@ -206,6 +206,7 @@ def test_commute_cycle_needs_no_typing(client):
         assert fb["study_next"]
         st = _next(client, sid)
         assert st["type"] == "study" and st["segment"]["id"] == lc2["segment"]["id"] and st["accuracy"] is None
+        assert st["report"] == "sound_only"
         fb = _answer(client, sid, st, {"text_check": "clear", "meaning_understood": True})
         assert fb["error_type"] == "phonetic"
         if fb.get("transfer_next"):
