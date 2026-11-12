@@ -190,20 +190,14 @@ export function VocabDiagnosticRunner({ style }: { style: "listening" | "placeme
             <p className="mt-1 text-sm text-muted-foreground">
               {placement
                 ? "結果に合わせて、単語の学習で「意味から覚える」「音声で覚え直す」「例文で聞き取る」の順に出題します。"
-                : "間違えた単語・勘で答えた単語は、毎日の学習（「TOEIC 語彙」と「復習」）に自動で組み込まれます。"}
+                : "間違えた単語・勘で答えた単語は、単語の学習で先に覚え直し、そのあと FSRS の復習に入ります。"}
             </p>
           </div>
           {placement ? <PlacementResultView result={diag.result} /> : <DiagnosticResultView result={diag.result} />}
           <div className="flex flex-wrap gap-2">
-            {placement ? (
-              <Link href="/vocab" className={buttonVariants({ size: "lg" })}>
-                単語の学習を始める <ArrowRight className="size-4" />
-              </Link>
-            ) : (
-              <Link href="/vocab/review" className={buttonVariants({ size: "lg" })}>
-                単語の復習を始める <ArrowRight className="size-4" />
-              </Link>
-            )}
+            <Link href="/vocab" className={buttonVariants({ size: "lg" })}>
+              単語の学習を始める <ArrowRight className="size-4" />
+            </Link>
             <Link href="/analytics/vocabulary" className={cn(buttonVariants({ size: "lg", variant: "outline" }))}>
               語彙の分析を見る
             </Link>

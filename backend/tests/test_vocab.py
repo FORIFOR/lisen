@@ -4,7 +4,7 @@ import random
 
 import pytest
 
-from app import db, lessons, vocab
+from app import db, lessons, srs, vocab
 from app.vocab_data import DATASET_PATH, validate_dataset, vocab_library
 
 
@@ -103,9 +103,8 @@ def test_diagnostic_separates_reading_from_listening(client):
     gap = res["sound_gap"][0]["id"]
     row = db.q1("SELECT * FROM user_vocab WHERE word_id=?", (gap,))
     assert vocab.status_of(row) == "sound_gap"
-    # missed modalities became FSRS cards, known ones did not
-    assert db.q1("SELECT 1 FROM srs_cards WHERE id=?", (f"w_audio:{gap}",))
-    assert not db.q1("SELECT 1 FROM srs_cards WHERE id=?", (f"w_text:{gap}",))
+    # the diagnosis makes no FSRS card: missed words are studied first, then enter FSRS from the lesson
+    assert not db.q1("SELECT 1 FROM srs_cards WHERE kind LIKE 'w_%'")
     stats = client.get("/v1/vocabulary/stats").json()
     assert stats["tested_words"] == res["words"]
     assert stats["acquired"] == 0, "nothing is acquired before context listening is shown"
@@ -149,6 +148,9 @@ def test_diagnostic_resume_duplicate_and_conflict(client):
 def test_review_queue_due_cards_and_history(client):
     run_diag(client, lambda sec: sec["modality"] == "text")
     with db.tx() as conn:
+        # cards come from lessons (the diagnosis makes none): give the tested words a card each
+        for r in conn.execute("SELECT word_id FROM user_vocab ORDER BY word_id LIMIT 8").fetchall():
+            srs.review(conn, "w_audio", r["word_id"], srs.Rating.Again)
         conn.execute("UPDATE srs_cards SET due='2000-01-01T00:00:00+00:00' WHERE kind LIKE 'w_%'")
     due = vocab.due_count()
     assert due > 0

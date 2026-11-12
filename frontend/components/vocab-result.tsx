@@ -44,9 +44,9 @@ export function DiagnosticResultView({ result }: { result: DiagnosticResult }) {
           <div className="text-xs text-muted-foreground">{result.words}語を診断</div>
         </div>
         <div className="rounded-2xl border bg-card p-4">
-          <div className="text-xs text-muted-foreground">復習に回した単語</div>
+          <div className="text-xs text-muted-foreground">これから覚え直す単語</div>
           <div className="mt-1 text-2xl font-semibold tabular">{result.weak.length}語</div>
-          <div className="text-xs text-muted-foreground">FSRS が復習日を決めます</div>
+          <div className="text-xs text-muted-foreground">単語の学習で覚え直してから FSRS の復習に入ります</div>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ export function DiagnosticResultView({ result }: { result: DiagnosticResult }) {
 
       {result.weak.length > 0 && (
         <section className="rounded-2xl border bg-card p-4 md:p-5">
-          <h2 className="text-sm font-medium">復習する単語</h2>
+          <h2 className="text-sm font-medium">覚え直す単語</h2>
           <ul className="mt-2">
             {result.weak.map((w) => (
               <WordRow key={w.id} lemma={w.lemma} meaning={w.meaning} audio={w.audio} note={w.failed.map((m) => MODALITY_LABEL[m]).join("・")} />

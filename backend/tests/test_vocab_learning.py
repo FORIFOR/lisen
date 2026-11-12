@@ -272,12 +272,18 @@ def test_lesson_starts_from_placement_weak_words(client):
     r, seen = run_placement(client, lambda sec: lib.words[sec["word_id"]].tier == 1 and sec["modality"] == "text")
     basic = [w["id"] for w in r["diagnostic"]["result"]["routes"]["basic"]]
     assert basic
-    # words missed in the placement are due for FSRS right away, so the lesson may open with those reviews;
-    # the first word it teaches comes from the placement's "basic" route
+    # missed words are new words to study, not FSRS reviews: the placement makes no card, so the first lesson
+    # opens with studying (not with reviews of words never taught), starting from the placement's "basic" route
+    assert not db.q1("SELECT 1 FROM srs_cards WHERE kind LIKE 'w_%'")
+    assert vocab.due_count() == 0
     lid, done, log = run_lesson(client, minutes=5)
-    first = next(x for x in log if x["type"] == "study")
+    assert log[0]["type"] == "study"
+    assert not [x for x in log if x["type"] == "word" and x["sec"].get("phase") == "review"]
+    first = log[0]
     wid = next(w.id for w in lib.words.values() if w.lemma == first["word"])
     assert wid in basic and "診断" in first["item"]["reason"]
+    # once studied and checked in the lesson, the word is in FSRS
+    assert db.q1("SELECT 1 FROM srs_cards WHERE ref=?", (wid,))
 
 
 def test_lesson_minutes_and_overview_counts(client):

@@ -384,7 +384,9 @@ def answer_item_conn(conn, item_id: str, body: dict, session_id: str | None = No
         from . import vocab_lessons
         fb = vocab_lessons.grade_study(conn, payload, body, row["origin_id"])
     else:
-        fb = grade(conn, payload, body, origin=row["origin"], session_id=session_id, block=block)
+        # a diagnosis records what is known per word, but makes no FSRS card: a word missed there is a new word to
+        # study first, and enters FSRS when it is studied in a lesson (not as a "review" before it was ever taught)
+        fb = grade(conn, payload, body, origin=row["origin"], session_id=session_id, block=block, learn=not is_diag)
     if is_diag:
         fb = _diag_after(conn, row["origin_id"], payload, fb)
     elif row["origin"] == "learn":
