@@ -207,7 +207,8 @@ def add_word(lesson_id: str, lemma: str, origin: str = "tap") -> dict:
         status = "created"
         with _words_lock:
             if wid not in vocab_library().words:
-                entry = news._word_entry(v, r["data"]["levels"]["B1"]["sentences"], news.LEVEL_TIER["B1"],
+                vl = r["data"].get("vocab_level", "B1")
+                entry = news._word_entry(v, r["data"]["levels"][vl]["sentences"], news.LEVEL_TIER[vl],
                                          r["data"]["source"]["category"])
                 p = news_words_path()
                 p.parent.mkdir(parents=True, exist_ok=True)

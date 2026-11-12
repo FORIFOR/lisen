@@ -42,6 +42,7 @@ function RunStatus({ st, onRun }: { st: NewsStatus; onRun: () => void }) {
     ok: "完了", partial: "一部のみ作成", failed: "失敗", no_stories: "新しいニュースなし", no_key: "Gemini キー未設定", running: "作成中",
   };
   const rejected = last?.detail?.lessons.filter((l) => l.status === "rejected" || l.status === "insufficient").length ?? 0;
+  const retrying = last?.detail?.lessons.filter((l) => l.status === "retry").length ?? 0;
   return (
     <section className="rounded-2xl border bg-card p-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -59,12 +60,13 @@ function RunStatus({ st, onRun }: { st: NewsStatus; onRun: () => void }) {
           前回: {new Date(last.started_at).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}{" "}
           {label[last.status] ?? last.status}
           {rejected > 0 && ` · 事実確認や音声の確認に通らなかった ${rejected} 本は表示していません`}
+          {retrying > 0 && ` · ${retrying} 本は次回の実行でもう一度試します`}
           {last.detail?.error && ` · ${last.detail.error}`}
         </p>
       )}
       {!st.gemini && <p className="mt-2 text-xs text-muted-foreground">作成には Gemini の API キーが必要です（設定 → 教材の生成）。</p>}
       <p className="mt-2 text-[11px] text-muted-foreground">
-        今月の Gemini 利用: {st.usage_month.calls}回（入力 {st.usage_month.prompt.toLocaleString()}・出力 {st.usage_month.output.toLocaleString()} トークン）。「今すぐ作る」も Gemini を使います（足りない本数だけ作成）。
+        今月の Gemini 利用: {st.usage_month.calls}回（入力 {st.usage_month.prompt.toLocaleString()}・出力 {st.usage_month.output.toLocaleString()} トークン、推定 ${st.usage_month.usd.toFixed(2)}）。「今すぐ作る」も Gemini を使います（足りない本数だけ作成）。
       </p>
     </section>
   );

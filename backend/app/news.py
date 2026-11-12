@@ -52,7 +52,20 @@ MIN_SUMMARY_WORDS = 40
 MAX_COPY_NGRAM = 8                                        # longest word sequence that may match the source
 VOICES = tts.VOCAB_EXAMPLE_VOICES
 GEMINI_TIMEOUT = 150.0
-MAX_OUTPUT_TOKENS = 32768      # thinking tokens count too; a cut-off answer is unreadable JSON
+# thinking tokens count toward maxOutputTokens and are billed as output; LOW thinking (Gemini 3+) keeps the answer
+# well under the limit, and a JSON Schema (responseJsonSchema) makes the answer syntactically valid JSON
+MAX_OUTPUT_TOKENS = 12000
+THINKING_LEVEL = "LOW"
+# USD per 1M tokens (input, output incl. thinking), standard paid tier; unknown models use the dearest Flash price
+PRICES = {"gemini-3.8-flash": (0.75, 3.75), "gemini-3.6-flash": (0.75, 3.75), "gemini-3-flash-preview": (0.50, 3.00),
+          "gemini-3.5-flash-lite": (0.30, 2.50), "gemini-2.5-flash": (0.30, 2.50)}
+PRICE_UNKNOWN = (1.50, 9.00)
+MAX_CALLS_PER_STORY = 2        # Gemini calls ever made for one story (billing can never repeat beyond this)
+MAX_TRIES_PER_STORY = 3        # runs that may try one story (API errors, audio)
+RETRY_AFTER = dt.timedelta(hours=1)
+# failure kinds. FIXABLE: one regeneration with the problems listed. Later runs retry only RETRYABLE ones.
+FIXABLE = {"fact", "copy", "translation", "question", "format", "vocab", "json"}
+RETRYABLE = {"api", "audio"}
 RUN_EVERY_S = 600
 MAX_FAILED_RUNS = 3
 
@@ -62,11 +75,13 @@ _started = False
 
 
 class NewsError(Exception):
-    def __init__(self, status: int, message: str, usage: dict | None = None):
+    def __init__(self, status: int, message: str, usage: dict | None = None, kind: str = "api", raw: dict | None = None):
         super().__init__(message)
         self.status = status
         self.message = message
         self.usage = usage or {}         # tokens of a call that was billed but could not be used
+        self.kind = kind
+        self.raw = raw or (usage or {}).get("raw")
 
 
 # --- 1. collect ----------------------------------------------------------------------------------
@@ -101,7 +116,13 @@ def select(conn, topics: list[str], count: int, now: dt.datetime | None = None) 
     now = now or dt.datetime.now(dt.timezone.utc)
     since = (now - dt.timedelta(days=F.MAX_AGE_DAYS)).isoformat(timespec="seconds")
     rows = [dict(r) for r in conn.execute("SELECT * FROM news_sources WHERE published_at>=? ORDER BY published_at DESC", (since,))]
-    used = {r["source_id"] for r in conn.execute("SELECT source_id FROM news_lessons")}
+    # a story is used once it has a lesson or a permanent failure; a retryable failure comes back after a while
+    used = {r["source_id"] for r in conn.execute(
+        "SELECT source_id FROM news_lessons WHERE NOT ("
+        " (status='retry' AND COALESCE(retry_after,'')<=? AND tries<? AND (failure='audio' OR calls<?))"
+        " OR (status='draft' AND updated_at<=? AND tries<? AND calls<?))",      # a run that was cut off (server stopped)
+        (now.isoformat(timespec="seconds"), MAX_TRIES_PER_STORY, MAX_CALLS_PER_STORY,
+         (now - RETRY_AFTER).isoformat(timespec="seconds"), MAX_TRIES_PER_STORY, MAX_CALLS_PER_STORY))}
     recent = [json.loads(r["data"])["source"]["title"] for r in conn.execute(
         "SELECT data FROM news_lessons WHERE status='published' AND date>=?", ((now - dt.timedelta(days=3)).date().isoformat(),))]
     scored = []
@@ -136,14 +157,20 @@ def source_text(src: dict) -> str:
     return "\n".join(x for x in (src["title"], src["summary"], src.get("content") or "") if x)
 
 
-def prompt(src: dict, problems: list[str] | None = None) -> str:
+def vocab_level(levels) -> str:
+    return "B1" if "B1" in levels else list(levels)[len(levels) // 2]
+
+
+def prompt(src: dict, problems: list[str] | None = None, levels=LEVELS) -> str:
     when = src.get("published_at") or "unknown"
     text = (src.get("content") or "")[:6000] or src["summary"]
-    lo = {k: v[0] for k, v in SENTENCES.items()}
-    hi = {k: v[1] for k, v in SENTENCES.items()}
+    vl = vocab_level(levels)
+    style = {"A2": "short sentences, common words, simple tenses", "B1": "clear sentences", "B2": "natural news English"}
+    versions = "\n".join(f"   {lv}: {SENTENCES[lv][0]}-{SENTENCES[lv][1]} sentences, at most {MAX_WORDS[lv]} words each, {style[lv]}."
+                         for lv in levels)
     fix = ""
     if problems:
-        fix = ("\n\nYour previous answer was rejected by an automatic fact check for these reasons. Fix every one of them:\n- "
+        fix = ("\n\nYour previous answer was rejected by an automatic check for these reasons. Fix every one of them:\n- "
                + "\n- ".join(problems[:12]))
     return f"""You write English listening lessons for a Japanese adult learner from ONE news source.
 
@@ -163,57 +190,111 @@ RULES
    that the source does not state.
 3. Retell in your own words. Never copy more than 6 words in a row from the SOURCE. Use no quotation marks.
 4. Write numbers with digits exactly as in the SOURCE (e.g. 10%, £10,000, 2026). Keep names spelled as in the SOURCE.
-5. Write three self-contained versions of the same story:
-   A2: {lo['A2']}-{hi['A2']} short sentences, at most {MAX_WORDS['A2']} words each, common words, simple tenses.
-   B1: {lo['B1']}-{hi['B1']} sentences, at most {MAX_WORDS['B1']} words each.
-   B2: {lo['B2']}-{hi['B2']} sentences, at most {MAX_WORDS['B2']} words each, natural news English.
+5. Write {"one version" if len(levels) == 1 else f"{len(levels)} self-contained versions"} of the story ("levels"):
+{versions}
    Each sentence has a natural Japanese translation ("ja") that keeps every number and name.
 6. For each level, write exactly {QUESTIONS} comprehension questions in Japanese about that level's text. Each has 4
    Japanese choices; exactly one is supported by the text, the other three are contradicted by it or not stated in it.
-   "evidence" lists the indexes (0-based) of the sentences that support the answer. "explanation" (Japanese) says why.
-7. "vocabulary": {VOCAB[0]}-{VOCAB[1]} useful English words from the B1 text that a learner preparing for TOEIC should
+   No "all / none of the above" choices. "evidence": the indexes (0-based) of the sentences that support the answer.
+   "explanation" (Japanese) says why.
+7. "vocabulary": {VOCAB[0]}-{VOCAB[1]} useful English words from the {vl} text that a learner preparing for TOEIC should
    know (not names, not numbers). lemma: lower-case dictionary form. pos: one of n, v, adj, adv, prep, conj, pron.
-   meaning: a short Japanese gloss of the sense used here. form: the word exactly as it appears in B1 sentence
-   "sentence" (0-based index). "transfer": a NEW sentence (8-18 words) using the same word in the same sense in a
-   different everyday or workplace situation unrelated to this story, with no names, plus its Japanese
-   translation (which must use the gloss) and the exact form used.
-8. If the SOURCE does not contain enough facts for a lesson, return {{"status": "insufficient_evidence"}}.
-
-Return JSON only, in this shape:
-{{"status": "ok", "title_en": "...", "title_ja": "...", "summary_ja": "1-2 Japanese sentences",
- "levels": {{"A2": {{"sentences": [{{"en": "...", "ja": "..."}}],
-                    "questions": [{{"q": "...", "choices": ["...", "...", "...", "..."], "answer": 0, "evidence": [0], "explanation": "..."}}]}},
-            "B1": {{...}}, "B2": {{...}}}},
- "vocabulary": [{{"lemma": "...", "pos": "n", "meaning": "...", "form": "...", "sentence": 0,
-                 "transfer": {{"en": "...", "form": "...", "ja": "..."}}}}]}}{fix}"""
+   meaning: a short Japanese gloss of the sense used here. form: the word exactly as it appears in {vl} sentence
+   "sentence" (0-based index); the Japanese translation of that sentence must contain the gloss. "transfer": a NEW
+   sentence (8-18 words) using the same word in the same sense in a different everyday or workplace situation
+   unrelated to this story, with no names, plus its Japanese translation (which must contain the gloss) and the
+   exact form used.
+8. If the SOURCE does not contain enough facts for a lesson, set "status" to "insufficient_evidence" and leave the
+   other fields empty.{fix}"""
 
 
-def call_gemini(text: str) -> tuple[dict, dict]:
-    """One generateContent call. Returns (parsed JSON, token usage). Raises NewsError."""
+def response_schema(levels=LEVELS) -> dict:
+    """JSON Schema for responseJsonSchema: the answer is valid JSON of this shape (values are still checked in code)."""
+    s = {"type": "string"}
+    sentence = {"type": "object", "properties": {"en": s, "ja": s}, "required": ["en", "ja"]}
+    question = {"type": "object", "properties": {
+        "q": s, "choices": {"type": "array", "items": s, "minItems": 4, "maxItems": 4},
+        "answer": {"type": "integer", "minimum": 0, "maximum": 3},
+        "evidence": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 1}, "explanation": s},
+        "required": ["q", "choices", "answer", "evidence", "explanation"]}
+    level = {lv: {"type": "object", "properties": {
+        "sentences": {"type": "array", "items": sentence, "minItems": SENTENCES[lv][0], "maxItems": SENTENCES[lv][1]},
+        "questions": {"type": "array", "items": question, "minItems": QUESTIONS, "maxItems": QUESTIONS}},
+        "required": ["sentences", "questions"]} for lv in levels}
+    word = {"type": "object", "properties": {
+        "lemma": s, "pos": {"type": "string", "enum": sorted(POS)}, "meaning": s, "form": s,
+        "sentence": {"type": "integer", "minimum": 0},
+        "transfer": {"type": "object", "properties": {"en": s, "form": s, "ja": s}, "required": ["en", "form", "ja"]}},
+        "required": ["lemma", "pos", "meaning", "form", "sentence", "transfer"]}
+    return {"type": "object", "properties": {
+        "status": {"type": "string", "enum": ["ok", "insufficient_evidence"]},
+        "title_en": s, "title_ja": s, "summary_ja": s,
+        "levels": {"type": "object", "properties": level, "required": list(levels)},
+        "vocabulary": {"type": "array", "items": word, "maxItems": VOCAB[1]}},
+        "required": ["status", "title_en", "title_ja", "summary_ja", "levels", "vocabulary"]}
+
+
+def price(model: str | None) -> tuple[float, float]:
+    m = (model or "").removeprefix("models/")
+    return next((p for k, p in PRICES.items() if m == k or m.startswith(k + "-")), PRICE_UNKNOWN)
+
+
+def cost(usage: dict, model: str | None = None) -> float:
+    pin, pout = price(model or usage.get("model"))
+    return (usage.get("prompt", 0) * pin + usage.get("output", 0) * pout) / 1e6
+
+
+def worst_case_cost(text: str, model: str | None) -> float:
+    """The most one call could cost: the prompt (~3 characters per token, generously) plus the output limit."""
+    pin, pout = price(model)
+    return (len(text) / 2.5 * pin + MAX_OUTPUT_TOKENS * pout) / 1e6
+
+
+def generation_config(levels=LEVELS) -> dict:
+    cfg = {"responseMimeType": "application/json", "responseJsonSchema": response_schema(levels),
+           "temperature": 0.3, "maxOutputTokens": MAX_OUTPUT_TOKENS}
+    if re.match(r"gemini-([3-9]|\d\d)|gemini-flash-latest|gemini-pro-latest", lessons.gemini_model()):
+        cfg["thinkingConfig"] = {"thinkingLevel": THINKING_LEVEL}    # Gemini 3+ only (an error on earlier models)
+    return cfg
+
+
+def call_gemini(text: str, levels=LEVELS) -> tuple[dict, dict]:
+    """One generateContent call. Returns (parsed JSON, usage incl. model, finish reason and the raw response).
+    Raises NewsError with `kind`: api (network / 5xx / 429: retry later), auth (key / model), max_tokens, blocked
+    (SAFETY, RECITATION ...), json (not valid JSON); `usage` and `raw` are kept for billed calls."""
     key = lessons.gemini_key()
     if not key:
-        raise NewsError(503, "Gemini の API キーが設定されていません")
-    body = {"contents": [{"parts": [{"text": text}]}],
-            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.3, "maxOutputTokens": MAX_OUTPUT_TOKENS}}
+        raise NewsError(503, "Gemini の API キーが設定されていません", kind="auth")
+    cfg = generation_config(levels)
+    body = {"contents": [{"parts": [{"text": text}]}], "generationConfig": cfg}
     req = urllib.request.Request(f"{lessons.GEMINI_API}/{lessons.gemini_model()}:generateContent",
                                  data=json.dumps(body).encode(), method="POST",
                                  headers={"Content-Type": "application/json", "x-goog-api-key": key})
+    request = {"model": lessons.gemini_model(), "generationConfig": {k: v for k, v in cfg.items() if k != "responseJsonSchema"}}
     try:
         with urllib.request.urlopen(req, timeout=GEMINI_TIMEOUT) as r:
             data = json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        kind = "auth" if e.code in (400, 401, 403, 404) else "api"
+        raise NewsError(e.code, lessons._gemini_error(e).msg, kind=kind, raw={"request": request, "http_status": e.code}) from e
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
-        code = e.code if isinstance(e, urllib.error.HTTPError) else 502
-        raise NewsError(code, lessons._gemini_error(e).msg) from e
-    usage = data.get("usageMetadata") or {}
-    usage = {"prompt": int(usage.get("promptTokenCount") or 0), "output": int(usage.get("candidatesTokenCount") or 0)
-             + int(usage.get("thoughtsTokenCount") or 0), "model": data.get("modelVersion")}
-    finish = ((data.get("candidates") or [{}])[0] or {}).get("finishReason")
+        raise NewsError(502, lessons._gemini_error(e).msg, kind="api", raw={"request": request, "error": type(e).__name__}) from e
+    meta = data.get("usageMetadata") or {}
+    cand = (data.get("candidates") or [{}])[0] or {}
+    finish = cand.get("finishReason")
+    usage = {"prompt": int(meta.get("promptTokenCount") or 0),
+             "output": int(meta.get("candidatesTokenCount") or 0) + int(meta.get("thoughtsTokenCount") or 0),
+             "thoughts": int(meta.get("thoughtsTokenCount") or 0), "model": data.get("modelVersion"), "finish": finish,
+             "raw": {"request": request, "response": data}}
+    if finish == "MAX_TOKENS":
+        raise NewsError(502, f"Gemini の出力が上限（{MAX_OUTPUT_TOKENS}トークン）で途中で切れました", usage=usage, kind="max_tokens")
+    if finish and finish not in ("STOP", "FINISH_REASON_UNSPECIFIED"):
+        raise NewsError(502, f"Gemini が出力を止めました（{finish}）", usage=usage, kind="blocked")
     try:
-        out = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"] if not p.get("thought"))
+        out = "".join(p.get("text", "") for p in cand["content"]["parts"] if not p.get("thought"))
         return json.loads(out), usage
     except (KeyError, IndexError, TypeError, json.JSONDecodeError) as e:
-        why = "出力が上限で途中で切れました" if finish == "MAX_TOKENS" else f"終了理由 {finish or '不明'}"
-        raise NewsError(502, f"Gemini の応答を読み取れませんでした（{why}）", usage=usage) from e
+        raise NewsError(502, f"Gemini の応答が JSON として読めませんでした（終了理由 {finish or '不明'}）", usage=usage, kind="json") from e
 
 
 # --- 4. verify (in code) ---------------------------------------------------------------------------
@@ -356,7 +437,28 @@ def _word_entry(v: dict, level_sentences: list[dict], tier: int, topic: str) -> 
                          {"role": "transfer", "en": t.get("en", ""), "form": t.get("form", ""), "ja": t.get("ja", "")}]}
 
 
-def verify(obj: dict, src: dict) -> tuple[dict, list[str], list[str]]:
+def problem_kinds(problems: list[str]) -> set[str]:
+    """fact / translation / question / format / vocab / insufficient for the problems verify() found."""
+    out = set()
+    for p in problems:
+        if p == "insufficient_evidence":
+            out.add("insufficient")
+        elif "translation" in p:
+            out.add("translation")
+        elif "copied" in p:
+            out.add("copy")             # too close to the source's wording
+        elif re.search(r"number|name or date|date word|quotation", p):
+            out.add("fact")
+        elif "question" in p:
+            out.add("question")
+        elif "vocabulary" in p:
+            out.add("vocab")
+        else:
+            out.add("format")
+    return out
+
+
+def verify(obj: dict, src: dict, levels=LEVELS) -> tuple[dict, list[str], list[str]]:
     """Returns (clean lesson data, fatal problems, notes). Fatal problems reject the lesson; notes (e.g. a
     dropped vocabulary entry) do not."""
     problems: list[str] = []
@@ -370,10 +472,12 @@ def verify(obj: dict, src: dict) -> tuple[dict, list[str], list[str]]:
     if not data["title_en"] or not _JA.search(data["title_ja"]) or not _JA.search(data["summary_ja"]):
         problems.append("title_en, title_ja and summary_ja are required (ja in Japanese)")
     problems += [f"title: {p}" for p in check_facts(data["title_en"], src_text, title=True)]
+    want_levels = [lv for lv in LEVELS if lv in levels]
     levels = obj.get("levels") or {}
     avg = {}
-    for lv in LEVELS:
-        L = levels.get(lv) or {}
+    got = levels
+    for lv in want_levels:
+        L = got.get(lv) or {}
         sents = [{"en": lessons._plain(str(s.get("en") or "")), "ja": str(s.get("ja") or "").strip()}
                  for s in (L.get("sentences") or []) if isinstance(s, dict)]
         lo, hi = SENTENCES[lv]
@@ -420,7 +524,9 @@ def verify(obj: dict, src: dict) -> tuple[dict, list[str], list[str]]:
         notes.append(f"level sentence lengths are not graded: {avg}")
     # vocabulary: each entry must pass the word-book checks; a bad entry is dropped, not the lesson
     lib = vocab_library()
-    b1 = data["levels"].get("B1", {}).get("sentences") or []
+    vl = vocab_level(want_levels)
+    data["vocab_level"] = vl
+    b1 = data["levels"].get(vl, {}).get("sentences") or []
     narr_tokens = set(re.findall(r"[a-z]+", " ".join(s["en"] for lv in data["levels"].values() for s in lv["sentences"]).lower()))
     names = {w for s in b1 for w, first in capitalised(s["en"]) if not first}
     seen = set()
@@ -437,7 +543,7 @@ def verify(obj: dict, src: dict) -> tuple[dict, list[str], list[str]]:
         if v["lemma"] in seen or v["pos"] not in POS or not 0 <= v["sentence"] < len(b1):
             why = "duplicate, unknown part of speech or sentence index"
         else:
-            entry = _word_entry(v, b1, LEVEL_TIER["B1"], src["category"])
+            entry = _word_entry(v, b1, LEVEL_TIER[vl], src["category"])
             errs = validate_dataset({"dataset": {"license": "x", "source": "x"}, "words": [entry]}, min_words=0)
             t = v["transfer"]["en"]
             t_tokens = set(re.findall(r"[a-z]+", t.lower()))
@@ -590,7 +696,8 @@ def build_audio(lesson_id: str, date: str, data: dict, checks: list[dict]) -> di
         return secs
 
     jobs = []   # (key, text, rel, voice, rate)
-    for lv in LEVELS:
+    lesson_levels = [lv for lv in LEVELS if lv in data["levels"]]
+    for lv in lesson_levels:
         for i, s in enumerate(data["levels"][lv]["sentences"]):
             jobs.append(((lv, i), s["en"], folder / f"{lv}-{i}.mp3", narrator, LEVEL_RATE[lv]))
     for c in checks:
@@ -615,7 +722,7 @@ def build_audio(lesson_id: str, date: str, data: dict, checks: list[dict]) -> di
         heard.update(zip([j[0] for j in retry if j[0] not in failed], again))
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=1))
     out = {"voice": narrator, "transfer_voice": other, "levels": {}, "transfer": {}}
-    for lv in LEVELS:
+    for lv in lesson_levels:
         keys = [(lv, i) for i in range(len(data["levels"][lv]["sentences"]))]
         if any(k in failed for k in keys):
             out["levels"][lv] = {"status": "failed", "reason": "音声を作れませんでした"}
@@ -645,102 +752,177 @@ def build_audio(lesson_id: str, date: str, data: dict, checks: list[dict]) -> di
 
 # --- 6. one lesson / one run ---------------------------------------------------------------------------
 
-def make_lesson(src: dict, date: str, usage: dict) -> dict:
-    """Generate, verify (one retry with the problems listed), build audio and publish (or reject) one story."""
+class BudgetExceeded(NewsError):
+    def __init__(self, message: str):
+        super().__init__(402, message, kind="budget")
+
+
+def raw_dir(lid: str) -> Path:
+    """Raw Gemini requests / responses for checking (no key: it is sent as a header and never stored)."""
+    return config.DATA_DIR / "news_raw" / lid
+
+
+def _keep_raw(lid: str, n: int, prompt_text: str, raw: dict | None, outcome: dict) -> None:
+    d = raw_dir(lid)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"call-{n}.json").write_text(json.dumps({"at": db.now_iso(), "prompt": prompt_text, **(raw or {}), "outcome": outcome},
+                                                 ensure_ascii=False, indent=1))
+
+
+def _count(usage: dict, use: dict) -> None:
+    usage["calls"] = usage.get("calls", 0) + 1
+    usage["prompt"] = usage.get("prompt", 0) + use.get("prompt", 0)
+    usage["output"] = usage.get("output", 0) + use.get("output", 0)
+    usage["thoughts"] = usage.get("thoughts", 0) + use.get("thoughts", 0)
+    usage["usd"] = round(usage.get("usd", 0.0) + cost(use), 6)
+    if use.get("model"):
+        usage["model"] = use["model"]          # the model behind the "-latest" alias
+
+
+def make_lesson(src: dict, date: str, usage: dict, levels=LEVELS, budget_usd: float | None = None) -> dict:
+    """Generate, verify (one regeneration when the cause can be fixed), build audio and publish one story.
+
+    Failures are recorded with their kind. Retryable (later runs): api (no answer), audio (made again from the saved
+    text, without Gemini). Permanent: the check failed twice, the source is not enough, the answer was cut off at
+    the output limit or blocked. A story never gets more than MAX_CALLS_PER_STORY Gemini calls in total."""
     lid = "nw-" + hashlib.sha1(src["id"].encode()).hexdigest()[:10]
     now = db.now_iso()
     with db.tx() as conn:
-        row = conn.execute("SELECT status FROM news_lessons WHERE source_id=?", (src["id"],)).fetchone()
-        if row and row["status"] != "draft":
+        row = conn.execute("SELECT * FROM news_lessons WHERE source_id=?", (src["id"],)).fetchone()
+        if row and row["status"] not in ("draft", "retry"):
             return {"id": lid, "status": row["status"], "skipped": True}
-        conn.execute("INSERT OR REPLACE INTO news_lessons (id, date, source_id, category, status, created_at, updated_at)"
-                     " VALUES (?,?,?,?,?,?,?)", (lid, date, src["id"], src["category"], "draft", now, now))
-    problems: list[str] = []
-    data, notes = {}, []
-    for attempt in range(2):
-        try:
-            obj, use = call_gemini(prompt(src, problems if attempt else None))
-        except NewsError as e:
-            if e.usage:                      # billed even though unreadable: count it
-                usage["calls"] = usage.get("calls", 0) + 1
-                usage["prompt"] = usage.get("prompt", 0) + e.usage.get("prompt", 0)
-                usage["output"] = usage.get("output", 0) + e.usage.get("output", 0)
-            raise
-        usage["calls"] = usage.get("calls", 0) + 1
-        usage["prompt"] = usage.get("prompt", 0) + use["prompt"]
-        usage["output"] = usage.get("output", 0) + use["output"]
-        if use.get("model"):
-            usage["model"] = use["model"]          # the model behind the "-latest" alias
-        data, problems, notes = verify(obj, src)
-        if not problems or problems == ["insufficient_evidence"]:
-            break
+        calls, tries = (row["calls"], row["tries"]) if row else (0, 0)
+        saved = json.loads(row["data"]) if row and row["failure"] == "audio" and row["data"] else None
+        conn.execute("INSERT INTO news_lessons (id, date, source_id, category, status, created_at, updated_at, calls, tries)"
+                     " VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET status='draft', updated_at=excluded.updated_at,"
+                     " tries=news_lessons.tries+1",
+                     (lid, date, src["id"], src["category"], "draft", now, now, 0, 1))
+        tries += 1
     source = {k: src[k] for k in ("id", "feed", "publisher", "category", "kind", "url", "title", "published_at")}
-    if problems:
-        status = "insufficient" if problems == ["insufficient_evidence"] else "rejected"
-        _save(lid, status, {"source": source, **data}, {"problems": problems, "notes": notes}, None, problems[0][:300])
-        return {"id": lid, "status": status, "reason": problems[0]}
-    data["source"] = source
-    data["corroborated"] = src.get("corroborated") or []
-    data["transfer_checks"] = transfer_checks(data, lid)
+    notes: list[str] = []
+    if saved:                                            # audio failed last time: only the audio is made again
+        data = saved
+    elif calls >= MAX_CALLS_PER_STORY:
+        _fail(lid, "rejected", "calls", "この記事は Gemini の呼び出し上限に達しました", calls, {"source": source}, {})
+        return {"id": lid, "status": "rejected", "kind": "calls", "reason": "calls"}
+    else:
+        problems: list[str] = []
+        data: dict = {}
+        for attempt in range(min(2, MAX_CALLS_PER_STORY - calls)):
+            text = prompt(src, problems if attempt else None, levels)
+            if budget_usd is not None and usage.get("usd", 0.0) + worst_case_cost(text, lessons.gemini_model()) > budget_usd:
+                _fail(lid, "retry" if attempt == 0 else "rejected", "budget", "予算を超える見込みのため Gemini を呼びませんでした",
+                      calls, {"source": source, **data}, {"problems": problems})
+                raise BudgetExceeded(f"予算 ${budget_usd:.2f} を超える見込みのため停止しました（使用済み ${usage.get('usd', 0):.4f}）")
+            try:
+                obj, use = call_gemini(text, levels)
+            except NewsError as e:
+                billed = bool(e.usage)
+                if billed:
+                    _count(usage, e.usage)
+                    calls += 1
+                _keep_raw(lid, calls if billed else calls + 1, text, e.raw, {"kind": e.kind, "message": e.message})
+                if e.kind == "json" and attempt == 0 and calls < MAX_CALLS_PER_STORY:
+                    problems = ["the previous answer was not valid JSON"]
+                    continue                              # sporadic: one more try
+                retry = (e.kind in RETRYABLE or e.kind == "auth") and tries < MAX_TRIES_PER_STORY   # a key problem is not the story's
+                _fail(lid, "retry" if retry else "rejected", e.kind, e.message, calls, {"source": source}, {"problems": [e.message]})
+                if e.kind in ("auth", "api"):
+                    raise                                 # the run stops (key / quota / network)
+                return {"id": lid, "status": "retry" if retry else "rejected", "kind": e.kind, "reason": e.message}
+            _count(usage, use)
+            calls += 1
+            data, problems, notes = verify(obj, src, levels)
+            kinds = problem_kinds(problems)
+            _keep_raw(lid, calls, text, use.get("raw"), {"problems": problems, "notes": notes, "kinds": sorted(kinds)})
+            if not problems or not kinds <= FIXABLE:
+                break
+        if problems:
+            kinds = problem_kinds(problems)
+            status = "insufficient" if kinds == {"insufficient"} else "rejected"
+            _fail(lid, status, ",".join(sorted(kinds)), problems[0][:300], calls, {"source": source, **data},
+                  {"problems": problems, "notes": notes})
+            return {"id": lid, "status": status, "kind": ",".join(sorted(kinds)), "reason": problems[0]}
+        data["source"] = source
+        data["corroborated"] = src.get("corroborated") or []
+        data["transfer_checks"] = transfer_checks(data, lid)
     audio = build_audio(lid, date, data, data["transfer_checks"])
-    data["transfer_checks"] = [c for c in data["transfer_checks"] if c["lemma"] in audio["transfer"]]
     ok_levels = [lv for lv, a in audio["levels"].items() if a["status"] == "ok"]
-    status = "published" if ok_levels else "rejected"
-    reason = None if ok_levels else "; ".join(f"{lv}: {a['reason']}" for lv, a in audio["levels"].items())
-    _save(lid, status, data, {"problems": [], "notes": notes, "audio": {lv: a["status"] for lv, a in audio["levels"].items()}},
-          audio, reason)
-    return {"id": lid, "status": status, "levels": ok_levels, "reason": reason}
-
-
-def _save(lid, status, data, checks, audio, reason) -> None:
+    checks = {"problems": [], "notes": notes, "audio": {lv: a["status"] for lv, a in audio["levels"].items()}}
+    if not ok_levels:
+        reason = "; ".join(f"{lv}: {a['reason']}" for lv, a in audio["levels"].items())
+        retry = tries < MAX_TRIES_PER_STORY
+        _fail(lid, "retry" if retry else "rejected", "audio", reason, calls, data, checks)   # the text is kept
+        return {"id": lid, "status": "retry" if retry else "rejected", "kind": "audio", "reason": reason}
+    published = {**data, "transfer_checks": [c for c in data["transfer_checks"] if c["lemma"] in audio["transfer"]]}
     with db.tx() as conn:
-        conn.execute("UPDATE news_lessons SET status=?, data=?, checks=?, audio=?, reason=?, model=?, updated_at=? WHERE id=?",
-                     (status, json.dumps(data, ensure_ascii=False), json.dumps(checks, ensure_ascii=False),
-                      json.dumps(audio) if audio else None, reason, lessons.gemini_model(), db.now_iso(), lid))
+        conn.execute("UPDATE news_lessons SET status='published', data=?, checks=?, audio=?, reason=NULL, failure=NULL,"
+                     " retry_after=NULL, calls=?, model=?, updated_at=? WHERE id=?",
+                     (json.dumps(published, ensure_ascii=False), json.dumps(checks, ensure_ascii=False), json.dumps(audio),
+                      calls, usage.get("model") or lessons.gemini_model(), db.now_iso(), lid))
+    return {"id": lid, "status": "published", "levels": ok_levels}
+
+
+def _fail(lid, status, kind, reason, calls, data, checks) -> None:
+    wait = dt.timedelta(0) if kind == "budget" else RETRY_AFTER      # no call was made: nothing to wait for
+    after = (dt.datetime.now(dt.timezone.utc) + wait).isoformat(timespec="seconds") if status == "retry" else None
+    with db.tx() as conn:
+        conn.execute("UPDATE news_lessons SET status=?, failure=?, reason=?, retry_after=?, calls=?, data=?, checks=?,"
+                     " model=?, updated_at=? WHERE id=?",
+                     (status, kind, reason[:300], after, calls, json.dumps(data, ensure_ascii=False),
+                      json.dumps(checks, ensure_ascii=False), lessons.gemini_model(), db.now_iso(), lid))
 
 
 def settings() -> dict:
     s = db.profile()["settings"]
     topics = [t for t in (s.get("news_topics") or []) if t in F.CATEGORIES] or ["technology"]
+    levels = [lv for lv in LEVELS if lv in (s.get("news_levels") or LEVELS)] or list(LEVELS)
     return {"auto": bool(s.get("news_auto", True)), "hour": int(s.get("news_hour", 6)), "topics": topics,
-            "per_day": max(1, min(5, int(s.get("news_per_day", 3)))), "level": s.get("news_level") if s.get("news_level") in LEVELS else "B1"}
+            "per_day": max(1, min(5, int(s.get("news_per_day", 3)))), "levels": levels,
+            "level": s.get("news_level") if s.get("news_level") in levels else vocab_level(levels)}
 
 
-def run(trigger: str = "manual", date: str | None = None, opener=None) -> dict:
-    """Collect, select and make today's lessons. Safe to call again: it only fills what is missing."""
+def run(trigger: str = "manual", date: str | None = None, opener=None, levels=None, budget_usd: float | None = None,
+        count: int | None = None, only: str | None = None) -> dict:
+    """Collect, select and make today's lessons. Safe to call again: it only fills what is missing.
+    `budget_usd` stops before a call whose worst case would go over it; `only` makes one given story."""
     if not _run_lock.acquire(blocking=False):
         return {"status": "busy"}
     rid = uuid.uuid4().hex[:12]
     date = date or db.local_date()
-    detail: dict = {"usage": {"calls": 0, "prompt": 0, "output": 0}, "lessons": []}
+    detail: dict = {"usage": {"calls": 0, "prompt": 0, "output": 0, "usd": 0.0}, "lessons": []}
+    status = "failed"
     try:
         db.q("INSERT INTO news_runs (id, date, trigger, started_at, status) VALUES (?,?,?,?,?)",
              (rid, date, trigger, db.now_iso(), "running"))
         if not lessons.gemini_key():
             status = "no_key"
         else:
-            detail["collect"] = collect(opener)
+            detail["collect"] = collect(opener) if not only else None
             s = settings()
+            levels = levels or s["levels"]
+            want = 1 if only else count if count is not None else s["per_day"]
             have = db.q1("SELECT COUNT(*) n FROM news_lessons WHERE date=? AND status='published'", (date,))["n"]
             with db.tx() as conn:
-                picks = select(conn, s["topics"], max(0, s["per_day"] - have))
+                if only:
+                    r = conn.execute("SELECT * FROM news_sources WHERE id=?", (only,)).fetchone()
+                    picks = [{**dict(r), "corroborated": []}] if r else []
+                else:
+                    picks = select(conn, s["topics"], max(0, want - have))
             for src in picks:
                 try:
-                    detail["lessons"].append(make_lesson(src, date, detail["usage"]))
+                    detail["lessons"].append(make_lesson(src, date, detail["usage"], levels, budget_usd))
                 except NewsError as e:
-                    detail["lessons"].append({"source": src["id"], "status": "error", "reason": e.message})
-                    db.q("UPDATE news_lessons SET status='error', reason=?, updated_at=? WHERE source_id=? AND status='draft'",
-                         (e.message[:300], db.now_iso(), src["id"]))
-                    if e.status in (401, 403, 429, 503):
-                        break         # key / quota problem: stop instead of failing every story
+                    detail["lessons"].append({"source": src["id"], "status": "error", "kind": e.kind, "reason": e.message})
+                    break             # budget, key, quota or network: stop instead of failing every story
             made = sum(1 for x in detail["lessons"] if x.get("status") == "published")
             errors = [x for x in detail["lessons"] if x.get("status") == "error"]
-            if have + made >= s["per_day"]:
+            if have + made >= want:
                 status = "ok"
             elif errors and not made:
                 status = "failed"
             elif not picks:
-                status = "no_stories" if not detail["collect"]["errors"] or detail["collect"]["found"] else "failed"
+                status = "no_stories" if not (detail["collect"] or {}).get("errors") or (detail["collect"] or {}).get("found") else "failed"
             else:
                 status = "partial"
         return {"id": rid, "status": status, **detail}
@@ -810,11 +992,12 @@ def status() -> dict:
     elif now >= nxt:
         nxt += dt.timedelta(days=1)
     month = (dt.date.today().replace(day=1)).isoformat()
-    calls = {"calls": 0, "prompt": 0, "output": 0}
+    calls = {"calls": 0, "prompt": 0, "output": 0, "usd": 0.0}
     for r in db.q("SELECT detail FROM news_runs WHERE date>=? AND detail IS NOT NULL", (month,)):
         u = (json.loads(r["detail"]) or {}).get("usage") or {}
         for k in calls:
-            calls[k] += int(u.get(k) or 0)
+            calls[k] += float(u.get(k) or 0) if k == "usd" else int(u.get(k) or 0)
+    calls["usd"] = round(calls["usd"], 4)
     return {"settings": s, "gemini": bool(lessons.gemini_key()), "auto": auto_enabled(), "running": _run_lock.locked(),
             "last_run": {k: last[k] for k in ("date", "trigger", "started_at", "finished_at", "status")} | {
                 "detail": _run_summary(last["detail"])} if last else None,
@@ -827,4 +1010,4 @@ def _run_summary(detail: str | None) -> dict | None:
         return None
     d = json.loads(detail)
     return {"collect": d.get("collect"), "error": d.get("error"),
-            "lessons": [{k: x.get(k) for k in ("id", "status", "reason")} for x in d.get("lessons", [])]}
+            "lessons": [{k: x.get(k) for k in ("id", "status", "kind", "reason")} for x in d.get("lessons", [])]}

@@ -62,6 +62,19 @@ export function NewsSettings({ settings: s, update }: { settings: Settings; upda
           </div>
         </div>
         <div>
+          <div className="mb-1.5 font-medium">作るレベル</div>
+          <div className="mb-1.5 text-xs text-muted-foreground">少ないほど Gemini の出力（料金）が減ります</div>
+          <div className="flex flex-wrap gap-1.5">
+            {LEVELS.map((l) => {
+              const on = (s.news_levels ?? LEVELS).includes(l);
+              const next = on ? (s.news_levels ?? LEVELS).filter((x) => x !== l) : LEVELS.filter((x) => x === l || (s.news_levels ?? LEVELS).includes(x));
+              return (
+                <Chip key={l} on={on} onClick={() => next.length && update({ news_levels: next })}>{NEWS_LEVEL_LABEL[l]}（{l}）</Chip>
+              );
+            })}
+          </div>
+        </div>
+        <div>
           <div className="mb-1.5 font-medium">最初に開くレベル</div>
           <div className="flex flex-wrap gap-1.5">
             {LEVELS.map((l) => (

@@ -199,6 +199,7 @@ class SettingsIn(BaseModel):
     news_topics: list[Literal["technology", "business", "world", "science"]] | None = Field(None, min_length=1, max_length=4)
     news_per_day: int | None = Field(None, ge=1, le=5)
     news_level: Literal["A2", "B1", "B2"] | None = None
+    news_levels: list[Literal["A2", "B1", "B2"]] | None = Field(None, min_length=1, max_length=3)
 
 
 @app.put("/settings")

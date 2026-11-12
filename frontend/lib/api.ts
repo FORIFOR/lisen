@@ -101,6 +101,7 @@ export type Settings = {
   news_topics: NewsCategory[];
   news_per_day: number;
   news_level: NewsLevel;
+  news_levels: NewsLevel[];
 };
 
 export type Profile = {
@@ -563,13 +564,13 @@ export type NewsRun = { date: string; trigger: string; started_at: string; finis
   detail: { collect?: { found: number; new: number; errors: string[] } | null; error?: string | null; lessons: { id?: string; status: string; reason?: string | null }[] } | null };
 
 export type NewsStatus = {
-  settings: { auto: boolean; hour: number; topics: NewsCategory[]; per_day: number; level: NewsLevel };
+  settings: { auto: boolean; hour: number; topics: NewsCategory[]; per_day: number; levels: NewsLevel[]; level: NewsLevel };
   gemini: boolean;
   auto: boolean;
   running: boolean;
   last_run: NewsRun | null;
   next_run: string | null;
-  usage_month: { calls: number; prompt: number; output: number };
+  usage_month: { calls: number; prompt: number; output: number; usd: number };
 };
 
 export type NewsProgress = {

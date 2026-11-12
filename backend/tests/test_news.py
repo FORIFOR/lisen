@@ -150,7 +150,7 @@ def newsenv(client, tmp_path, monkeypatch):
                     "-b:a", "64k", str(silent)], check=True)
     calls = {"gemini": [], "say": [], "responses": []}
 
-    def fake_gemini(text):
+    def fake_gemini(text, levels=news.LEVELS):
         calls["gemini"].append(text)
         obj = calls["responses"].pop(0) if calls["responses"] else copy.deepcopy(GOOD)
         return obj, {"prompt": 1000, "output": 2000}
@@ -267,7 +267,7 @@ def test_verify_rejects_bad_questions_and_too_few_words():
 def test_run_publishes_once_and_never_regenerates(newsenv):
     r = _run()
     assert r["status"] in ("ok", "partial") and [x["status"] for x in r["lessons"]] == ["published"]
-    assert r["usage"] == {"calls": 1, "prompt": 1000, "output": 2000}
+    assert {k: r["usage"][k] for k in ("calls", "prompt", "output")} == {"calls": 1, "prompt": 1000, "output": 2000}
     said = len(newsenv["say"])
     assert said == 5 + 6 + 7 + 3, "every sentence of every level and the 3 unseen sentences"
     row = db.q1("SELECT * FROM news_lessons")
@@ -293,7 +293,7 @@ def test_a_rejected_answer_is_retried_once_with_the_problems_listed(newsenv):
     newsenv["responses"] += [bad]
     r = _run()
     assert r["lessons"][0]["status"] == "published" and r["usage"]["calls"] == 2
-    assert "4000" in newsenv["gemini"][1] and "automatic fact check" in newsenv["gemini"][1]
+    assert "4000" in newsenv["gemini"][1] and "automatic check" in newsenv["gemini"][1]
     # twice wrong: kept as rejected with the reason, never shown, never generated again
     db.q("DELETE FROM news_lessons")
     newsenv["responses"] += [bad, bad]
@@ -318,7 +318,7 @@ def test_audio_that_does_not_match_its_text_is_not_offered(newsenv):
     db.q("DELETE FROM news_sources")
     newsenv["heard"] = lambda text: False
     r = _run()
-    assert r["lessons"][0]["status"] == "rejected"
+    assert r["lessons"][0]["status"] == "retry" and r["lessons"][0]["kind"] == "audio", "audio is retried later, not the text"
 
 
 # --- the learner's flow -------------------------------------------------------------------------------
@@ -496,12 +496,129 @@ def test_feed_boilerplate_is_not_part_of_the_story():
 def test_an_unreadable_answer_is_still_counted_and_not_retried_endlessly(newsenv, monkeypatch):
     calls = []
 
-    def cut_off(text):
+    def cut_off(text, levels=news.LEVELS):
         calls.append(text)
-        raise news.NewsError(502, "Gemini の応答を読み取れませんでした（出力が上限で途中で切れました）", usage={"prompt": 1100, "output": 32768})
+        raise news.NewsError(502, "Gemini の出力が上限で途中で切れました", usage={"prompt": 1100, "output": 12000}, kind="max_tokens")
     monkeypatch.setattr(news, "call_gemini", cut_off)
     r = _run()
-    assert len(calls) == 1 and r["lessons"][0]["status"] == "error" and "途中で切れました" in r["lessons"][0]["reason"]
-    assert r["usage"]["calls"] == 1 and r["usage"]["output"] == 32768, "a billed but unusable call is still counted"
-    assert db.q1("SELECT status FROM news_lessons")["status"] == "error"
+    assert len(calls) == 1, "a cut-off answer is not fixed by asking again"
+    assert r["lessons"][0]["status"] == "rejected" and r["lessons"][0]["kind"] == "max_tokens"
+    assert r["usage"]["calls"] == 1 and r["usage"]["output"] == 12000, "a billed but unusable call is still counted"
+    row = db.q1("SELECT status, failure, calls FROM news_lessons")
+    assert (row["status"], row["failure"], row["calls"]) == ("rejected", "max_tokens", 1)
     assert news_study.overview()["today"] == []
+    assert _run()["usage"]["calls"] == 0 and len(calls) == 1, "a permanent failure is never generated again"
+
+
+
+# --- retries, budget and the Gemini request -------------------------------------------------------------
+
+def _past(conn_sql="UPDATE news_lessons SET retry_after='2000-01-01T00:00:00+00:00', updated_at='2000-01-01T00:00:00+00:00'"):
+    db.q(conn_sql)
+
+
+def test_api_errors_are_retried_later_but_never_beyond_the_caps(newsenv, monkeypatch):
+    seen = []
+
+    def down(text, levels=news.LEVELS):
+        seen.append(1)
+        raise news.NewsError(503, "Gemini に接続できませんでした", kind="api")
+    monkeypatch.setattr(news, "call_gemini", down)
+    r = _run()
+    assert r["lessons"][0]["status"] == "error" and r["lessons"][0]["kind"] == "api"
+    row = db.q1("SELECT status, failure, calls, tries, retry_after FROM news_lessons")
+    assert (row["status"], row["failure"], row["calls"], row["tries"]) == ("retry", "api", 0, 1) and row["retry_after"]
+    _run()
+    assert len(seen) == 1, "not again before retry_after"
+    _past()
+    monkeypatch.setattr(news, "call_gemini", lambda text, levels=news.LEVELS: (copy.deepcopy(GOOD), {"prompt": 1000, "output": 2000}))
+    r = _run()
+    assert [x["status"] for x in r["lessons"]] == ["published"] and r["usage"]["calls"] == 1
+    assert db.q1("SELECT status, calls, tries FROM news_lessons")["tries"] == 2
+
+
+def test_failed_audio_is_made_again_without_gemini(newsenv):
+    newsenv["heard"] = lambda text: False
+    r = _run()
+    assert r["lessons"][0] == {**r["lessons"][0], "status": "retry", "kind": "audio"}
+    assert len(newsenv["gemini"]) == 1
+    row = db.q1("SELECT status, failure, data FROM news_lessons")
+    assert row["failure"] == "audio" and json.loads(row["data"])["levels"]["B1"]["sentences"], "the checked text is kept"
+    newsenv["heard"] = lambda text: True
+    _past()
+    r = _run()
+    assert [x["status"] for x in r["lessons"]] == ["published"]
+    assert len(newsenv["gemini"]) == 1 and r["usage"]["calls"] == 0, "no second Gemini call for an audio problem"
+
+
+def test_a_story_never_gets_more_than_two_gemini_calls(newsenv):
+    bad = copy.deepcopy(GOOD)
+    bad["levels"]["B1"]["sentences"][1] = {"en": "The new site is expected to create 4,000 jobs.", "ja": "4,000人の雇用が生まれる。"}
+    newsenv["responses"] += [bad, bad, bad, bad]
+    r = _run()
+    assert r["lessons"][0]["status"] == "rejected" and r["lessons"][0]["kind"] == "fact" and len(newsenv["gemini"]) == 2
+    assert news.problem_kinds(["B1: 11 words in a row are copied from the source (max 8)"]) == {"copy"}
+    _past()
+    db.q("UPDATE news_lessons SET status='retry'")        # even if it were marked retryable, the cap holds
+    r = _run()
+    assert len(newsenv["gemini"]) == 2
+    assert db.q1("SELECT calls FROM news_lessons")["calls"] == 2
+
+
+def test_the_budget_stops_before_a_call_that_could_exceed_it(newsenv):
+    r = news.run("manual", opener=opener, budget_usd=0.001)
+    assert newsenv["gemini"] == [] and r["lessons"][0]["kind"] == "budget"
+    assert db.q1("SELECT status, calls FROM news_lessons")["calls"] == 0
+    r = news.run("manual", opener=opener, budget_usd=0.20)
+    assert [x["status"] for x in r["lessons"]] == ["published"] and len(newsenv["gemini"]) == 1
+    assert 0 < r["usage"]["usd"] <= 0.20
+
+
+def test_one_level_lessons(newsenv, client):
+    b1_only = copy.deepcopy(GOOD)
+    b1_only["levels"] = {"B1": b1_only["levels"]["B1"]}
+    newsenv["responses"] += [b1_only]
+    r = news.run("manual", opener=opener, levels=["B1"])
+    assert [x["status"] for x in r["lessons"]] == ["published"] and r["lessons"][0]["levels"] == ["B1"]
+    assert "B1:" in newsenv["gemini"][0] and "A2:" not in newsenv["gemini"][0]
+    lid = r["lessons"][0]["id"]
+    v = client.get(f"/v1/news/{lid}?level=A2").json()
+    assert v["levels"] == ["B1"] and v["level"] == "B1"
+
+
+def test_the_request_uses_a_json_schema_low_thinking_and_an_output_limit(client, monkeypatch):
+    sent = {}
+
+    class Resp:
+        def __init__(self, body):
+            self.body = body
+
+        def read(self):
+            return json.dumps(self.body).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake_urlopen(req, timeout=None):
+        sent["body"] = json.loads(req.data)
+        sent["headers"] = dict(req.headers)
+        return Resp({"candidates": [{"finishReason": "MAX_TOKENS", "content": {"parts": [{"text": '{"status": "ok", "ti'}]}}],
+                     "usageMetadata": {"promptTokenCount": 1500, "candidatesTokenCount": 2000, "thoughtsTokenCount": 10000},
+                     "modelVersion": "gemini-3.8-flash"})
+    monkeypatch.setattr(news.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(news.lessons, "gemini_key", lambda: "test-key")
+    with pytest.raises(news.NewsError) as e:
+        news.call_gemini("prompt", ["B1"])
+    cfg = sent["body"]["generationConfig"]
+    assert cfg["responseMimeType"] == "application/json" and cfg["maxOutputTokens"] == news.MAX_OUTPUT_TOKENS
+    assert cfg["thinkingConfig"] == {"thinkingLevel": "LOW"}
+    assert list(cfg["responseJsonSchema"]["properties"]["levels"]["properties"]) == ["B1"]
+    assert e.value.kind == "max_tokens" and e.value.usage["output"] == 12000
+    assert "test-key" not in json.dumps(e.value.raw), "the key is never kept with the raw response"
+    assert news.cost({"prompt": 1_000_000, "output": 1_000_000, "model": "gemini-3.8-flash"}) == pytest.approx(4.50)
+    assert news.price("gemini-unknown-9") == news.PRICE_UNKNOWN
+    monkeypatch.setattr(news.lessons, "gemini_model", lambda: "gemini-2.5-flash")
+    assert "thinkingConfig" not in news.generation_config(["B1"]), "thinkingLevel is an error on earlier models"

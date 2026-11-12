@@ -120,7 +120,9 @@ CREATE INDEX IF NOT EXISTS news_sources_published ON news_sources(published_at);
 CREATE TABLE IF NOT EXISTS news_lessons (
   id TEXT PRIMARY KEY, date TEXT NOT NULL, source_id TEXT NOT NULL UNIQUE, category TEXT NOT NULL,
   status TEXT NOT NULL, data TEXT, checks TEXT, audio TEXT, reason TEXT, model TEXT,
-  created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+  created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+  -- draft / published / retry (failure: api or audio, after retry_after) / rejected / insufficient
+  failure TEXT, retry_after TEXT, calls INTEGER NOT NULL DEFAULT 0, tries INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS news_lessons_date ON news_lessons(date);
 CREATE TABLE IF NOT EXISTS news_runs (
@@ -160,6 +162,7 @@ DEFAULT_SETTINGS = {
     "news_topics": ["technology"],   # technology / business / world / science
     "news_per_day": 3,
     "news_level": "B1",            # the level a news lesson opens with (A2 / B1 / B2)
+    "news_levels": ["A2", "B1", "B2"],   # levels written for each story (one Gemini call for all of them)
 }
 
 
