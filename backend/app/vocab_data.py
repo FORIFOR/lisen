@@ -20,6 +20,7 @@ DATASET_PATHS = (DATASET_PATH, VOCAB_DIR / "ngsl_tsl.json")
 POS = {"n", "v", "adj", "adv", "prep", "conj", "pron"}
 # audio a person has to listen to before it is used (e.g. speech recognition heard "clock" for "clerk")
 AUDIO_REVIEW_PATH = VOCAB_DIR / "audio_review.json"
+NEWS_DATASET = "news_words"     # words the learner added from a news lesson (personal, in data/vocab)
 AUDIO_KINDS = ("word", "example", "transfer")
 TIERS = (1, 2, 3, 4)
 _JA = re.compile(r"[぀-ヿ一-鿿]")
@@ -108,7 +109,11 @@ def overlaps(a: Word, b: Word) -> bool:
     return bool(_meaning_parts(a.meaning) & _meaning_parts(b.meaning))
 
 
-def validate_dataset(data: dict) -> list[str]:
+def news_words_path() -> Path:
+    return config.DATA_DIR / "vocab" / f"{NEWS_DATASET}.json"
+
+
+def validate_dataset(data: dict, min_words: int = 40) -> list[str]:
     """Return a list of problems (empty = valid). Checks duplicates, malformed entries and license."""
     problems: list[str] = []
     meta = data.get("dataset") or {}
@@ -143,7 +148,7 @@ def validate_dataset(data: dict) -> list[str]:
         roles = [ex.get("role") for ex in w["examples"]]
         if any(roles) and roles[:2] != ["study", "transfer"]:
             problems.append(f"{where}: examples must be [study, transfer]")
-        if w.get("source") is not None and w["source"] not in ("tsl", "ngsl"):
+        if w.get("source") is not None and w["source"] not in ("tsl", "ngsl", "news"):
             problems.append(f"{where}: unknown source {w['source']}")
         for ex in w["examples"]:
             en, form = ex.get("en", ""), ex.get("form", "")
@@ -170,7 +175,7 @@ def validate_dataset(data: dict) -> list[str]:
             a, b = (_tokens(x["en"]) for x in w["examples"][:2])
             if len(a & b) / max(1, len(a | b)) > 0.4:
                 problems.append(f"{where}: transfer sentence is too close to the study sentence")
-    if len(seen_ids) < 40:
+    if len(seen_ids) < min_words:
         problems.append("dataset: too few words for a diagnostic")
     return problems
 
@@ -192,14 +197,23 @@ class VocabLibrary:
     def __init__(self, paths=None) -> None:
         if isinstance(paths, Path):
             paths = (paths,)
-        paths = [p for p in (paths or DATASET_PATHS) if p.exists()]
+        paths = [p for p in (paths or (*DATASET_PATHS, news_words_path())) if p.exists()]
         self.datasets: list[dict] = []
         self.words: dict[str, Word] = {}
+        self.user_holds: dict[str, set[str]] = {}
         lemmas: dict[str, str] = {}
+        loaded = []
         for path in paths:
             raw = json.loads(path.read_text())
-            problems = validate_dataset(raw)
             name = path.stem
+            if name == NEWS_DATASET:
+                raw = _valid_user_words(raw, lemmas)
+                if not raw["words"]:
+                    continue
+                problems = []
+            else:
+                problems = validate_dataset(raw)
+            loaded.append(raw)
             for w in raw.get("words") or []:
                 other = lemmas.get(w.get("lemma", "").lower())
                 if other and other != name:
@@ -218,7 +232,9 @@ class VocabLibrary:
                     pronunciation=w.get("pronunciation"), scene=w.get("scene"), example_ja=ex.get("ja"),
                     transfer=tr.get("en"), transfer_form=tr.get("form"), transfer_ja=tr.get("ja"),
                     source=w.get("source"), rank=w.get("rank"), dataset=name)
-        self.raw = {"dataset": self.datasets[0], "words": [w for p in paths for w in json.loads(p.read_text())["words"]]}
+                if w.get("audio_hold"):
+                    self.user_holds[w["id"]] = set(w["audio_hold"])
+        self.raw = {"dataset": self.datasets[0], "words": [w for raw in loaded for w in raw["words"]]}
         self.meta = {"name": " + ".join(d["name"] for d in self.datasets),
                      "license": " / ".join(f"{d['file']}: {d['license']}" for d in self.datasets),
                      "source": self.datasets[0]["source"]}
@@ -227,11 +243,25 @@ class VocabLibrary:
 
     def held(self, word: Word, kind: str) -> bool:
         """On hold until someone has listened to it. An entry for an older wording no longer applies."""
+        if kind in self.user_holds.get(word.id, ()):
+            return True         # a news word whose audio failed the speech-recognition check
         r = self.review.get(f"{word.id}:{kind}")
         return bool(r) and r.get("status") != "ok" and r.get("text") == spoken_text(word, kind)
 
     def held_items(self) -> list[str]:
-        return [k for k in self.review if (w := self.words.get(k.split(":")[0])) and self.held(w, k.split(":")[1])]
+        user = [f"{wid}:{k}" for wid, ks in self.user_holds.items() for k in sorted(ks)]
+        return [k for k in self.review if (w := self.words.get(k.split(":")[0])) and self.held(w, k.split(":")[1])] + user
+
+    def by_lemma(self, text: str) -> Word | None:
+        """The word-book entry whose lemma or inflected form is `text` (e.g. 'launched' -> launch)."""
+        t = text.lower().strip()
+        if not hasattr(self, "_forms"):
+            self._forms: dict[str, Word] = {}
+            for w in self.words.values():
+                for f in w.forms():
+                    self._forms.setdefault(f.lower(), w)
+                self._forms[w.lemma.lower()] = w
+        return self._forms.get(t)
 
     def by_tier(self, tier: int) -> list[Word]:
         return [w for w in self.words.values() if w.tier == tier]
@@ -253,6 +283,24 @@ class VocabLibrary:
     def missing_audio(self) -> list[str]:
         """Words whose audio files were not generated (held audio exists; it is only not served)."""
         return [w.id for w in self.words.values() if len(self.files(w)) < (3 if w.transfer else 2)]
+
+
+def _valid_user_words(raw: dict, lemmas: dict[str, str]) -> dict:
+    """The personal news word list is checked word by word: a bad entry is skipped (and logged), never allowed
+    to stop the word book from loading, and a lemma already in the built-in lists is not loaded twice."""
+    import logging
+
+    meta = raw.get("dataset") or {}
+    keep = []
+    for w in raw.get("words") or []:
+        problems = validate_dataset({"dataset": meta, "words": [w]}, min_words=0)
+        if w.get("lemma", "").lower() in lemmas:
+            problems.append("already in the word book")
+        if problems:
+            logging.getLogger(__name__).warning("news word %r skipped: %s", w.get("lemma"), problems[0])
+            continue
+        keep.append(w)
+    return {"dataset": meta, "words": keep}
 
 
 def load_audio_review() -> dict:

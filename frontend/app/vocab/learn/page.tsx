@@ -152,7 +152,7 @@ export default function VocabLearnPage() {
             </>
           )}
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Link href={`/vocab/learn?m=${lesson?.minutes ?? 10}&new=1`} className={cn(buttonVariants({ size: "lg" }), "h-12 flex-1")}>
+            <Link href={`/vocab/learn?m=${lesson?.minutes ?? 10}&new=1`} className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 sm:flex-1")}>
               もう一度 {lesson?.minutes ?? 10}分 <ArrowRight className="size-4" />
             </Link>
             <Link href="/vocab" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12")}>

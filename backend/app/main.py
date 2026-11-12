@@ -13,7 +13,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, Response, Uploa
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from . import abilities, access, backup, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, study, tts, vocab, vocab_lessons
+from . import abilities, access, backup, analytics, asr, config, db, engine, growth, imports, lessons, news, news_study, sentences, planner, progress, srs, study, tts, vocab, vocab_lessons
 from .content import library, reload_library
 from .vocab_data import vocab_library
 
@@ -22,6 +22,8 @@ from .vocab_data import vocab_library
 async def _lifespan(_: FastAPI):
     if os.environ.get("LISTENFLOW_BACKUPS", "on").lower() not in {"off", "0", "false"}:
         backup.start_daily()
+    if os.environ.get("LISTENFLOW_NEWS_AUTO", "1") != "0":
+        news.start_scheduler()     # today's news lessons every morning (only when enabled and a Gemini key is set)
     yield
 
 
@@ -127,6 +129,11 @@ def _vocab_error(_: Request, exc: vocab.VocabError):
     return JSONResponse(status_code=exc.status, content={"detail": exc.msg})
 
 
+@app.exception_handler(news.NewsError)
+def _news_error(_: Request, exc: news.NewsError):
+    return JSONResponse(status_code=exc.status, content={"detail": exc.message})
+
+
 @app.exception_handler(lessons.LessonError)
 def _lesson_error(_: Request, exc: lessons.LessonError):
     return JSONResponse(status_code=exc.status, content={"detail": exc.msg, "checks": exc.checks})
@@ -187,6 +194,12 @@ class SettingsIn(BaseModel):
     gemini_voice_female: str | None = Field(None, pattern=r"^[A-Z][a-z]{2,20}$")
     gemini_model: str | None = Field(None, pattern=r"^gemini-[a-z0-9][a-z0-9.\-]{1,60}$")
     interests: list[Literal["tech", "business", "conversation", "science", "travel", "daily"]] | None = Field(None, max_length=6)
+    news_auto: bool | None = None
+    news_hour: int | None = Field(None, ge=0, le=23)
+    news_topics: list[Literal["technology", "business", "world", "science"]] | None = Field(None, min_length=1, max_length=4)
+    news_per_day: int | None = Field(None, ge=1, le=5)
+    news_level: Literal["A2", "B1", "B2"] | None = None
+    news_levels: list[Literal["A2", "B1", "B2"]] | None = Field(None, min_length=1, max_length=3)
 
 
 @app.put("/settings")
@@ -478,7 +491,7 @@ def export():
     out = {}
     for t in ("profile", "skill_stats", "level_stats", "exposures", "sessions", "attempts", "srs_cards", "daily_log", "tests",
               "user_vocab", "vocab_diagnostics", "vocab_lessons", "audio_lessons", "imports", "ability_snapshots", "growth_events",
-              "checkpoint_plan"):
+              "checkpoint_plan", "news_lessons", "news_answers", "news_words"):
         out[t] = [dict(r) for r in db.q(f"SELECT * FROM {t}")]
     return JSONResponse(out, headers={"Content-Disposition": "attachment; filename=listenflow-export.json"})
 
@@ -575,6 +588,61 @@ def vocabulary_review_answer(body: WordAnswerIn):
 class LessonIn(BaseModel):
     minutes: Literal[5, 10, 15, 30] = 10
     replace: bool = False
+
+
+# --- Daily English News -----------------------------------------------------------------------------
+
+class NewsAnswerIn(BaseModel):
+    level: Literal["A2", "B1", "B2"]
+    phase: Literal["first", "transfer"]
+    index: int = Field(ge=0, le=20)
+    choice: int | None = Field(None, ge=0, le=3)     # None = 分からない
+    ms: int = Field(0, ge=0)
+
+
+class NewsWordIn(BaseModel):
+    lemma: str = Field(pattern=r"^[a-z][a-z\-]{0,40}$")
+
+
+@app.get("/v1/news")
+def news_list():
+    return news_study.overview()
+
+
+@app.get("/v1/news/status")
+def news_status():
+    return news.status()
+
+
+@app.get("/v1/news/progress")
+def news_progress():
+    return news_study.progress()
+
+
+@app.post("/v1/news/run")
+def news_run():
+    """Make today's lessons now (Gemini; the same run as the morning one, so it only fills what is missing)."""
+    if not lessons.gemini_key():
+        raise news.NewsError(400, "Gemini の API キーが設定されていません（設定 → 教材の生成）")
+    if news.status()["running"]:
+        return {"started": False, "running": True}
+    threading.Thread(target=news.run, args=("manual",), daemon=True).start()
+    return {"started": True, "running": True}
+
+
+@app.get("/v1/news/{lesson_id}")
+def news_lesson(lesson_id: str, level: str | None = None):
+    return news_study.view(lesson_id, level)
+
+
+@app.post("/v1/news/{lesson_id}/attempt")
+def news_attempt(lesson_id: str, body: NewsAnswerIn):
+    return news_study.answer(lesson_id, body.level, body.phase, body.index, body.choice, body.ms)
+
+
+@app.post("/v1/news/{lesson_id}/vocabulary")
+def news_add_word(lesson_id: str, body: NewsWordIn):
+    return news_study.add_word(lesson_id, body.lemma)
 
 
 @app.get("/v1/vocabulary/overview")

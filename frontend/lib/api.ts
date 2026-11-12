@@ -96,6 +96,12 @@ export type Settings = {
   gemini_voice_female: string;
   interests: string[];
   gemini_model: string | null;
+  news_auto: boolean;
+  news_hour: number;
+  news_topics: NewsCategory[];
+  news_per_day: number;
+  news_level: NewsLevel;
+  news_levels: NewsLevel[];
 };
 
 export type Profile = {
@@ -523,3 +529,87 @@ export const SKILL_LABEL: Record<string, string> = {
 };
 
 export const LEVEL_LABEL: Record<number, string> = { 1: "A2", 2: "B1", 3: "B1+", 4: "B2", 5: "C1" };
+
+// ---- Daily English News --------------------------------------------------------------------------------
+
+export type NewsLevel = "A2" | "B1" | "B2";
+export type NewsCategory = "technology" | "business" | "world" | "science";
+export const NEWS_LEVEL_LABEL: Record<NewsLevel, string> = { A2: "初級", B1: "中級", B2: "上級" };
+export const NEWS_CATEGORY_LABEL: Record<NewsCategory, string> = { technology: "AI・テクノロジー", business: "ビジネス・経済", world: "世界", science: "科学" };
+
+export type NewsSource = {
+  publisher: string;
+  kind: "press" | "government" | "company";
+  kind_label: string;
+  url: string;
+  title: string;
+  published_at: string | null;
+  category: NewsCategory;
+  category_label: string;
+};
+
+export type NewsCard = {
+  id: string;
+  date: string;
+  title_en: string;
+  title_ja: string | null;
+  source: NewsSource;
+  corroborated: string[];
+  levels: NewsLevel[];
+  minutes: number;
+  state: "new" | "listened" | "done";
+};
+
+export type NewsRun = { date: string; trigger: string; started_at: string; finished_at: string | null; status: string;
+  detail: { collect?: { found: number; new: number; errors: string[] } | null; error?: string | null; lessons: { id?: string; status: string; reason?: string | null }[] } | null };
+
+export type NewsStatus = {
+  settings: { auto: boolean; hour: number; topics: NewsCategory[]; per_day: number; levels: NewsLevel[]; level: NewsLevel };
+  gemini: boolean;
+  auto: boolean;
+  running: boolean;
+  last_run: NewsRun | null;
+  next_run: string | null;
+  usage_month: { calls: number; prompt: number; output: number; usd: number };
+  verified_levels: NewsLevel[];
+};
+
+export type NewsProgress = {
+  first: { label: string; n: number; accuracy: number | null };
+  transfer: { label: string; n: number; accuracy: number | null };
+  lessons: number;
+  words: number;
+};
+
+export type NewsOverview = { date: string; today: NewsCard[]; recent: NewsCard[]; status: NewsStatus; progress: NewsProgress };
+
+export type NewsResult = { q: string; choices: string[]; answer: number; choice: number | null; correct: boolean; explanation: string; evidence: number[] };
+export type NewsVocab = { lemma: string; pos: string; meaning: string; form: string; sentence: number | null; in_book: boolean; added: boolean };
+export type NewsTransferFb = { correct: boolean; answer: number; choice: number | null; en: string; ja: string; form: string; meaning: string };
+export type NewsTransfer = { index: number; lemma: string; audio: string | null; choices: string[]; answered: NewsTransferFb | null };
+
+export type NewsLesson = {
+  id: string;
+  date: string;
+  level: NewsLevel;
+  levels: NewsLevel[];
+  /** levels this lesson does not have: "準備中" (not verified yet) or "この記事では未生成" */
+  unavailable: Partial<Record<NewsLevel, string>>;
+  title_en: string;
+  source: NewsSource;
+  corroborated: string[];
+  audio: string;
+  seconds: number;
+  questions: { q: string; choices: string[] }[];
+  first_done: boolean;
+  first_answered: number[];
+  // after the three questions
+  title_ja?: string;
+  summary_ja?: string;
+  sentences?: { en: string; ja: string; audio: string }[];
+  results?: NewsResult[];
+  vocabulary?: NewsVocab[];
+  transfer?: NewsTransfer[];
+};
+
+export type NewsWordAdded = { status: "queued" | "created" | "already"; lemma: string; word_id: string; message: string };

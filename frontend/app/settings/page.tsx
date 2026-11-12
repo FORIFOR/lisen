@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AccessSettings } from "@/components/access-settings";
 import { GeminiSettings } from "@/components/gemini-settings";
 import { InterestPicker } from "@/components/interest-picker";
+import { NewsSettings } from "@/components/news-settings";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { api, type Profile, type Settings } from "@/lib/api";
@@ -117,6 +118,8 @@ export default function SettingsPage() {
       </section>
 
       <GeminiSettings settings={s} update={update} />
+
+      <NewsSettings settings={s} update={update} />
 
       <section className="rounded-2xl border bg-card p-4 md:p-5">
         <h2 className="text-sm font-medium">ほかの端末から使う</h2>
