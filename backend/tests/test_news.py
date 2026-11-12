@@ -162,6 +162,10 @@ def newsenv(client, tmp_path, monkeypatch):
         return 1.0, voice
 
     calls["heard"] = lambda text: True
+    monkeypatch.setattr(news, "VERIFIED_LEVELS", news.LEVELS)        # the generation tests cover all three levels
+    with db.tx() as conn:
+        cur = json.loads(conn.execute("SELECT settings FROM profile WHERE id=1").fetchone()["settings"])
+        conn.execute("UPDATE profile SET settings=? WHERE id=1", (json.dumps({**cur, "news_levels": list(news.LEVELS)}),))
     monkeypatch.setattr(news, "call_gemini", fake_gemini)
     monkeypatch.setattr(tts, "_say_checked", fake_say)
     monkeypatch.setattr(news, "asr_check", lambda items: [calls["heard"](t) for t, _ in items])
@@ -410,8 +414,16 @@ def test_news_routes_need_a_signed_in_device(newsenv, client, monkeypatch):
 
 # --- every morning -----------------------------------------------------------------------------------
 
+def _auto_on(on=True):
+    with db.tx() as conn:
+        cur = json.loads(conn.execute("SELECT settings FROM profile WHERE id=1").fetchone()["settings"])
+        conn.execute("UPDATE profile SET settings=? WHERE id=1", (json.dumps({**cur, "news_auto": on}),))
+
+
 def test_morning_run_is_due_once_a_day_after_the_hour(newsenv, monkeypatch):
     monkeypatch.setenv("LISTENFLOW_NEWS_AUTO", "1")
+    assert not news.due(), "the morning run is off until it is turned on"
+    _auto_on()
     hour = news.settings()["hour"]
     today = dt.datetime.now().astimezone()
     assert news.due(today.replace(hour=hour - 1 if hour else 0, minute=0)) is (hour == 0)
@@ -437,7 +449,8 @@ def test_settings_accept_news_fields(client):
     r = client.put("/settings", json={"news_topics": ["technology", "science"], "news_hour": 7, "news_level": "A2"})
     assert r.status_code == 200
     s = news.settings()
-    assert s["topics"] == ["technology", "science"] and s["hour"] == 7 and s["level"] == "A2"
+    assert s["topics"] == ["technology", "science"] and s["hour"] == 7
+    assert s["level"] == "B1" and s["levels"] == ["B1"], "A2 is not verified yet: lessons open in B1"
     assert client.put("/settings", json={"news_topics": ["sports"]}).status_code == 422
 
 
@@ -622,3 +635,60 @@ def test_the_request_uses_a_json_schema_low_thinking_and_an_output_limit(client,
     assert news.price("gemini-unknown-9") == news.PRICE_UNKNOWN
     monkeypatch.setattr(news.lessons, "gemini_model", lambda: "gemini-2.5-flash")
     assert "thinkingConfig" not in news.generation_config(["B1"]), "thinkingLevel is an error on earlier models"
+
+
+
+# --- what ships: B1 only, no morning run until turned on --------------------------------------------------
+
+def test_only_verified_levels_are_made_and_the_others_say_in_preparation(newsenv, client, monkeypatch):
+    monkeypatch.setattr(news, "VERIFIED_LEVELS", ("B1",))
+    assert news.settings()["levels"] == ["B1"] and news.settings()["auto"] is False
+    client.put("/settings", json={"news_levels": ["A2", "B1", "B2"]})
+    assert news.settings()["levels"] == ["B1"], "A2 / B2 are never generated before they are verified"
+    r = _run()
+    assert [x["levels"] for x in r["lessons"]] == [["B1"]]
+    assert "A2:" not in newsenv["gemini"][0] and "B2:" not in newsenv["gemini"][0], "nothing is asked (or paid) for A2 / B2"
+    lid = r["lessons"][0]["id"]
+    v = client.get(f"/v1/news/{lid}").json()
+    assert v["levels"] == ["B1"] and v["unavailable"] == {"A2": "準備中", "B2": "準備中"}
+    assert client.get("/v1/news/status").json()["verified_levels"] == ["B1"]
+
+
+# --- the morning run with a test clock ---------------------------------------------------------------------
+
+def test_scheduler_runs_once_survives_restarts_and_catches_up_after_sleep(newsenv, monkeypatch):
+    monkeypatch.setenv("LISTENFLOW_NEWS_AUTO", "1")
+    monkeypatch.setattr(news, "VERIFIED_LEVELS", ("B1",))
+    _auto_on()
+    runs = []
+    real_run = news.run
+    monkeypatch.setattr(news, "run", lambda trigger="manual", **k: runs.append((trigger, k.get("date"))) or real_run(trigger, opener=opener, **k))
+    day = dt.datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
+    # every 10 minutes from 04:00 to 12:00, like the scheduler loop
+    clock = [day + dt.timedelta(hours=4, minutes=10 * i) for i in range(49)]
+    made = [t for t in clock if news.tick(t)]
+    assert [t.strftime("%H:%M") for t in made] == ["06:00"], "once, at the first check after 06:00"
+    assert runs == [("auto", day.date().isoformat())] and len(newsenv["gemini"]) == 1
+    # a restart (new process: the scheduler starts again) makes nothing new on the same day
+    monkeypatch.setattr(news, "_started", False)
+    assert not any(news.tick(t) for t in clock)
+    assert len(newsenv["gemini"]) == 1 and db.q1("SELECT COUNT(*) n FROM news_lessons")["n"] == 1
+    # the next day, the Mac was asleep (server not running) until 09:20: it catches up once at the first check
+    db.q("DELETE FROM news_runs")
+    db.q("DELETE FROM news_lessons")
+    db.q("DELETE FROM news_sources")
+    later = [day + dt.timedelta(days=1, hours=9, minutes=20 + 10 * i) for i in range(6)]
+    made = [t for t in later if news.tick(t)]
+    assert [t.strftime("%H:%M") for t in made] == ["09:20"]
+    # a run cut off by a stopped server ("running" for over 30 minutes) is retried, a live one is not
+    db.q("DELETE FROM news_runs")
+    t = day + dt.timedelta(days=2, hours=7)
+    db.q("INSERT INTO news_runs (id, date, trigger, started_at, status) VALUES ('x', ?, 'auto', ?, 'running')",
+         (t.date().isoformat(), (t - dt.timedelta(minutes=5)).isoformat()))
+    assert not news.due(t), "another process is running it"
+    assert news.due(t + dt.timedelta(hours=1)), "left 'running' by a stopped server: tried again"
+
+
+
+def test_explanations_number_sentences_from_one():
+    assert news_study.one_based("文0に書かれています。文4と文5で比べています。") == "文1に書かれています。文5と文6で比べています。"

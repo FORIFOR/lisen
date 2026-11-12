@@ -56,18 +56,27 @@ function Listen({ lesson, onNext, onLevel }: { lesson: NewsLesson; onNext: () =>
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="レベル">
-        {lesson.levels.map((l) => (
-          <button
-            key={l}
-            type="button"
-            role="radio"
-            aria-checked={lesson.level === l}
-            onClick={() => onLevel(l)}
-            className={cn("h-10 rounded-xl border px-4 text-sm", lesson.level === l ? "border-primary bg-brand-soft font-medium text-primary" : "hover:bg-muted")}
-          >
-            {NEWS_LEVEL_LABEL[l]} <span className="text-xs text-muted-foreground">{l}</span>
-          </button>
-        ))}
+        {(["A2", "B1", "B2"] as NewsLevel[]).map((l) => {
+          const off = lesson.unavailable?.[l];
+          return (
+            <button
+              key={l}
+              type="button"
+              role="radio"
+              aria-checked={lesson.level === l}
+              aria-disabled={!!off}
+              disabled={!!off}
+              onClick={() => onLevel(l)}
+              title={off ?? undefined}
+              className={cn(
+                "h-10 rounded-xl border px-3 text-sm",
+                lesson.level === l ? "border-primary bg-brand-soft font-medium text-primary" : off ? "cursor-not-allowed border-dashed text-muted-foreground/60" : "hover:bg-muted",
+              )}
+            >
+              {NEWS_LEVEL_LABEL[l]} <span className="text-xs text-muted-foreground">{off ? `· ${off}` : l}</span>
+            </button>
+          );
+        })}
       </div>
       <div className="rounded-3xl border bg-card p-5">
         <div className="text-xs text-muted-foreground">1. まず字幕なしで聞いてください（約{Math.max(1, Math.round(lesson.seconds / 60))}分）</div>
@@ -175,6 +184,7 @@ function Read({ lesson, onNext, setLesson }: { lesson: NewsLesson; onNext: () =>
             return (
               <li key={i}>
                 <button type="button" onClick={() => playAudio(s.audio)} className="flex w-full items-start gap-2 rounded-xl px-2 py-1.5 text-left hover:bg-muted">
+                  <span className="mt-0.5 w-4 shrink-0 text-right text-xs tabular text-muted-foreground">{i + 1}</span>
                   <Volume2 className="mt-1 size-4 shrink-0 text-muted-foreground" />
                   <span className="flex-1">
                     <span className="block text-[15px] leading-relaxed"><Highlight text={s.en} form={v?.form} /></span>
@@ -263,6 +273,7 @@ function Unseen({ lesson, onDone }: { lesson: NewsLesson; onDone: (t: NewsTransf
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-xl bg-muted/60 p-3 text-sm">
             <div className="leading-relaxed"><Highlight text={fb.en} form={fb.form} /></div>
             <div className="text-muted-foreground">{fb.ja}</div>
+            {fb.choice == null && <div className="mt-1 text-xs text-muted-foreground">「分からない」を選びました（正解に印を付けています）</div>}
             {added && <div className="mt-1 text-xs text-primary">{added}</div>}
           </motion.div>
         )}
@@ -297,8 +308,8 @@ function Done({ lesson }: { lesson: NewsLesson }) {
         <p className="mt-1 text-xs text-muted-foreground">別の文で間違えた単語は単語帳に追加し、次の単語の学習で最初に出します。</p>
       </section>
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Link href="/news" className={cn(buttonVariants({ size: "lg" }), "h-12 flex-1")}>ほかのニュース</Link>
-        <Link href="/vocab" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 flex-1")}>単語の学習へ</Link>
+        <Link href="/news" className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 sm:flex-1")}>ほかのニュース</Link>
+        <Link href="/vocab" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 shrink-0 sm:flex-1")}>単語の学習へ</Link>
       </div>
     </motion.div>
   );

@@ -571,6 +571,7 @@ export type NewsStatus = {
   last_run: NewsRun | null;
   next_run: string | null;
   usage_month: { calls: number; prompt: number; output: number; usd: number };
+  verified_levels: NewsLevel[];
 };
 
 export type NewsProgress = {
@@ -592,6 +593,8 @@ export type NewsLesson = {
   date: string;
   level: NewsLevel;
   levels: NewsLevel[];
+  /** levels this lesson does not have: "準備中" (not verified yet) or "この記事では未生成" */
+  unavailable: Partial<Record<NewsLevel, string>>;
   title_en: string;
   source: NewsSource;
   corroborated: string[];

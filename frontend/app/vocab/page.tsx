@@ -120,7 +120,7 @@ export default function VocabHomePage() {
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           {ov.active_lesson ? (
             <>
-              <Link href={`/vocab/learn?id=${ov.active_lesson.id}`} className={cn(buttonVariants({ size: "lg" }), "h-12 flex-1")}>
+              <Link href={`/vocab/learn?id=${ov.active_lesson.id}`} className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 sm:flex-1")}>
                 続きから（{ov.active_lesson.minutes}分・{Math.floor(ov.active_lesson.spent_s / 60)}分経過） <ArrowRight className="size-4" />
               </Link>
               <Link href={`/vocab/learn?m=${minutes}&new=1`} className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12")}>
@@ -128,7 +128,7 @@ export default function VocabHomePage() {
               </Link>
             </>
           ) : (
-            <Link href={`/vocab/learn?m=${minutes}`} className={cn(buttonVariants({ size: "lg" }), "h-12 flex-1")}>
+            <Link href={`/vocab/learn?m=${minutes}`} className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 sm:flex-1")}>
               {minutes}分 学習する <ArrowRight className="size-4" />
             </Link>
           )}

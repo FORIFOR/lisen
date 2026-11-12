@@ -87,6 +87,8 @@ def view(lesson_id: str, level: str | None = None) -> dict:
     first = ans.get((level, "first"), {})
     first_done = len(first) >= news.QUESTIONS
     out = {"id": lesson_id, "date": r["date"], "level": level, "levels": lv_ok, "level_labels": news.LEVEL_LABEL,
+           "unavailable": {lv: ("準備中" if lv not in news.VERIFIED_LEVELS else "この記事では未生成")
+                           for lv in news.LEVELS if lv not in lv_ok},
            "title_en": d["title_en"], "source": _source(d),
            "corroborated": sorted({c["publisher"] for c in d.get("corroborated") or []}),
            "audio": A["full"], "seconds": A["seconds"],
@@ -125,7 +127,13 @@ def _has(text: str, form: str) -> bool:
 
 def _first_fb(q: dict, a: dict) -> dict:
     return {"q": q["q"], "choices": q["choices"], "answer": q["answer"], "choice": a["choice"], "correct": bool(a["correct"]),
-            "explanation": q["explanation"], "evidence": q["evidence"]}
+            "explanation": one_based(q["explanation"]), "evidence": [i + 1 for i in q["evidence"]]}
+
+
+def one_based(text: str) -> str:
+    """Gemini numbers sentences from 0 ('文0', 'sentence 0'); the lesson shows them from 1."""
+    import re
+    return re.sub(r"(文|sentence )(\d+)", lambda m: f"{m.group(1)}{int(m.group(2)) + 1}", text)
 
 
 def _transfer_fb(c: dict, a: dict) -> dict:

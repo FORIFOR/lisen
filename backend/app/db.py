@@ -157,12 +157,12 @@ DEFAULT_SETTINGS = {
     "gemini_voice_male": "Algieba",
     "gemini_voice_female": "Aoede",
     "interests": ["tech", "business", "conversation"],   # topics preferred for new listening material         # None = LISTENFLOW_GEMINI_MODEL or the default in lessons.py
-    "news_auto": True,             # make today's news lessons every morning (Gemini; needs a key)
+    "news_auto": False,            # make today's news lessons every morning (Gemini; needs a key). Off until turned on
     "news_hour": 6,                # from this hour (local time) on; caught up later if the Mac was asleep
     "news_topics": ["technology"],   # technology / business / world / science
     "news_per_day": 3,
     "news_level": "B1",            # the level a news lesson opens with (A2 / B1 / B2)
-    "news_levels": ["A2", "B1", "B2"],   # levels written for each story (one Gemini call for all of them)
+    "news_levels": ["B1"],         # levels written for each story (only those in news.VERIFIED_LEVELS are made)
 }
 
 

@@ -40,6 +40,10 @@ log = logging.getLogger(__name__)
 
 GENERATOR_VERSION = 1
 LEVELS = ("A2", "B1", "B2")
+# levels whose generation has been checked with the real Gemini API; the others are shown as "in preparation"
+# and never generated, whatever the settings say (B1 was verified on 2026-11-13)
+VERIFIED_LEVELS = ("B1",)
+STALE_RUN = dt.timedelta(minutes=30)      # a run still "running" after this was cut off (server stopped)
 LEVEL_LABEL = {"A2": "初級", "B1": "中級", "B2": "上級"}
 LEVEL_TIER = {"A2": 2, "B1": 3, "B2": 4}                 # word-book tier of words added from this level
 LEVEL_RATE = {"A2": 155, "B1": 170, "B2": 185}            # words per minute (`say -r`)
@@ -876,8 +880,8 @@ def _fail(lid, status, kind, reason, calls, data, checks) -> None:
 def settings() -> dict:
     s = db.profile()["settings"]
     topics = [t for t in (s.get("news_topics") or []) if t in F.CATEGORIES] or ["technology"]
-    levels = [lv for lv in LEVELS if lv in (s.get("news_levels") or LEVELS)] or list(LEVELS)
-    return {"auto": bool(s.get("news_auto", True)), "hour": int(s.get("news_hour", 6)), "topics": topics,
+    levels = [lv for lv in VERIFIED_LEVELS if lv in (s.get("news_levels") or VERIFIED_LEVELS)] or list(VERIFIED_LEVELS)
+    return {"auto": bool(s.get("news_auto", False)), "hour": int(s.get("news_hour", 6)), "topics": topics,
             "per_day": max(1, min(5, int(s.get("news_per_day", 3)))), "levels": levels,
             "level": s.get("news_level") if s.get("news_level") in levels else vocab_level(levels)}
 
@@ -900,7 +904,7 @@ def run(trigger: str = "manual", date: str | None = None, opener=None, levels=No
         else:
             detail["collect"] = collect(opener) if not only else None
             s = settings()
-            levels = levels or s["levels"]
+            levels = [lv for lv in (levels or s["levels"]) if lv in VERIFIED_LEVELS] or list(VERIFIED_LEVELS)
             want = 1 if only else count if count is not None else s["per_day"]
             have = db.q1("SELECT COUNT(*) n FROM news_lessons WHERE date=? AND status='published'", (date,))["n"]
             with db.tx() as conn:
@@ -951,14 +955,26 @@ def due(now: dt.datetime | None = None) -> bool:
     if now.hour < settings()["hour"]:
         return False
     runs = db.q("SELECT status, started_at FROM news_runs WHERE date=? AND trigger='auto'", (now.date().isoformat(),))
-    if any(r["status"] in ("ok", "partial", "no_stories", "running", "no_key") for r in runs):
+    if any(r["status"] in ("ok", "partial", "no_stories", "no_key") for r in runs):
         return False
-    failed = [r for r in runs if r["status"] == "failed"]
+    live = [r for r in runs if r["status"] == "running" and now - dt.datetime.fromisoformat(r["started_at"]) < STALE_RUN]
+    if live:
+        return False            # running now (in this or another process)
+    # a run left "running" by a stopped server counts as failed (it is retried, within the same limits)
+    failed = [r for r in runs if r["status"] == "failed" or r["status"] == "running"]
     if len(failed) >= MAX_FAILED_RUNS:
         return False
     if failed and now - dt.datetime.fromisoformat(max(r["started_at"] for r in failed)) < dt.timedelta(hours=1):
         return False
     return True
+
+
+def tick(now: dt.datetime | None = None) -> bool:
+    """One scheduler check: run today's lessons if they are due. Returns whether a run was made."""
+    if due(now):
+        run("auto", date=(now or dt.datetime.now().astimezone()).date().isoformat())   # recorded on the day it checked
+        return True
+    return False
 
 
 def start_scheduler() -> None:
@@ -973,8 +989,7 @@ def start_scheduler() -> None:
         while not stop.wait(wait):
             wait = RUN_EVERY_S
             try:
-                if due():
-                    run("auto")
+                tick()
             except Exception:  # noqa: BLE001 - the loop must survive
                 log.exception("news scheduler")
 
@@ -1002,7 +1017,7 @@ def status() -> dict:
             "last_run": {k: last[k] for k in ("date", "trigger", "started_at", "finished_at", "status")} | {
                 "detail": _run_summary(last["detail"])} if last else None,
             "next_run": nxt.isoformat(timespec="minutes") if auto_enabled() else None,
-            "usage_month": calls, "categories": F.CATEGORIES, "levels": LEVEL_LABEL}
+            "usage_month": calls, "categories": F.CATEGORIES, "levels": LEVEL_LABEL, "verified_levels": list(VERIFIED_LEVELS)}
 
 
 def _run_summary(detail: str | None) -> dict | None:
