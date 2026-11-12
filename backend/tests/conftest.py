@@ -12,6 +12,7 @@ _tmp = tempfile.mkdtemp(prefix="listenflow-test-")
 os.environ["LISTENFLOW_DATA_DIR"] = _tmp
 os.environ["LISTENFLOW_DB"] = str(Path(_tmp) / "test.db")
 os.environ["LISTENFLOW_AUTO_LESSONS"] = "0"  # background lesson generation is tested directly
+os.environ["LISTENFLOW_NEWS_AUTO"] = "0"      # the morning news run is tested directly
 # never call the real Gemini API from tests, whatever the shell exports
 os.environ.pop("GEMINI_API_KEY", None)
 os.environ.pop("GOOGLE_API_KEY", None)

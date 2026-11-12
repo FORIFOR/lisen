@@ -109,6 +109,33 @@ CREATE TABLE IF NOT EXISTS vocab_lessons (
   id TEXT PRIMARY KEY, status TEXT NOT NULL, minutes INTEGER NOT NULL, created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL, completed_at TEXT, state TEXT NOT NULL, result TEXT
 );
+-- Daily English News: stories found in RSS feeds (headline, summary, link, time), lessons made from them,
+-- the runs that made them (with Gemini token use), and the learner's answers (kept apart from `attempts`)
+CREATE TABLE IF NOT EXISTS news_sources (
+  id TEXT PRIMARY KEY, feed TEXT NOT NULL, publisher TEXT NOT NULL, category TEXT NOT NULL, kind TEXT NOT NULL,
+  url TEXT NOT NULL, title TEXT NOT NULL, summary TEXT NOT NULL, content TEXT NOT NULL DEFAULT '',
+  published_at TEXT, fetched_at TEXT NOT NULL, lesson_ok INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS news_sources_published ON news_sources(published_at);
+CREATE TABLE IF NOT EXISTS news_lessons (
+  id TEXT PRIMARY KEY, date TEXT NOT NULL, source_id TEXT NOT NULL UNIQUE, category TEXT NOT NULL,
+  status TEXT NOT NULL, data TEXT, checks TEXT, audio TEXT, reason TEXT, model TEXT,
+  created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS news_lessons_date ON news_lessons(date);
+CREATE TABLE IF NOT EXISTS news_runs (
+  id TEXT PRIMARY KEY, date TEXT NOT NULL, trigger TEXT NOT NULL, started_at TEXT NOT NULL, finished_at TEXT,
+  status TEXT NOT NULL, detail TEXT
+);
+CREATE TABLE IF NOT EXISTS news_answers (
+  lesson_id TEXT NOT NULL, level TEXT NOT NULL, phase TEXT NOT NULL, idx INTEGER NOT NULL,
+  choice INTEGER, correct INTEGER NOT NULL, ms INTEGER, created_at TEXT NOT NULL, date TEXT NOT NULL,
+  PRIMARY KEY (lesson_id, level, phase, idx)
+);
+-- words met in a news lesson (tapped, or missed in its unseen sentence): studied first in the word lessons
+CREATE TABLE IF NOT EXISTS news_words (
+  lemma TEXT PRIMARY KEY, word_id TEXT NOT NULL, lesson_id TEXT NOT NULL, origin TEXT NOT NULL, added_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS devices (
   id TEXT PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL, last_seen TEXT NOT NULL
 );
@@ -128,6 +155,11 @@ DEFAULT_SETTINGS = {
     "gemini_voice_male": "Algieba",
     "gemini_voice_female": "Aoede",
     "interests": ["tech", "business", "conversation"],   # topics preferred for new listening material         # None = LISTENFLOW_GEMINI_MODEL or the default in lessons.py
+    "news_auto": True,             # make today's news lessons every morning (Gemini; needs a key)
+    "news_hour": 6,                # from this hour (local time) on; caught up later if the Mac was asleep
+    "news_topics": ["technology"],   # technology / business / world / science
+    "news_per_day": 3,
+    "news_level": "B1",            # the level a news lesson opens with (A2 / B1 / B2)
 }
 
 
@@ -181,7 +213,7 @@ def connect() -> sqlite3.Connection:
         return _conn
 
 
-MIGRATION_MARKERS = ("vocab_lessons",)   # tables added by the latest schema change
+MIGRATION_MARKERS = ("vocab_lessons", "news_lessons")   # tables added by the latest schema change
 
 
 def _backup_before_migration(conn: sqlite3.Connection) -> None:

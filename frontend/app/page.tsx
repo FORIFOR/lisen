@@ -22,6 +22,7 @@ import {
   Target,
   Users,
   Languages,
+  Newspaper,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -361,6 +362,14 @@ export default function Home() {
           <div className="flex-1">
             <div className="font-medium">単語を覚え直す</div>
             <div className="text-sm text-muted-foreground">語彙診断 → 苦手な単語 → 例文を音で確認 → 初見の文で確認（5〜30分）</div>
+          </div>
+          <ArrowRight className="size-4 text-muted-foreground" />
+        </Link>
+        <Link href="/news" className="flex items-center gap-4 rounded-2xl border bg-card p-4 hover:bg-muted/50 sm:col-span-2">
+          <Newspaper className="size-5 text-primary" />
+          <div className="flex-1">
+            <div className="font-medium">今日のニュース</div>
+            <div className="text-sm text-muted-foreground">最新ニュースを字幕なしで聞く → 内容の問題 → 英文と訳 → 単語 → 別の文で確認（初級・中級・上級）</div>
           </div>
           <ArrowRight className="size-4 text-muted-foreground" />
         </Link>

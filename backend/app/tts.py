@@ -197,6 +197,24 @@ def _say_checked(text: str, voice: str, rate: int, mp3: Path) -> tuple[float, st
     raise RuntimeError(f"audio check failed: {text[:40]!r}")
 
 
+def planned_voice(word, entry: dict | None, kind: str, review: dict) -> str:
+    """The voice a word's example ('example') or unseen sentence ('transfer') is read with.
+    1. a voice chosen after listening (content/vocab/audio_review.json)
+    2. the voice the existing audio was made with (recognised from its content hash)
+    3. for a new word: from the word id; the unseen sentence gets the next voice, so the two differ"""
+    v = (review.get(f"{word.id}:{kind}") or {}).get("voice")
+    if v:
+        return v
+    if entry:
+        for v in VOCAB_EXAMPLE_VOICES:
+            if kind == "example" and entry.get("hash") == _vocab_hash(word, v):
+                return v
+            if kind == "transfer" and word.transfer and entry.get("t_hash") == _transfer_hash(word, v):
+                return v
+    base = int(hashlib.sha1(word.id.encode()).hexdigest(), 16) % len(VOCAB_EXAMPLE_VOICES)
+    return VOCAB_EXAMPLE_VOICES[base if kind == "example" else (base + 1) % len(VOCAB_EXAMPLE_VOICES)]
+
+
 def build_vocab_audio(words, force: bool = False, workers: int = 3, log=print) -> dict:
     """Word, study example and (if present) transfer sentence, synthesized once and cached by content hash:
     playing a word never calls a speech service. A word whose audio fails the check is left out of the
@@ -206,15 +224,10 @@ def build_vocab_audio(words, force: bool = False, workers: int = 3, log=print) -
     config.ensure_dirs()
     manifest = load_audio_manifest()
     review = load_audio_review()
-    voices = {w.id: VOCAB_EXAMPLE_VOICES[i % len(VOCAB_EXAMPLE_VOICES)] for i, w in enumerate(words)}
-    # the unseen sentence is read by a different voice than the study example
-    tvoices = {w.id: VOCAB_EXAMPLE_VOICES[(i + 1) % len(VOCAB_EXAMPLE_VOICES)] for i, w in enumerate(words)}
-    # a sentence that was hard to understand can be re-read by another voice (content/vocab/audio_review.json)
-    for w in words:
-        for kind, table in (("example", voices), ("transfer", tvoices)):
-            v = (review.get(f"{w.id}:{kind}") or {}).get("voice")
-            if v:
-                table[w.id] = v
+    # each word keeps its voice: the one its existing audio was made with, or (new words) one derived from the
+    # word id, never its position in `words` (rebuilding a few words, or adding words, changes no other voice)
+    voices = {w.id: planned_voice(w, manifest.get(w.id), "example", review) for w in words}
+    tvoices = {w.id: planned_voice(w, manifest.get(w.id), "transfer", review) for w in words}
 
     def stale(w) -> bool:
         m = manifest.get(w.id) or {}

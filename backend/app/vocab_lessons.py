@@ -7,7 +7,8 @@ For each word:
   2. first    – a few items later: the word alone by ear (4 choices)
   3. first    – the study example by ear
   4. transfer – a sentence the learner has never seen (another scene, another speaker), at normal speed
-Words come from the placement test's routes first (basic -> sound -> context), then forgotten words,
+Words come from news lessons first (words the learner added there), then the placement test's routes
+(basic -> sound -> context), then forgotten words,
 then new words at the estimated level. FSRS reviews that are due take up to 40% of the time.
 Results of placement, first checks, transfer and review are logged with their phase and reported apart.
 """
@@ -99,6 +100,11 @@ def choose_word(conn, exclude: set[str], rng: random.Random) -> tuple[str, str] 
     lib = vocab_library()
     skip = exclude | _studied_recently(conn)
     rows = {r["word_id"]: r for r in conn.execute("SELECT * FROM user_vocab").fetchall()}
+    # words the learner picked up in a news lesson (tapped, or missed in its unseen sentence) come first
+    for r in conn.execute("SELECT word_id, origin FROM news_words ORDER BY added_at").fetchall():
+        wid = r["word_id"]
+        if wid in lib.words and wid not in skip and V.status_of(rows.get(wid)) not in ("acquired", "confirm"):
+            return wid, "ニュースで聞き取れなかった単語" if r["origin"] == "missed" else "ニュースで出会った単語"
     last = conn.execute("SELECT result FROM vocab_diagnostics WHERE status='completed' AND result IS NOT NULL"
                         " ORDER BY completed_at DESC LIMIT 1").fetchone()
     if last:

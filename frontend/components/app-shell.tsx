@@ -49,7 +49,7 @@ export function Logo() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const focusMode = pathname.startsWith("/session") || pathname.startsWith("/login") || pathname.startsWith("/onboarding") || pathname.startsWith("/vocab/");
+  const focusMode = pathname.startsWith("/session") || pathname.startsWith("/login") || pathname.startsWith("/onboarding") || pathname.startsWith("/vocab/") || pathname.startsWith("/news/");
 
   if (focusMode) {
     return <div className="min-h-dvh">{children}</div>;
