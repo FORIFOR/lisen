@@ -463,3 +463,45 @@ def test_money_and_percent_are_read_as_words():
     assert news.spoken("The £85m plan") == "The 85 million pounds plan"
     assert news.spoken("a $2bn deal, 10% more, a £10,000 prize") == "a 2 billion dollars deal, 10 percent more, a 10,000 pounds prize"
     assert news.spoken("No money here.") == "No money here."
+
+
+# --- found in the first real Gemini run (a Guardian story about a wooden datacentre) -------------------
+
+def test_title_case_headlines_and_choices_that_only_mention_all():
+    src = "EcoDataCenter built a datacentre in Falun, Sweden; its power is totally renewable."
+    assert news.check_facts("Sweden Builds Wooden Datacentre Powered by Renewable Energy", src, title=True) == []
+    assert any("'Oslo'" in p for p in news.check_facts("Sweden And Oslo Build A Datacentre", src, title=True))
+    for meta in ("上記のすべて", "すべて正しい", "どれでもない", "いずれも当てはまらない"):
+        assert news.META_CHOICE.search(meta), meta
+    for real in ("建設のためにスウェーデンの森林をすべて伐採した。", "使用した木材をすべて植林し直す計画がある点"):
+        assert not news.META_CHOICE.search(real), real
+
+
+def test_spelling_only_differences_are_the_same_speech():
+    from app import asr
+    for ref, heard in (("A company named EcoDataCenter built a special datacentre in Falun.",
+                        "A company named Eco Data Center built a special data center in Falun."),
+                       ("The colour of the theatre", "The color of the theater")):
+        r, h = news.same_speech(asr.tokens(ref), asr.tokens(heard))
+        assert asr.wer(r, h) == 0, (r, h)
+    r, h = news.same_speech(asr.tokens("The new site opens in May."), asr.tokens("The new side opens in March."))
+    assert asr.wer(r, h) > 0.2, "a real misreading still counts"
+
+
+def test_feed_boilerplate_is_not_part_of_the_story():
+    assert F.clean_text("<p>Story.</p><p>Continue reading...</p><p>Get our daily political email , free app or daily news podcast</p>"
+                        "<p>Sign up for Guardian Australia's newsletter here</p>") == "Story."
+
+
+def test_an_unreadable_answer_is_still_counted_and_not_retried_endlessly(newsenv, monkeypatch):
+    calls = []
+
+    def cut_off(text):
+        calls.append(text)
+        raise news.NewsError(502, "Gemini の応答を読み取れませんでした（出力が上限で途中で切れました）", usage={"prompt": 1100, "output": 32768})
+    monkeypatch.setattr(news, "call_gemini", cut_off)
+    r = _run()
+    assert len(calls) == 1 and r["lessons"][0]["status"] == "error" and "途中で切れました" in r["lessons"][0]["reason"]
+    assert r["usage"]["calls"] == 1 and r["usage"]["output"] == 32768, "a billed but unusable call is still counted"
+    assert db.q1("SELECT status FROM news_lessons")["status"] == "error"
+    assert news_study.overview()["today"] == []

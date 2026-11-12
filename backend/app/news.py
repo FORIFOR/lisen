@@ -51,7 +51,8 @@ TRANSFER_CHECKS = 3                                       # unseen sentences ask
 MIN_SUMMARY_WORDS = 40
 MAX_COPY_NGRAM = 8                                        # longest word sequence that may match the source
 VOICES = tts.VOCAB_EXAMPLE_VOICES
-GEMINI_TIMEOUT = 120.0
+GEMINI_TIMEOUT = 150.0
+MAX_OUTPUT_TOKENS = 32768      # thinking tokens count too; a cut-off answer is unreadable JSON
 RUN_EVERY_S = 600
 MAX_FAILED_RUNS = 3
 
@@ -61,10 +62,11 @@ _started = False
 
 
 class NewsError(Exception):
-    def __init__(self, status: int, message: str):
+    def __init__(self, status: int, message: str, usage: dict | None = None):
         super().__init__(message)
         self.status = status
         self.message = message
+        self.usage = usage or {}         # tokens of a call that was billed but could not be used
 
 
 # --- 1. collect ----------------------------------------------------------------------------------
@@ -155,7 +157,10 @@ RULES
 1. Use only facts stated in the SOURCE. Do not add background knowledge, causes, reactions, dates, days of the week,
    numbers, names, places or quotations that are not in the SOURCE.
 2. Keep every attribution: if the source says something was reported, alleged, claimed or expected, say so. Never
-   state an allegation as a fact.
+   state an allegation as a fact. Keep who said what: the reporter's own descriptions and judgements (e.g. "could
+   lay claim to being the best") are not said by the people in the story; do not put them in a person's or a
+   company's mouth. Do not add causes, conclusions or predictions (e.g. "consequently", "this might change ...")
+   that the source does not state.
 3. Retell in your own words. Never copy more than 6 words in a row from the SOURCE. Use no quotation marks.
 4. Write numbers with digits exactly as in the SOURCE (e.g. 10%, £10,000, 2026). Keep names spelled as in the SOURCE.
 5. Write three self-contained versions of the same story:
@@ -189,7 +194,7 @@ def call_gemini(text: str) -> tuple[dict, dict]:
     if not key:
         raise NewsError(503, "Gemini の API キーが設定されていません")
     body = {"contents": [{"parts": [{"text": text}]}],
-            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.3}}
+            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.3, "maxOutputTokens": MAX_OUTPUT_TOKENS}}
     req = urllib.request.Request(f"{lessons.GEMINI_API}/{lessons.gemini_model()}:generateContent",
                                  data=json.dumps(body).encode(), method="POST",
                                  headers={"Content-Type": "application/json", "x-goog-api-key": key})
@@ -201,12 +206,14 @@ def call_gemini(text: str) -> tuple[dict, dict]:
         raise NewsError(code, lessons._gemini_error(e).msg) from e
     usage = data.get("usageMetadata") or {}
     usage = {"prompt": int(usage.get("promptTokenCount") or 0), "output": int(usage.get("candidatesTokenCount") or 0)
-             + int(usage.get("thoughtsTokenCount") or 0)}
+             + int(usage.get("thoughtsTokenCount") or 0), "model": data.get("modelVersion")}
+    finish = ((data.get("candidates") or [{}])[0] or {}).get("finishReason")
     try:
         out = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"] if not p.get("thought"))
         return json.loads(out), usage
     except (KeyError, IndexError, TypeError, json.JSONDecodeError) as e:
-        raise NewsError(502, "Gemini の応答を読み取れませんでした") from e
+        why = "出力が上限で途中で切れました" if finish == "MAX_TOKENS" else f"終了理由 {finish or '不明'}"
+        raise NewsError(502, f"Gemini の応答を読み取れませんでした（{why}）", usage=usage) from e
 
 
 # --- 4. verify (in code) ---------------------------------------------------------------------------
@@ -226,6 +233,9 @@ FUNCTION_WORDS = set("a an the this that these those it its he she they we you i
                      "today tonight one some many most several all both each every no not more less other another "
                      "what who which where why how meanwhile however also still yet then later earlier".split())
 ALWAYS_OK = {"I", "AI", "OK", "TV"}
+# a choice that is only "all / none of the above" (not a sentence that happens to contain すべて)
+META_CHOICE = re.compile(r"^\s*((上記|以上)の?)?(すべて|全て|いずれ|どれ)(も|が)?(正しい|当てはまる|当てはまらない|違う|でもない|ではない)?[。.]?\s*$"
+                         r"|^\s*(上記|以上)の?(すべて|全て|いずれ)|どれでもない|いずれも(当てはまらない|正しくない)")
 
 
 def numbers(text: str) -> set[float]:
@@ -303,8 +313,9 @@ def copied_run(narration: str, source: str) -> int:
     return n
 
 
-def check_facts(en: str, src_text: str) -> list[str]:
-    """Numbers, names, date words and quotations in one English sentence that the source does not have."""
+def check_facts(en: str, src_text: str, title: bool = False) -> list[str]:
+    """Numbers, names, date words and quotations in one English sentence that the source does not have.
+    In a headline (Title Case) every word is capitalised: there an ordinary English word is not taken for a name."""
     problems = []
     src_nums = numbers(src_text)
     for n in sorted(numbers(en) - src_nums):
@@ -315,7 +326,7 @@ def check_facts(en: str, src_text: str) -> list[str]:
         if w in ALWAYS_OK or w in src_case:
             continue
         low = w.lower()
-        if first and low not in DATE_WORDS and (low in FUNCTION_WORDS or low in src_lower or _english_word(low)):
+        if (first or title) and low not in DATE_WORDS and (low in FUNCTION_WORDS or low in src_lower or _english_word(low)):
             continue
         problems.append(f"name or date {w!r} is not in the source: {en!r}")
     for low in _lower_words(en) & DATE_WORDS:
@@ -358,7 +369,7 @@ def verify(obj: dict, src: dict) -> tuple[dict, list[str], list[str]]:
             "summary_ja": str(obj.get("summary_ja") or "").strip()[:400], "levels": {}, "vocabulary": []}
     if not data["title_en"] or not _JA.search(data["title_ja"]) or not _JA.search(data["summary_ja"]):
         problems.append("title_en, title_ja and summary_ja are required (ja in Japanese)")
-    problems += [f"title: {p}" for p in check_facts(data["title_en"], src_text)]
+    problems += [f"title: {p}" for p in check_facts(data["title_en"], src_text, title=True)]
     levels = obj.get("levels") or {}
     avg = {}
     for lv in LEVELS:
@@ -396,7 +407,7 @@ def verify(obj: dict, src: dict) -> tuple[dict, list[str], list[str]]:
             if not ev or not all(0 <= i < len(sents) for i in ev):
                 problems.append(f"{lv}: question evidence must point to its sentences: {q.get('q')!r}")
                 continue
-            if any(re.search(r"(すべて|全て|どれでもない|いずれも)", c) for c in choices):
+            if any(META_CHOICE.search(c) for c in choices):
                 problems.append(f"{lv}: 'all/none of the above' choices are not allowed: {q.get('q')!r}")
                 continue
             qs.append({"q": str(q["q"]).strip(), "choices": choices, "answer": ans, "evidence": ev,
@@ -523,9 +534,39 @@ def asr_check(items: list[tuple[str, Path]]) -> list[bool | None]:
     res = asr.transcribe([p for _, p in items], timeout=120 + 6 * len(items))
     out = []
     for (text, _), r in zip(items, res):
-        ref, hyp = asr.tokens(text), asr.tokens(r.get("text", ""))
+        ref, hyp = same_speech(asr.tokens(text), asr.tokens(r.get("text", "")))
         out.append(asr.wer(ref, hyp) <= 0.35)
     return out
+
+
+def _us(t: str) -> str:
+    """British and American spellings are the same speech (centre / center, colour / color)."""
+    for uk, us in (("tres", "ters"), ("tre", "ter"), ("ours", "ors"), ("our", "or")):
+        if t.endswith(uk) and len(t) > len(uk) + 2:
+            return t[: -len(uk)] + us
+    return t
+
+
+def same_speech(ref: list[str], hyp: list[str]) -> tuple[list[str], list[str]]:
+    """Spelling-only differences removed: 'EcoDataCenter' heard as 'Eco Data Center', 'datacentre' as 'data center'."""
+    ref = [_us(t) for t in ref]
+    hyp = [_us(t) for t in hyp]
+
+    def join(a: list[str], want: set[str]) -> list[str]:
+        out, i = [], 0
+        while i < len(a):
+            for n in (3, 2):
+                if i + n <= len(a) and "".join(a[i:i + n]) in want:
+                    out.append("".join(a[i:i + n]))
+                    i += n
+                    break
+            else:
+                out.append(a[i])
+                i += 1
+        return out
+    hyp = join(hyp, set(ref))
+    ref = join(ref, set(hyp))
+    return ref, hyp
 
 
 def build_audio(lesson_id: str, date: str, data: dict, checks: list[dict]) -> dict:
@@ -617,10 +658,19 @@ def make_lesson(src: dict, date: str, usage: dict) -> dict:
     problems: list[str] = []
     data, notes = {}, []
     for attempt in range(2):
-        obj, use = call_gemini(prompt(src, problems if attempt else None))
+        try:
+            obj, use = call_gemini(prompt(src, problems if attempt else None))
+        except NewsError as e:
+            if e.usage:                      # billed even though unreadable: count it
+                usage["calls"] = usage.get("calls", 0) + 1
+                usage["prompt"] = usage.get("prompt", 0) + e.usage.get("prompt", 0)
+                usage["output"] = usage.get("output", 0) + e.usage.get("output", 0)
+            raise
         usage["calls"] = usage.get("calls", 0) + 1
         usage["prompt"] = usage.get("prompt", 0) + use["prompt"]
         usage["output"] = usage.get("output", 0) + use["output"]
+        if use.get("model"):
+            usage["model"] = use["model"]          # the model behind the "-latest" alias
         data, problems, notes = verify(obj, src)
         if not problems or problems == ["insufficient_evidence"]:
             break

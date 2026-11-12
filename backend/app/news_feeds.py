@@ -102,7 +102,12 @@ def clean_text(s: str | None) -> str:
     s = html.unescape(s)
     s = re.sub(r"[ \t ]+", " ", s)
     s = re.sub(r"\s*\n\s*", "\n", s)
+    # feed boilerplate, not part of the story
+    s = "\n".join(l for l in s.split("\n") if not BOILERPLATE.match(l))
     return s.strip()
+
+
+BOILERPLATE = re.compile(r"^(continue reading\.*|sign up (for|to) .*|get our .*(newsletter|email|app|podcast).*|read more.*)$", re.I)
 
 
 def parse_date(s: str | None) -> str | None:
