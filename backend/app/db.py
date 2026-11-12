@@ -104,6 +104,11 @@ CREATE TABLE IF NOT EXISTS sentence_studies (
   error_type TEXT NOT NULL DEFAULT 'unknown', transfer_id TEXT, transfer_correct INTEGER, transfer_ms INTEGER,
   mode TEXT NOT NULL DEFAULT 'standard', line_report TEXT
 );
+-- vocabulary lessons (5-30 min): study a word -> hear it -> hear it in a sentence -> an unseen sentence
+CREATE TABLE IF NOT EXISTS vocab_lessons (
+  id TEXT PRIMARY KEY, status TEXT NOT NULL, minutes INTEGER NOT NULL, created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL, completed_at TEXT, state TEXT NOT NULL, result TEXT
+);
 CREATE TABLE IF NOT EXISTS devices (
   id TEXT PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, name TEXT NOT NULL, created_at TEXT NOT NULL, last_seen TEXT NOT NULL
 );
@@ -151,11 +156,20 @@ def connect() -> sqlite3.Connection:
             _conn.row_factory = sqlite3.Row
             _conn.execute("PRAGMA journal_mode=WAL")
             _conn.execute("PRAGMA busy_timeout=5000")
+            _backup_before_migration(_conn)
             _conn.executescript(SCHEMA)
             # additive migrations for databases created by earlier versions
             cols = {r[1] for r in _conn.execute("PRAGMA table_info(user_vocab)")}
             if "lapsed" not in cols:
                 _conn.execute("ALTER TABLE user_vocab ADD COLUMN lapsed INTEGER NOT NULL DEFAULT 0")
+            if "correct_days" not in cols:
+                # "acquired" now also needs the word right on a second day; count the days already in the log
+                _conn.execute("ALTER TABLE user_vocab ADD COLUMN correct_days INTEGER NOT NULL DEFAULT 0")
+                _conn.execute("ALTER TABLE user_vocab ADD COLUMN last_correct_date TEXT")
+                _conn.execute("UPDATE user_vocab SET correct_days=(SELECT COUNT(DISTINCT date) FROM attempts a"
+                              " WHERE a.kind='word' AND a.item_id=user_vocab.word_id AND a.score>=0.8),"
+                              " last_correct_date=(SELECT MAX(date) FROM attempts a"
+                              " WHERE a.kind='word' AND a.item_id=user_vocab.word_id AND a.score>=0.8)")
             cols = {r[1] for r in _conn.execute("PRAGMA table_info(sentence_studies)")}
             if "mode" not in cols:     # 'standard' (dictation finds the line) or 'commute' (tap: heard / not heard)
                 _conn.execute("ALTER TABLE sentence_studies ADD COLUMN mode TEXT NOT NULL DEFAULT 'standard'")
@@ -165,6 +179,25 @@ def connect() -> sqlite3.Connection:
                 _conn.execute("INSERT INTO profile (id, settings, created_at) VALUES (1, ?, ?)",
                               (json.dumps(DEFAULT_SETTINGS), now_iso()))
         return _conn
+
+
+MIGRATION_MARKERS = ("vocab_lessons",)   # tables added by the latest schema change
+
+
+def _backup_before_migration(conn: sqlite3.Connection) -> None:
+    """Copy an existing database once before its schema is changed, so learning data can be restored.
+    Named outside the daily-backup pattern so the 14-day pruning never removes it."""
+    have = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if "profile" not in have or all(t in have for t in MIGRATION_MARKERS):
+        return      # a new database, or already migrated
+    folder = config.DATA_DIR / "backups"
+    folder.mkdir(parents=True, exist_ok=True)
+    dest = folder / f"pre-migration-{datetime.now().strftime('%Y%m%d-%H%M%S')}.db"
+    out = sqlite3.connect(dest)
+    try:
+        conn.backup(out)
+    finally:
+        out.close()
 
 
 def reset_connection() -> None:

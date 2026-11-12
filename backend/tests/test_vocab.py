@@ -4,7 +4,7 @@ import random
 
 import pytest
 
-from app import db, lessons, vocab
+from app import db, lessons, srs, vocab
 from app.vocab_data import DATASET_PATH, validate_dataset, vocab_library
 
 
@@ -37,6 +37,10 @@ def test_every_word_yields_single_answer_questions_in_all_modalities():
     for w in lib.words.values():
         for mod in vocab.MODALITIES:
             p = vocab.build_item(w, mod, rng)
+            kind = {"audio": "word", "context": "example"}.get(mod)
+            if kind and lib.held(w, kind):
+                assert p is None, (w.id, mod)       # audio on hold (content/vocab/audio_review.json) is not asked
+                continue
             assert p, (w.id, mod)
             opts = [lib.words[i] for i in p["secret"]["options"]]
             assert len({o.meaning for o in opts}) == 4
@@ -47,7 +51,7 @@ def test_every_word_yields_single_answer_questions_in_all_modalities():
                 # exactly one option's word is actually in the sentence that is played
                 assert [o.id for o in opts if o.appears_in(w.example)] == [w.id]
             if mod != "text":
-                assert w.lemma not in p["public"]["audio"]  # the URL must not give the word away
+                assert w.lemma not in p["public"]["audio"].rsplit("/", 1)[-1]  # the file name must not give the word away
                 assert "lemma" not in p["public"]
 
 
@@ -99,9 +103,8 @@ def test_diagnostic_separates_reading_from_listening(client):
     gap = res["sound_gap"][0]["id"]
     row = db.q1("SELECT * FROM user_vocab WHERE word_id=?", (gap,))
     assert vocab.status_of(row) == "sound_gap"
-    # missed modalities became FSRS cards, known ones did not
-    assert db.q1("SELECT 1 FROM srs_cards WHERE id=?", (f"w_audio:{gap}",))
-    assert not db.q1("SELECT 1 FROM srs_cards WHERE id=?", (f"w_text:{gap}",))
+    # the diagnosis makes no FSRS card: missed words are studied first, then enter FSRS from the lesson
+    assert not db.q1("SELECT 1 FROM srs_cards WHERE kind LIKE 'w_%'")
     stats = client.get("/v1/vocabulary/stats").json()
     assert stats["tested_words"] == res["words"]
     assert stats["acquired"] == 0, "nothing is acquired before context listening is shown"
@@ -145,6 +148,9 @@ def test_diagnostic_resume_duplicate_and_conflict(client):
 def test_review_queue_due_cards_and_history(client):
     run_diag(client, lambda sec: sec["modality"] == "text")
     with db.tx() as conn:
+        # cards come from lessons (the diagnosis makes none): give the tested words a card each
+        for r in conn.execute("SELECT word_id FROM user_vocab ORDER BY word_id LIMIT 8").fetchall():
+            srs.review(conn, "w_audio", r["word_id"], srs.Rating.Again)
         conn.execute("UPDATE srs_cards SET due='2000-01-01T00:00:00+00:00' WHERE kind LIKE 'w_%'")
     due = vocab.due_count()
     assert due > 0
@@ -180,6 +186,12 @@ def test_acquired_requires_all_three_modalities(client):
     assert vocab.status_of(row) != "acquired"
     with db.tx() as conn:
         p = vocab.build_item(w, "context")
+        fb = vocab.grade(conn, p, {"choice": p["secret"]["answer"], "ms": 1000}, origin="test")
+    # all three right, but on one day only: confirmed on another day before it counts as acquired
+    assert fb["status"] == "confirm"
+    with db.tx() as conn:
+        conn.execute("UPDATE user_vocab SET last_correct_date='2000-01-01' WHERE word_id='allocate'")
+        p = vocab.build_item(w, "text")
         fb = vocab.grade(conn, p, {"choice": p["secret"]["answer"], "ms": 1000}, origin="test")
     assert fb["status"] == "acquired"
     # a lucky guess is not the same as knowing: half credit and a review card

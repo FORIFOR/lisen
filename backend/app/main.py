@@ -13,7 +13,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, Response, Uploa
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from . import abilities, access, backup, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, study, tts, vocab
+from . import abilities, access, backup, analytics, asr, config, db, engine, growth, imports, lessons, sentences, planner, progress, srs, study, tts, vocab, vocab_lessons
 from .content import library, reload_library
 from .vocab_data import vocab_library
 
@@ -477,7 +477,7 @@ def audio(path: str):
 def export():
     out = {}
     for t in ("profile", "skill_stats", "level_stats", "exposures", "sessions", "attempts", "srs_cards", "daily_log", "tests",
-              "user_vocab", "vocab_diagnostics", "audio_lessons", "imports", "ability_snapshots", "growth_events",
+              "user_vocab", "vocab_diagnostics", "vocab_lessons", "audio_lessons", "imports", "ability_snapshots", "growth_events",
               "checkpoint_plan"):
         out[t] = [dict(r) for r in db.q(f"SELECT * FROM {t}")]
     return JSONResponse(out, headers={"Content-Disposition": "attachment; filename=listenflow-export.json"})
@@ -526,11 +526,13 @@ log = logging.getLogger("listenflow")
 
 class DiagnosticIn(BaseModel):
     replace: bool = False
+    # "listening": the listening profile's word part · "placement": the word book's entrance (written first)
+    style: Literal["listening", "placement"] = "listening"
 
 
 @app.post("/v1/vocabulary/diagnostics")
 def create_diagnostic(body: DiagnosticIn):
-    return vocab.start_diagnostic(body.replace)
+    return vocab.start_diagnostic(body.replace, style=body.style)
 
 
 @app.post("/v1/vocabulary/diagnostics/{did}/next")
@@ -549,6 +551,7 @@ class WordAnswerIn(BaseModel):
     choice: int | None = Field(None, ge=0, le=3)
     confidence: Literal["sure", "guess", "unknown"] = "sure"
     ms: int | None = Field(None, ge=0)
+    recall: Literal["yes", "no"] | None = None     # word lessons: "I recalled the meaning" before seeing it
 
 
 @app.post("/v1/vocabulary/answers")
@@ -567,6 +570,31 @@ def vocabulary_reviews(limit: int = 20, include_new: bool = False):
 @app.post("/v1/vocabulary/reviews")
 def vocabulary_review_answer(body: WordAnswerIn):
     return vocab.answer_item(body.item_id, body.model_dump())
+
+
+class LessonIn(BaseModel):
+    minutes: Literal[5, 10, 15, 30] = 10
+    replace: bool = False
+
+
+@app.get("/v1/vocabulary/overview")
+def vocabulary_overview():
+    return vocab_lessons.overview()
+
+
+@app.post("/v1/vocabulary/lessons")
+def vocabulary_lesson_start(body: LessonIn):
+    return vocab_lessons.start(body.minutes, body.replace)
+
+
+@app.post("/v1/vocabulary/lessons/{lid}/next")
+def vocabulary_lesson_next(lid: str):
+    return vocab_lessons.next_item(lid)
+
+
+@app.get("/v1/vocabulary/lessons/{lid}")
+def vocabulary_lesson_get(lid: str):
+    return vocab_lessons.get(lid)
 
 
 @app.get("/v1/vocabulary/stats")

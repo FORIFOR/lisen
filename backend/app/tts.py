@@ -172,21 +172,61 @@ def _say_to_mp3(text: str, voice: str, rate: int, mp3: Path) -> float:
     return dur
 
 
+def _transfer_hash(word, voice: str) -> str:
+    payload = json.dumps([word.transfer, voice, VOCAB_EXAMPLE_RATE[word.tier]])
+    return hashlib.sha1(payload.encode()).hexdigest()[:12]
+
+
+def plausible_seconds(text: str, seconds: float) -> bool:
+    """A synthesized file is usable if its length fits the text: not empty / truncated, not runaway."""
+    n = max(1, len(text.split()))
+    return 0.25 <= seconds <= 2.0 + n * 0.9
+
+
+def _say_checked(text: str, voice: str, rate: int, mp3: Path) -> tuple[float, str]:
+    """Synthesize and check the result; a bad file is retried once with the default voice.
+    Raises if both attempts fail, so the word is left without that audio (and is asked in writing)."""
+    for v in dict.fromkeys([voice, config.DEFAULT_VOICE]):
+        try:
+            secs = _say_to_mp3(text, v, rate, mp3)
+        except Exception:      # noqa: BLE001 - a missing voice or encoder failure: try the fallback
+            continue
+        if plausible_seconds(text, secs) and mp3.exists() and mp3.stat().st_size > 1000:
+            return secs, v
+    mp3.unlink(missing_ok=True)
+    raise RuntimeError(f"audio check failed: {text[:40]!r}")
+
+
 def build_vocab_audio(words, force: bool = False, workers: int = 3, log=print) -> dict:
-    from .vocab_data import load_audio_manifest, manifest_path
+    """Word, study example and (if present) transfer sentence, synthesized once and cached by content hash:
+    playing a word never calls a speech service. A word whose audio fails the check is left out of the
+    manifest, so its questions fall back to the written form."""
+    from .vocab_data import load_audio_manifest, load_audio_review, manifest_path
 
     config.ensure_dirs()
     manifest = load_audio_manifest()
+    review = load_audio_review()
     voices = {w.id: VOCAB_EXAMPLE_VOICES[i % len(VOCAB_EXAMPLE_VOICES)] for i, w in enumerate(words)}
+    # the unseen sentence is read by a different voice than the study example
+    tvoices = {w.id: VOCAB_EXAMPLE_VOICES[(i + 1) % len(VOCAB_EXAMPLE_VOICES)] for i, w in enumerate(words)}
+    # a sentence that was hard to understand can be re-read by another voice (content/vocab/audio_review.json)
+    for w in words:
+        for kind, table in (("example", voices), ("transfer", tvoices)):
+            v = (review.get(f"{w.id}:{kind}") or {}).get("voice")
+            if v:
+                table[w.id] = v
 
     def stale(w) -> bool:
         m = manifest.get(w.id) or {}
+        keys = ("word", "example", "transfer") if w.transfer else ("word", "example")
         return (force or m.get("hash") != _vocab_hash(w, voices[w.id])
-                or not all((config.AUDIO_DIR / m.get(k, "missing")).exists() for k in ("word", "example")))
+                or (w.transfer and m.get("t_hash") != _transfer_hash(w, tvoices[w.id]))
+                or not all((config.AUDIO_DIR / m.get(k, "missing")).exists() for k in keys))
 
     todo = [w for w in words if stale(w)]
     log(f"{len(words)} words, {len(todo)} to synthesize")
     lock = threading.Lock()
+    failed: list[str] = []
 
     def save() -> None:
         p = manifest_path()
@@ -198,13 +238,28 @@ def build_vocab_audio(words, force: bool = False, workers: int = 3, log=print) -
         voice = voices[w.id]
         word_rel = f"vocab/{w.audio_key}-w.mp3"
         ex_rel = f"vocab/{w.audio_key}-x.mp3"
-        wd = _say_to_mp3(w.lemma, config.DEFAULT_VOICE, VOCAB_WORD_RATE, config.AUDIO_DIR / word_rel)
-        xd = _say_to_mp3(w.example, voice, VOCAB_EXAMPLE_RATE[w.tier], config.AUDIO_DIR / ex_rel)
+        tr_rel = f"vocab/{w.audio_key}-t.mp3"
+        try:
+            wd, _ = _say_checked(w.lemma, config.DEFAULT_VOICE, VOCAB_WORD_RATE, config.AUDIO_DIR / word_rel)
+            xd, xv = _say_checked(w.example, voice, VOCAB_EXAMPLE_RATE[w.tier], config.AUDIO_DIR / ex_rel)
+            entry = {"word": word_rel, "example": ex_rel, "voice": xv, "hash": _vocab_hash(w, voice),
+                     "word_seconds": round(wd, 2), "example_seconds": round(xd, 2)}
+            if w.transfer:
+                td, tv = _say_checked(w.transfer, tvoices[w.id], VOCAB_EXAMPLE_RATE[w.tier], config.AUDIO_DIR / tr_rel)
+                entry.update({"transfer": tr_rel, "transfer_voice": tv, "t_hash": _transfer_hash(w, tvoices[w.id]),
+                              "transfer_seconds": round(td, 2)})
+        except RuntimeError as e:
+            with lock:
+                failed.append(f"{w.id}: {e}")
+                manifest.pop(w.id, None)
+                save()
+            return
         with lock:
-            manifest[w.id] = {"word": word_rel, "example": ex_rel, "voice": voice, "hash": _vocab_hash(w, voice),
-                              "word_seconds": round(wd, 2), "example_seconds": round(xd, 2)}
+            manifest[w.id] = entry
             save()
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
         list(ex.map(work, todo))
+    if failed:
+        log(f"{len(failed)} words without audio (asked in writing instead):\n  " + "\n  ".join(failed[:20]))
     return manifest

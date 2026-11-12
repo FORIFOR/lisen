@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { audioUrl, MODALITY_LABEL, type Mastery, type Modality, type WordFeedback, type WordItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-const POS_LABEL: Record<string, string> = { n: "名詞", v: "動詞", adj: "形容詞", adv: "副詞" };
+export const POS_LABEL: Record<string, string> = { n: "名詞", v: "動詞", adj: "形容詞", adv: "副詞", prep: "前置詞", conj: "接続詞", pron: "代名詞" };
 
 export function playAudio(rel?: string | null) {
   if (rel) new Audio(audioUrl(rel)).play().catch(() => {});
@@ -35,7 +35,7 @@ export function MasteryChips({ mastery, className }: { mastery: Mastery; classNa
   );
 }
 
-function Highlight({ text, form }: { text: string; form?: string }) {
+export function Highlight({ text, form }: { text: string; form?: string }) {
   if (!form) return <>{text}</>;
   const i = text.toLowerCase().indexOf(form.toLowerCase());
   if (i < 0) return <>{text}</>;
@@ -60,7 +60,9 @@ type Props = {
 /** One vocabulary question: read (text), hear the word (audio) or hear it in a sentence (context). */
 export function WordQuestion({ item, rate, submit, next, blind }: Props) {
   const listen = item.modality !== "text";
-  const ctl = useAudio(listen ? item.audio : null, { rate, autoplay: listen && !blind, allowSlow: !blind });
+  // an unseen sentence is a test of normal listening: 1.0x, no slow button until it has been answered
+  const fixed = blind || !!item.transfer;
+  const ctl = useAudio(listen ? item.audio : null, { rate: item.transfer ? 1 : rate, autoplay: listen && !blind, allowSlow: !fixed });
   const [fb, setFb] = useState<WordFeedback | null>(null);
   const [choice, setChoice] = useState<number | null | undefined>(undefined);
   const [guess, setGuess] = useState(false);
@@ -104,7 +106,9 @@ export function WordQuestion({ item, rate, submit, next, blind }: Props) {
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full bg-brand-soft px-2.5 py-1 font-medium text-primary">TOEIC 語彙 · {item.modality_label}</span>
+        <span className="rounded-full bg-brand-soft px-2.5 py-1 font-medium text-primary">
+          {item.transfer ? "初見の例文 · 1.0倍速" : `TOEIC 語彙 · ${item.modality_label}`}
+        </span>
         <span className="rounded-full border px-2 py-0.5">難易度 {item.tier}</span>
         {item.reason && <span className="ml-auto rounded-full bg-warning-soft px-2 py-0.5 text-foreground/80">{item.reason}</span>}
       </div>
@@ -115,7 +119,11 @@ export function WordQuestion({ item, rate, submit, next, blind }: Props) {
           {item.pos && <div className="mt-1 text-sm text-muted-foreground">{POS_LABEL[item.pos] ?? item.pos}</div>}
         </div>
       ) : (
-        <AudioPlayer ctl={ctl} allowSlow={!blind} label={item.modality === "audio" ? "単語の音声（文字は表示されません）" : "例文の音声（文字は表示されません）"} />
+        <AudioPlayer
+          ctl={ctl}
+          allowSlow={!fixed}
+          label={item.modality === "audio" ? "単語の音声（文字は表示されません）" : item.transfer ? "初めて聞く文（文字は表示されません）" : "例文の音声（文字は表示されません）"}
+        />
       )}
 
       <p className="mt-5 text-sm font-medium">{item.prompt}</p>
@@ -182,18 +190,31 @@ export function WordQuestion({ item, rate, submit, next, blind }: Props) {
                 <Volume2 className="size-4" /> 単語
               </Button>
             </div>
-            {fb.example && (
-              <button type="button" onClick={() => playAudio(fb.example_audio)} className="mt-3 flex w-full items-start gap-2 rounded-xl bg-muted/60 px-3 py-2 text-left text-sm hover:bg-muted">
+            {fb.scene && <p className="mt-1 text-xs text-muted-foreground">よく使う場面: {fb.scene}</p>}
+            {fb.sentence === "transfer" && fb.transfer ? (
+              <button type="button" onClick={() => playAudio(fb.transfer_audio)} className="mt-3 flex w-full items-start gap-2 rounded-xl bg-muted/60 px-3 py-2 text-left text-sm hover:bg-muted">
                 <Volume2 className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                 <span>
-                  <Highlight text={fb.example} form={fb.form} />
+                  <span className="block text-[11px] text-muted-foreground">いま聞いた文</span>
+                  <Highlight text={fb.transfer} form={fb.transfer_form ?? fb.lemma} />
+                  {fb.transfer_ja && <span className="mt-0.5 block text-xs text-muted-foreground">{fb.transfer_ja}</span>}
                 </span>
               </button>
+            ) : (
+              fb.example && (
+                <button type="button" onClick={() => playAudio(fb.example_audio)} className="mt-3 flex w-full items-start gap-2 rounded-xl bg-muted/60 px-3 py-2 text-left text-sm hover:bg-muted">
+                  <Volume2 className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <span>
+                    <Highlight text={fb.example} form={fb.form} />
+                    {fb.example_ja && <span className="mt-0.5 block text-xs text-muted-foreground">{fb.example_ja}</span>}
+                  </span>
+                </button>
+              )
             )}
             {fb.mastery && <MasteryChips mastery={fb.mastery} className="mt-3" />}
             {fb.status_label && <p className="mt-2 text-xs text-muted-foreground">この単語の状態: {fb.status_label}</p>}
           </div>
-          <div className="flex items-center justify-between gap-3">
+          <div className="sticky bottom-0 -mx-4 flex items-center justify-between gap-3 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
             <SrsLine srs={fb.srs} />
             <Button size="lg" className="h-12 px-8" onClick={next} autoFocus>
               次へ <ArrowRight className="size-4" /> <Kbd>Enter</Kbd>
