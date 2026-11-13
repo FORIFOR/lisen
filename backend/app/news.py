@@ -783,7 +783,8 @@ def _count(usage: dict, use: dict) -> None:
         usage["model"] = use["model"]          # the model behind the "-latest" alias
 
 
-def make_lesson(src: dict, date: str, usage: dict, levels=LEVELS, budget_usd: float | None = None) -> dict:
+def make_lesson(src: dict, date: str, usage: dict, levels=LEVELS, budget_usd: float | None = None,
+                budget_name: str = "予算", on_usage=None) -> dict:
     """Generate, verify (one regeneration when the cause can be fixed), build audio and publish one story.
 
     Failures are recorded with their kind. Retryable (later runs): api (no answer), audio (made again from the saved
@@ -815,9 +816,11 @@ def make_lesson(src: dict, date: str, usage: dict, levels=LEVELS, budget_usd: fl
         for attempt in range(min(2, MAX_CALLS_PER_STORY - calls)):
             text = prompt(src, problems if attempt else None, levels)
             if budget_usd is not None and usage.get("usd", 0.0) + worst_case_cost(text, lessons.gemini_model()) > budget_usd:
-                _fail(lid, "retry" if attempt == 0 else "rejected", "budget", "予算を超える見込みのため Gemini を呼びませんでした",
+                # never permanent, and no try used: the story was not (or not again) sent to Gemini
+                _fail(lid, "retry", "budget", f"{budget_name}を超える見込みのため Gemini を呼びませんでした",
                       calls, {"source": source, **data}, {"problems": problems})
-                raise BudgetExceeded(f"予算 ${budget_usd:.2f} を超える見込みのため停止しました（使用済み ${usage.get('usd', 0):.4f}）")
+                db.q("UPDATE news_lessons SET tries=MAX(0, tries-1) WHERE id=?", (lid,))
+                raise BudgetExceeded(f"{budget_name}（残り ${budget_usd:.2f}）を超える見込みのため Gemini を呼びませんでした")
             try:
                 obj, use = call_gemini(text, levels)
             except NewsError as e:
@@ -825,6 +828,8 @@ def make_lesson(src: dict, date: str, usage: dict, levels=LEVELS, budget_usd: fl
                 if billed:
                     _count(usage, e.usage)
                     calls += 1
+                    if on_usage:
+                        on_usage()
                 _keep_raw(lid, calls if billed else calls + 1, text, e.raw, {"kind": e.kind, "message": e.message})
                 if e.kind == "json" and attempt == 0 and calls < MAX_CALLS_PER_STORY:
                     problems = ["the previous answer was not valid JSON"]
@@ -836,6 +841,8 @@ def make_lesson(src: dict, date: str, usage: dict, levels=LEVELS, budget_usd: fl
                 return {"id": lid, "status": "retry" if retry else "rejected", "kind": e.kind, "reason": e.message}
             _count(usage, use)
             calls += 1
+            if on_usage:
+                on_usage()                       # saved now: a run cut off later still counts what it spent
             data, problems, notes = verify(obj, src, levels)
             kinds = problem_kinds(problems)
             _keep_raw(lid, calls, text, use.get("raw"), {"problems": problems, "notes": notes, "kinds": sorted(kinds)})
@@ -877,13 +884,27 @@ def _fail(lid, status, kind, reason, calls, data, checks) -> None:
                       json.dumps(checks, ensure_ascii=False), lessons.gemini_model(), db.now_iso(), lid))
 
 
+TYPICAL_PROMPT_CHARS = 6000      # for the morning check: is there room for one more call this month?
+
+
+def month_spent(today: dt.date | None = None, exclude: str | None = None) -> float:
+    """Estimated USD of the Gemini calls made this month (from the runs' recorded usage, saved after every call,
+    so runs still going on or cut off count too). `exclude`: a run whose spending the caller counts itself."""
+    month = (today or dt.date.today()).replace(day=1).isoformat()
+    total = 0.0
+    for r in db.q("SELECT detail FROM news_runs WHERE date>=? AND detail IS NOT NULL AND id<>?", (month, exclude or "")):
+        total += float(((json.loads(r["detail"]) or {}).get("usage") or {}).get("usd") or 0)
+    return round(total, 6)
+
+
 def settings() -> dict:
     s = db.profile()["settings"]
     topics = [t for t in (s.get("news_topics") or []) if t in F.CATEGORIES] or ["technology"]
     levels = [lv for lv in VERIFIED_LEVELS if lv in (s.get("news_levels") or VERIFIED_LEVELS)] or list(VERIFIED_LEVELS)
     return {"auto": bool(s.get("news_auto", False)), "hour": int(s.get("news_hour", 6)), "topics": topics,
             "per_day": max(1, min(5, int(s.get("news_per_day", 3)))), "levels": levels,
-            "level": s.get("news_level") if s.get("news_level") in levels else vocab_level(levels)}
+            "level": s.get("news_level") if s.get("news_level") in levels else vocab_level(levels),
+            "monthly_usd": float(s.get("news_monthly_usd", 3.0))}
 
 
 def run(trigger: str = "manual", date: str | None = None, opener=None, levels=None, budget_usd: float | None = None,
@@ -899,6 +920,9 @@ def run(trigger: str = "manual", date: str | None = None, opener=None, levels=No
     try:
         db.q("INSERT INTO news_runs (id, date, trigger, started_at, status) VALUES (?,?,?,?,?)",
              (rid, date, trigger, db.now_iso(), "running"))
+
+        def save():
+            db.q("UPDATE news_runs SET detail=? WHERE id=?", (json.dumps(detail, ensure_ascii=False), rid))
         if not lessons.gemini_key():
             status = "no_key"
         else:
@@ -915,7 +939,11 @@ def run(trigger: str = "manual", date: str | None = None, opener=None, levels=No
                     picks = select(conn, s["topics"], max(0, want - have))
             for src in picks:
                 try:
-                    detail["lessons"].append(make_lesson(src, date, detail["usage"], levels, budget_usd))
+                    # the whole run's spending (detail["usage"], counted in make_lesson) stays within the run's
+                    # budget and within what other runs left of this month's budget
+                    left = s["monthly_usd"] - month_spent(exclude=rid)
+                    budget, name = (left, "今月の上限") if budget_usd is None or left < budget_usd else (budget_usd, "予算")
+                    detail["lessons"].append(make_lesson(src, date, detail["usage"], levels, budget, name, save))
                 except NewsError as e:
                     detail["lessons"].append({"source": src["id"], "status": "error", "kind": e.kind, "reason": e.message})
                     break             # budget, key, quota or network: stop instead of failing every story
@@ -954,6 +982,8 @@ def due(now: dt.datetime | None = None) -> bool:
     now = now or dt.datetime.now().astimezone()
     if now.hour < settings()["hour"]:
         return False
+    if month_spent(now.date()) + worst_case_cost("x" * TYPICAL_PROMPT_CHARS, lessons.gemini_model()) > settings()["monthly_usd"]:
+        return False            # this month's budget is used up
     runs = db.q("SELECT status, started_at FROM news_runs WHERE date=? AND trigger='auto'", (now.date().isoformat(),))
     if any(r["status"] in ("ok", "partial", "no_stories", "no_key") for r in runs):
         return False
@@ -1017,7 +1047,15 @@ def status() -> dict:
             "last_run": {k: last[k] for k in ("date", "trigger", "started_at", "finished_at", "status")} | {
                 "detail": _run_summary(last["detail"])} if last else None,
             "next_run": nxt.isoformat(timespec="minutes") if auto_enabled() else None,
-            "usage_month": calls, "categories": F.CATEGORIES, "levels": LEVEL_LABEL, "verified_levels": list(VERIFIED_LEVELS)}
+            "usage_month": calls, "budget": budget_state(s, calls["usd"]),
+            "categories": F.CATEGORIES, "levels": LEVEL_LABEL, "verified_levels": list(VERIFIED_LEVELS)}
+
+
+def budget_state(s: dict, spent: float) -> dict:
+    """The month's cap, what is left, and whether one more (typical, worst-case) call fits: the same rule as due()."""
+    nxt = worst_case_cost("x" * TYPICAL_PROMPT_CHARS, lessons.gemini_model())
+    return {"monthly_usd": s["monthly_usd"], "left_usd": round(max(0.0, s["monthly_usd"] - spent), 4),
+            "next_call_usd": round(nxt, 4), "can_call": spent + nxt <= s["monthly_usd"]}
 
 
 def _run_summary(detail: str | None) -> dict | None:

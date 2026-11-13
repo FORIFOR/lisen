@@ -65,8 +65,11 @@ function RunStatus({ st, onRun }: { st: NewsStatus; onRun: () => void }) {
         </p>
       )}
       {!st.gemini && <p className="mt-2 text-xs text-muted-foreground">作成には Gemini の API キーが必要です（設定 → 教材の生成）。</p>}
+      {st.gemini && !st.budget.can_call && (
+        <p className="mt-2 rounded-lg bg-warning-soft px-2 py-1 text-xs">今月の上限に達したため、来月まで新しいニュース教材は作りません（設定 → 今日のニュース で変更できます）。</p>
+      )}
       <p className="mt-2 text-[11px] text-muted-foreground">
-        今月の Gemini 利用: {st.usage_month.calls}回（入力 {st.usage_month.prompt.toLocaleString()}・出力 {st.usage_month.output.toLocaleString()} トークン、推定 ${st.usage_month.usd.toFixed(2)}）。「今すぐ作る」も Gemini を使います（足りない本数だけ作成）。
+        今月の Gemini 利用: {st.usage_month.calls}回（入力 {st.usage_month.prompt.toLocaleString()}・出力 {st.usage_month.output.toLocaleString()} トークン、推定 ${st.usage_month.usd.toFixed(2)} / 上限 ${st.budget.monthly_usd.toFixed(2)}）。「今すぐ作る」も Gemini を使います（足りない本数だけ作成）。
       </p>
     </section>
   );
