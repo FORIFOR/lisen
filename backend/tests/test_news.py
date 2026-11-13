@@ -6,6 +6,7 @@ import datetime as dt
 import json
 import shutil
 import subprocess
+import sys
 
 import pytest
 
@@ -692,3 +693,133 @@ def test_scheduler_runs_once_survives_restarts_and_catches_up_after_sleep(newsen
 
 def test_explanations_number_sentences_from_one():
     assert news_study.one_based("文0に書かれています。文4と文5で比べています。") == "文1に書かれています。文5と文6で比べています。"
+
+
+# --- monthly budget ---------------------------------------------------------------------------------------
+
+def _settings(**kw):
+    with db.tx() as conn:
+        cur = json.loads(conn.execute("SELECT settings FROM profile WHERE id=1").fetchone()["settings"])
+        conn.execute("UPDATE profile SET settings=? WHERE id=1", (json.dumps({**cur, **kw}),))
+
+
+def test_the_monthly_budget_stops_gemini_calls_for_the_rest_of_the_month(newsenv, client):
+    assert news.settings()["monthly_usd"] == 3.0, "a cap is on from the start"
+    # this month already spent almost all of a $0.05 cap: the next call's worst case does not fit
+    _settings(news_monthly_usd=0.05)
+    month = dt.date.today().replace(day=1).isoformat()
+    db.q("INSERT INTO news_runs (id, date, trigger, started_at, status, detail) VALUES ('m', ?, 'manual', ?, 'ok', ?)",
+         (month, NOW.isoformat(), json.dumps({"usage": {"calls": 3, "prompt": 3000, "output": 9000, "usd": 0.045}})))
+    assert news.month_spent() == pytest.approx(0.045)
+    r = _run()
+    assert newsenv["gemini"] == [], "no call once the month's budget could be exceeded"
+    assert r["lessons"][0]["kind"] == "budget" and "月" in r["lessons"][0]["reason"]
+    st = client.get("/v1/news/status").json()
+    assert st["usage_month"]["usd"] == pytest.approx(0.045) and st["budget"]["monthly_usd"] == 0.05
+    assert st["budget"]["left_usd"] == pytest.approx(0.005)
+    # a larger cap: the same story is made (the budget failure did not use it up)
+    _settings(news_monthly_usd=3.0)
+    r = _run()
+    assert [x["status"] for x in r["lessons"]] == ["published"] and len(newsenv["gemini"]) == 1
+    # the morning run is not even due while the month's budget is used up
+    _settings(news_monthly_usd=0.05, news_auto=True)
+    assert not news.due(dt.datetime.now().astimezone().replace(hour=23)), "budget used up: no morning run"
+
+
+def test_monthly_budget_setting_is_validated(client):
+    assert client.put("/settings", json={"news_monthly_usd": 5}).status_code == 200
+    assert news.settings()["monthly_usd"] == 5.0
+    assert client.put("/settings", json={"news_monthly_usd": 0}).status_code == 422
+    assert client.put("/settings", json={"news_monthly_usd": 1000}).status_code == 422
+
+
+def _two_stories():
+    """A second, different story in the technology feed (so one run makes two lessons)."""
+    from xml.sax.saxutils import escape
+    extra = ("<item><title>Robot vacuum maker Cleanly opens Cardiff office with 120 staff</title>"
+             "<link>https://www.theguardian.com/technology/2026/cleanly-cardiff</link><description><![CDATA[<p>"
+             + escape(SUMMARY) + "</p>]]></description><pubDate>" + PUB + "</pubDate></item>")
+    url = "https://www.theguardian.com/uk/technology/rss"
+    return {**FEED_DATA, url: FEED_DATA[url].replace(b"</channel>", extra.encode() + b"</channel>")}
+
+
+def test_several_stories_in_one_run_never_take_the_month_over_its_cap(newsenv, monkeypatch):
+    """Spending earlier in the same run counts against the month (it is not cancelled out)."""
+    feeds = _two_stories()
+    monkeypatch.setattr(sys.modules[__name__], "FEED_DATA", feeds)
+    monkeypatch.setattr(news, "call_gemini", lambda text, levels=news.LEVELS: (
+        newsenv["gemini"].append(text) or copy.deepcopy(GOOD), {"prompt": 2000, "output": 11000, "model": "gemini-3.8-flash"}))
+    one = news.cost({"prompt": 2000, "output": 11000, "model": "gemini-3.8-flash"})
+    worst = news.worst_case_cost(news.prompt(_src()), news.lessons.gemini_model())
+    _settings(news_monthly_usd=round(one + worst * 0.9, 4))       # room for one call, not two
+    r = news.run("manual", opener=opener)
+    assert len(newsenv["gemini"]) == 1, r["lessons"]
+    assert news.month_spent() <= news.settings()["monthly_usd"]
+    assert [x.get("kind") for x in r["lessons"]][-1] == "budget"
+
+
+def test_a_run_budget_is_for_the_whole_run(newsenv, monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "FEED_DATA", _two_stories())
+    monkeypatch.setattr(news, "call_gemini", lambda text, levels=news.LEVELS: (
+        newsenv["gemini"].append(text) or copy.deepcopy(GOOD), {"prompt": 2000, "output": 11000, "model": "gemini-3.8-flash"}))
+    worst = news.worst_case_cost(news.prompt(_src()), news.lessons.gemini_model())
+    one = news.cost({"prompt": 2000, "output": 11000, "model": "gemini-3.8-flash"})
+    r = news.run("manual", opener=opener, budget_usd=one + worst * 0.9)
+    assert len(newsenv["gemini"]) == 1 and r["usage"]["usd"] <= one + worst * 0.9
+
+
+def test_spend_is_saved_as_it_happens_and_a_cut_off_run_still_counts(newsenv, monkeypatch):
+    seen = []
+
+    def gemini_then_crash(text, levels=news.LEVELS):
+        seen.append(text)
+        return copy.deepcopy(GOOD), {"prompt": 1000, "output": 2000, "usd": 0, "model": "gemini-3.8-flash"}
+    monkeypatch.setattr(news, "call_gemini", gemini_then_crash)
+    at_crash = []
+
+    def server_stops(*a, **k):
+        at_crash.append(news.month_spent())      # what another process would see if this one died right here
+        raise KeyboardInterrupt()
+    monkeypatch.setattr(news, "build_audio", server_stops)
+    with pytest.raises(KeyboardInterrupt):
+        news.run("manual", opener=opener)
+    spent = at_crash[0]
+    assert spent == pytest.approx(news.cost({"prompt": 1000, "output": 2000, "model": "gemini-3.8-flash"})), \
+        "the billed call is in news_runs although the run never finished"
+
+
+def test_a_budget_stop_does_not_use_up_the_story(newsenv):
+    _settings(news_monthly_usd=0.1)
+    month = dt.date.today().replace(day=1).isoformat()
+    db.q("INSERT INTO news_runs (id, date, trigger, started_at, status, detail) VALUES ('m', ?, 'manual', ?, 'ok', ?)",
+         (month, NOW.isoformat(), json.dumps({"usage": {"usd": 0.099}})))
+    for _ in range(4):
+        r = _run()
+        assert r["lessons"][0]["kind"] == "budget"
+    row = db.q1("SELECT status, tries, calls FROM news_lessons")
+    assert (row["status"], row["tries"], row["calls"]) == ("retry", 0, 0), "never sent to Gemini: no try used"
+    _settings(news_monthly_usd=3.0)
+    assert [x["status"] for x in _run()["lessons"]] == ["published"]
+
+
+def test_a_budget_stop_before_the_regeneration_is_retryable(newsenv, monkeypatch):
+    bad = copy.deepcopy(GOOD)
+    bad["levels"]["B1"]["sentences"][1] = {"en": "The new site is expected to create 4,000 jobs.", "ja": "4,000人の雇用。"}
+    newsenv["responses"] += [bad]
+    worst = news.worst_case_cost(news.prompt(_src()), news.lessons.gemini_model())
+    _settings(news_monthly_usd=round(worst + 0.001, 4))      # room for the first call, not the regeneration
+    r = _run()
+    assert len(newsenv["gemini"]) == 1 and r["lessons"][0]["kind"] == "budget"
+    row = db.q1("SELECT status, calls FROM news_lessons")
+    assert (row["status"], row["calls"]) == ("retry", 1), "a budget stop is never permanent"
+
+
+def test_status_says_whether_one_more_call_fits(newsenv, client):
+    _settings(news_monthly_usd=0.1)
+    month = dt.date.today().replace(day=1).isoformat()
+    db.q("INSERT INTO news_runs (id, date, trigger, started_at, status, detail) VALUES ('m', ?, 'manual', ?, 'ok', ?)",
+         (month, NOW.isoformat(), json.dumps({"usage": {"usd": 0.03}})))
+    st = client.get("/v1/news/status").json()["budget"]
+    worst = news.worst_case_cost("x" * news.TYPICAL_PROMPT_CHARS, news.lessons.gemini_model())
+    assert st["left_usd"] == pytest.approx(0.07) and st["can_call"] is (0.03 + worst <= 0.1)
+    assert st["next_call_usd"] == pytest.approx(round(worst, 4))

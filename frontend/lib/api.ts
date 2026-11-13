@@ -102,6 +102,7 @@ export type Settings = {
   news_per_day: number;
   news_level: NewsLevel;
   news_levels: NewsLevel[];
+  news_monthly_usd: number;
 };
 
 export type Profile = {
@@ -572,6 +573,8 @@ export type NewsStatus = {
   next_run: string | null;
   usage_month: { calls: number; prompt: number; output: number; usd: number };
   verified_levels: NewsLevel[];
+  /** can_call: one more call (worst case next_call_usd) fits in this month's cap — the server's own rule */
+  budget: { monthly_usd: number; left_usd: number; next_call_usd: number; can_call: boolean };
 };
 
 export type NewsProgress = {

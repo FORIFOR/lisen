@@ -162,6 +162,7 @@ DEFAULT_SETTINGS = {
     "news_topics": ["technology"],   # technology / business / world / science
     "news_per_day": 3,
     "news_level": "B1",            # the level a news lesson opens with (A2 / B1 / B2)
+    "news_monthly_usd": 3.0,       # estimated Gemini spend per month for news; no call once it could be exceeded
     "news_levels": ["B1"],         # levels written for each story (only those in news.VERIFIED_LEVELS are made)
 }
 

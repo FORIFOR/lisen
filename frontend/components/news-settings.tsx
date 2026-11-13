@@ -63,6 +63,15 @@ export function NewsSettings({ settings: s, update }: { settings: Settings; upda
           </div>
         </div>
         <div>
+          <div className="mb-1.5 font-medium">1か月の上限（推定額）</div>
+          <div className="mb-1.5 text-xs text-muted-foreground">今月の推定額がこの上限を超えそうなら、自動・手動とも Gemini を呼びません（中級だけなら1日3本で月 $1 前後の見込み）</div>
+          <div className="flex flex-wrap gap-1.5">
+            {[1, 3, 5, 10].map((v) => (
+              <Chip key={v} on={(s.news_monthly_usd ?? 3) === v} onClick={() => update({ news_monthly_usd: v })}>${v}</Chip>
+            ))}
+          </div>
+        </div>
+        <div>
           <div className="mb-1.5 font-medium">作るレベル</div>
           <div className="mb-1.5 text-xs text-muted-foreground">初級（A2）と上級（B2）は、実際の生成での確認が済んでいないため準備中です。今は中級（B1）だけを作ります。</div>
           <div className="flex flex-wrap gap-1.5">
